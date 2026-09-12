@@ -1,0 +1,28 @@
+#!/bin/bash
+
+IMAGE_NAME="gym-crm-system"
+
+case "$1" in
+  test)
+    echo "Running tests..."
+
+    docker run --rm \
+      -v "$(pwd)":/app \
+      -v "$HOME/.m2":/root/.m2 \
+      -w /app \
+      eclipse-temurin:17-jdk \
+      ./mvnw clean test
+    ;;
+
+  start)
+    echo "Building and running the application..."
+
+    docker build -t "$IMAGE_NAME" .
+    docker run -it --rm "$IMAGE_NAME"
+    ;;
+
+  *)
+    echo "Usage: $0 [test|start]"
+    exit 1
+    ;;
+esac
