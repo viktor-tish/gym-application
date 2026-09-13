@@ -8,7 +8,7 @@ import java.util.UUID;
 
 @Getter
 @Setter
-public class TraineeDto extends BaseUserDto{
+public class TraineeDto extends BaseUserDto {
     private UUID userId;
     private LocalDate dateOfBirth;
     private String address;
