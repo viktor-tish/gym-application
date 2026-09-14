@@ -4,12 +4,19 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.io.Resource;
+import org.vttish.gymcrmsystem.dto.TraineeDto;
+import org.vttish.gymcrmsystem.dto.TrainerDto;
+import org.vttish.gymcrmsystem.dto.TrainingDto;
 import org.vttish.gymcrmsystem.entity.Trainee;
 import org.vttish.gymcrmsystem.entity.Trainer;
 import org.vttish.gymcrmsystem.entity.Training;
+import org.vttish.gymcrmsystem.mapper.TraineeMapper;
+import org.vttish.gymcrmsystem.mapper.TrainerMapper;
+import org.vttish.gymcrmsystem.mapper.TrainingMapper;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -34,6 +41,15 @@ class StorageInitializationPostProcessorTest {
     @Mock
     private StorageWrapper storageWrapper;
 
+    @Mock
+    private TraineeMapper traineeMapper;
+
+    @Mock
+    private TrainerMapper trainerMapper;
+
+    @Mock
+    private TrainingMapper trainingMapper;
+
     private StorageInitializationPostProcessor postProcessor;
 
     @BeforeEach
@@ -41,6 +57,9 @@ class StorageInitializationPostProcessorTest {
         postProcessor = new StorageInitializationPostProcessor();
         postProcessor.setObjectMapper(objectMapper);
         postProcessor.setStorageFilePath(storageFile);
+        postProcessor.setTraineeMapper(traineeMapper);
+        postProcessor.setTrainerMapper(trainerMapper);
+        postProcessor.setTrainingMapper(trainingMapper);
     }
 
     private void setUpSuccessfulStorageFileLoad() throws IOException {
@@ -85,37 +104,58 @@ class StorageInitializationPostProcessorTest {
     @Test
     public void postProcessAfterInitialization_shouldReplaceTraineeStorage() throws IOException {
         Object emptyBean = new Object();
-        Map<UUID, Trainee> traineeMap = Map.of();
-        when(storageWrapper.trainees()).thenReturn(traineeMap);
+        UUID id = UUID.randomUUID();
+        TraineeDto dto = mock(TraineeDto.class);
+        Trainee entity = mock(Trainee.class);
+
+        when(storageWrapper.trainees()).thenReturn(Map.of(id, dto));
+        when(traineeMapper.toTrainee(dto)).thenReturn(entity);
         setUpSuccessfulStorageFileLoad();
 
         Object result = postProcessor.postProcessAfterInitialization(emptyBean, "traineeStorage");
 
-        assertSame(traineeMap, result);
+        assertInstanceOf(Map.class, result);
+        Map<?, ?> resultMap = (Map<?, ?>) result;
+        assertEquals(1, resultMap.size());
+        assertEquals(entity, resultMap.get(id));
     }
 
     @Test
     public void postProcessAfterInitialization_shouldReplaceTrainerStorage() throws IOException {
         Object emptyBean = new Object();
-        Map<UUID, Trainer> trainerMap = Map.of();
-        when(storageWrapper.trainers()).thenReturn(trainerMap);
+        UUID id = UUID.randomUUID();
+        TrainerDto dto = mock(TrainerDto.class);
+        Trainer entity = mock(Trainer.class);
+
+        when(storageWrapper.trainers()).thenReturn(Map.of(id, dto));
+        when(trainerMapper.toTrainer(dto)).thenReturn(entity);
         setUpSuccessfulStorageFileLoad();
 
         Object result = postProcessor.postProcessAfterInitialization(emptyBean, "trainerStorage");
 
-        assertSame(trainerMap, result);
+        assertInstanceOf(Map.class, result);
+        Map<?, ?> resultMap = (Map<?, ?>) result;
+        assertEquals(1, resultMap.size());
+        assertEquals(entity, resultMap.get(id));
     }
 
     @Test
     public void postProcessAfterInitialization_shouldReplaceTrainingStorage() throws IOException {
         Object emptyBean = new Object();
-        Map<UUID, Training> trainingMap = Map.of();
-        when(storageWrapper.trainings()).thenReturn(trainingMap);
+        UUID id = UUID.randomUUID();
+        TrainingDto dto = mock(TrainingDto.class);
+        Training entity = mock(Training.class);
+
+        when(storageWrapper.trainings()).thenReturn(Map.of(id, dto));
+        when(trainingMapper.toTraining(dto)).thenReturn(entity);
         setUpSuccessfulStorageFileLoad();
 
         Object result = postProcessor.postProcessAfterInitialization(emptyBean, "trainingStorage");
 
-        assertSame(trainingMap, result);
+        assertInstanceOf(Map.class, result);
+        Map<?, ?> resultMap = (Map<?, ?>) result;
+        assertEquals(1, resultMap.size());
+        assertEquals(entity, resultMap.get(id));
     }
 
     @Test
