@@ -11,6 +11,10 @@ import java.util.UUID;
 public class Trainer extends User {
     private final UUID userId;
 
+    public Trainer() {
+        userId = UUID.randomUUID();
+    }
+
     @Setter
     private TrainingType specialization;
 }

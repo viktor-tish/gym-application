@@ -19,7 +19,7 @@ class InMemoryTraineeDaoTest {
     private Trainee testTrainee;
 
     @BeforeEach
-    void setUp() {
+    public void setUp() {
         traineeDao = new InMemoryTraineeDao();
         testStorage = new HashMap<>();
         traineeDao.setTraineeStorage(testStorage);
@@ -31,7 +31,7 @@ class InMemoryTraineeDaoTest {
     }
 
     @Test
-    void create_shouldAddTrainee_whenValidAndNew() {
+    public void create_shouldAddTrainee_whenValidAndNew() {
         Trainee result = traineeDao.create(testTrainee);
 
         assertSame(testTrainee, result);
@@ -40,19 +40,19 @@ class InMemoryTraineeDaoTest {
     }
 
     @Test
-    void create_shouldThrowException_whenIdAlreadyExists() {
+    public void create_shouldThrowException_whenIdAlreadyExists() {
         testStorage.put(testTrainee.getUserId(), testTrainee);
 
         assertThrows(IllegalArgumentException.class, () -> traineeDao.create(testTrainee));
     }
 
     @Test
-    void create_shouldThrowException_whenTraineeIsNull() {
+    public void create_shouldThrowException_whenTraineeIsNull() {
         assertThrows(IllegalArgumentException.class, () -> traineeDao.create(null));
     }
 
     @Test
-    void selectById_shouldReturnTrainee_whenExists() {
+    public void selectById_shouldReturnTrainee_whenExists() {
         testStorage.put(testTrainee.getUserId(), testTrainee);
 
         Optional<Trainee> result = traineeDao.selectById(testTrainee.getUserId());
@@ -62,14 +62,14 @@ class InMemoryTraineeDaoTest {
     }
 
     @Test
-    void selectById_shouldReturnEmpty_whenDoesNotExist() {
+    public void selectById_shouldReturnEmpty_whenDoesNotExist() {
         Optional<Trainee> result = traineeDao.selectById(UUID.randomUUID());
 
         assertTrue(result.isEmpty());
     }
 
     @Test
-    void selectAll_shouldReturnAllTrainees() {
+    public void selectAll_shouldReturnAllTrainees() {
         Trainee trainee2 = new Trainee();
         testStorage.put(testTrainee.getUserId(), testTrainee);
         testStorage.put(trainee2.getUserId(), trainee2);
@@ -82,7 +82,7 @@ class InMemoryTraineeDaoTest {
     }
 
     @Test
-    void update_shouldUpdateTrainee_whenExists() {
+    public void update_shouldUpdateTrainee_whenExists() {
         testStorage.put(testTrainee.getUserId(), testTrainee);
         testTrainee.setFirstName("newFirstName");
 
@@ -93,12 +93,12 @@ class InMemoryTraineeDaoTest {
     }
 
     @Test
-    void update_shouldThrowException_whenDoesNotExist() {
+    public void update_shouldThrowException_whenDoesNotExist() {
         assertThrows(IllegalArgumentException.class, () -> traineeDao.update(testTrainee));
     }
 
     @Test
-    void delete_shouldRemoveTrainee_whenExists() {
+    public void delete_shouldRemoveTrainee_whenExists() {
         testStorage.put(testTrainee.getUserId(), testTrainee);
 
         traineeDao.delete(testTrainee.getUserId());
@@ -108,12 +108,12 @@ class InMemoryTraineeDaoTest {
     }
 
     @Test
-    void delete_shouldNotFail_whenDoesNotExist() {
+    public void delete_shouldNotFail_whenDoesNotExist() {
         assertDoesNotThrow(() -> traineeDao.delete(UUID.randomUUID()));
     }
 
     @Test
-    void existsByUsername_shouldReturnTrue_whenUsernameMatches() {
+    public void existsByUsername_shouldReturnTrue_whenUsernameMatches() {
         testStorage.put(testTrainee.getUserId(), testTrainee);
 
         boolean exists = traineeDao.existsByUsername("firstName.lastName");
@@ -122,7 +122,7 @@ class InMemoryTraineeDaoTest {
     }
 
     @Test
-    void existsByUsername_shouldReturnFalse_whenUsernameDoesNotMatch() {
+    public void existsByUsername_shouldReturnFalse_whenUsernameDoesNotMatch() {
         testStorage.put(testTrainee.getUserId(), testTrainee);
 
         boolean exists = traineeDao.existsByUsername("newFirstName.lastName");
