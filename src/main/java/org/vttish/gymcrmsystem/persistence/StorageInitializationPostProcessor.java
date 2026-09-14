@@ -7,15 +7,24 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
+import org.vttish.gymcrmsystem.mapper.TraineeMapper;
+import org.vttish.gymcrmsystem.mapper.TrainerMapper;
+import org.vttish.gymcrmsystem.mapper.TrainingMapper;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Component
 public class StorageInitializationPostProcessor implements BeanPostProcessor, InitializingBean {
     private ObjectMapper objectMapper;
     private Resource storageFile;
     private StorageWrapper initialData;
+
+    private TraineeMapper traineeMapper;
+    private TrainerMapper trainerMapper;
+    private TrainingMapper trainingMapper;
 
     @Autowired
     public void setObjectMapper(ObjectMapper objectMapper) {
@@ -25,6 +34,21 @@ public class StorageInitializationPostProcessor implements BeanPostProcessor, In
     @Value("${application.storage-file-path}")
     public void setStorageFilePath(Resource storageFile) {
         this.storageFile = storageFile;
+    }
+
+    @Autowired
+    public void setTraineeMapper(TraineeMapper traineeMapper) {
+        this.traineeMapper = traineeMapper;
+    }
+
+    @Autowired
+    public void setTrainerMapper(TrainerMapper trainerMapper) {
+        this.trainerMapper = trainerMapper;
+    }
+
+    @Autowired
+    public void setTrainingMapper(TrainingMapper trainingMapper) {
+        this.trainingMapper = trainingMapper;
     }
 
     @Override
@@ -47,11 +71,23 @@ public class StorageInitializationPostProcessor implements BeanPostProcessor, In
         }
 
         if (beanName.equals("traineeStorage") && initialData.trainees() != null) {
-            return initialData.trainees();
+            return initialData.trainees().entrySet().stream()
+                    .collect(Collectors.toMap(
+                            Map.Entry::getKey,
+                            entry -> traineeMapper.toTrainee(entry.getValue()))
+                    );
         } else if (beanName.equals("trainerStorage") && initialData.trainers() != null) {
-            return initialData.trainers();
+            return initialData.trainers().entrySet().stream()
+                    .collect(Collectors.toMap(
+                            Map.Entry::getKey,
+                            entry -> trainerMapper.toTrainer(entry.getValue()))
+                    );
         } else if (beanName.equals("trainingStorage") && initialData.trainings() != null) {
-            return initialData.trainings();
+            return initialData.trainings().entrySet().stream()
+                    .collect(Collectors.toMap(
+                            Map.Entry::getKey,
+                            entry -> trainingMapper.toTraining(entry.getValue()))
+                    );
         }
 
         return bean;
