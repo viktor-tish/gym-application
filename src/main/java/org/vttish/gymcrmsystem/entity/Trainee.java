@@ -12,6 +12,10 @@ import java.util.UUID;
 public class Trainee extends User {
     private final UUID userId;
 
+    public Trainee() {
+        userId = UUID.randomUUID();
+    }
+
     @Setter
     private LocalDate dateOfBirth;
 
