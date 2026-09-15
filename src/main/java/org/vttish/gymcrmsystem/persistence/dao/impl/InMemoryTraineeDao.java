@@ -2,6 +2,7 @@ package org.vttish.gymcrmsystem.persistence.dao.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
 import org.vttish.gymcrmsystem.entity.Trainee;
 import org.vttish.gymcrmsystem.persistence.dao.TraineeDao;
 
@@ -18,13 +19,8 @@ public class InMemoryTraineeDao implements TraineeDao {
 
     @Override
     public Trainee create(Trainee trainee) {
-        if (trainee == null) {
-            throw new IllegalArgumentException("Trainee must not be null");
-        }
-
-        if (trainee.getUserId() == null) {
-            throw new IllegalArgumentException("Trainee ID must not be null");
-        }
+        Assert.notNull(trainee, "Trainee must not be null");
+        Assert.notNull(trainee.getUserId(), "Trainee ID must not be null");
 
         if (traineeStorage.containsKey(trainee.getUserId())) {
             throw new IllegalArgumentException("Trainee already exists with such ID");
@@ -36,9 +32,7 @@ public class InMemoryTraineeDao implements TraineeDao {
 
     @Override
     public Optional<Trainee> selectById(UUID id) {
-        if (id == null) {
-            throw new IllegalArgumentException("Trainee ID must not be null");
-        }
+        Assert.notNull(id, "Trainee ID must not be null");
 
         return Optional.ofNullable(traineeStorage.get(id));
     }
@@ -49,28 +43,8 @@ public class InMemoryTraineeDao implements TraineeDao {
     }
 
     @Override
-    public Trainee update(Trainee trainee) {
-        if (trainee == null) {
-            throw new IllegalArgumentException("Trainee must not be null");
-        }
-
-        if (trainee.getUserId() == null) {
-            throw new IllegalArgumentException("Trainee ID must not be null");
-        }
-
-        if (!traineeStorage.containsKey(trainee.getUserId())) {
-            throw new IllegalArgumentException("Trainee does not exist with such ID");
-        }
-
-        traineeStorage.put(trainee.getUserId(), trainee);
-        return trainee;
-    }
-
-    @Override
     public void delete(UUID id) {
-        if (id == null) {
-            throw new IllegalArgumentException("Trainee ID must not be null");
-        }
+        Assert.notNull(id, "Trainee ID must not be null");
 
         traineeStorage.remove(id);
     }

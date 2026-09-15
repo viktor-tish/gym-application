@@ -82,22 +82,6 @@ class InMemoryTraineeDaoTest {
     }
 
     @Test
-    public void update_shouldUpdateTrainee_whenExists() {
-        testStorage.put(testTrainee.getUserId(), testTrainee);
-        testTrainee.setFirstName("newFirstName");
-
-        Trainee result = traineeDao.update(testTrainee);
-
-        assertSame(testTrainee, result);
-        assertEquals("newFirstName", testStorage.get(testTrainee.getUserId()).getFirstName());
-    }
-
-    @Test
-    public void update_shouldThrowException_whenDoesNotExist() {
-        assertThrows(IllegalArgumentException.class, () -> traineeDao.update(testTrainee));
-    }
-
-    @Test
     public void delete_shouldRemoveTrainee_whenExists() {
         testStorage.put(testTrainee.getUserId(), testTrainee);
 

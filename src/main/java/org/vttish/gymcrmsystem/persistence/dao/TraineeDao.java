@@ -10,7 +10,6 @@ public interface TraineeDao {
     Trainee create(Trainee trainee);
     Optional<Trainee> selectById(UUID id);
     List<Trainee> selectAll();
-    Trainee update(Trainee trainee);
     void delete(UUID id);
 
     boolean existsByUsername(String username);

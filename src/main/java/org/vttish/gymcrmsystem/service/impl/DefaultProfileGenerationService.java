@@ -12,10 +12,10 @@ import java.security.SecureRandom;
 public class DefaultProfileGenerationService implements ProfileGenerationService {
 
     @Autowired
-    TraineeDao traineeDao;
+    private TraineeDao traineeDao;
 
     @Autowired
-    TrainerDao trainerDao;
+    private TrainerDao trainerDao;
 
     private static final String PASSWORD_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     private final SecureRandom random = new SecureRandom();
@@ -29,7 +29,7 @@ public class DefaultProfileGenerationService implements ProfileGenerationService
         String finalUsername = baseUsername.toString();
         int serialNumber = 1;
 
-        while (traineeDao.existsByUsername(finalUsername) || trainerDao.existsByUsername(finalUsername)) {
+        while (existsByUsername(finalUsername)) {
             baseUsername.setLength(baseLength);
             finalUsername = baseUsername.append(serialNumber).toString();
             serialNumber++;
@@ -48,5 +48,10 @@ public class DefaultProfileGenerationService implements ProfileGenerationService
         }
 
         return password.toString();
+    }
+
+    @Override
+    public boolean existsByUsername(String username) {
+        return traineeDao.existsByUsername(username) || trainerDao.existsByUsername(username);
     }
 }
