@@ -60,7 +60,7 @@ public class StorageInitializationPostProcessor implements BeanPostProcessor, In
                 try (InputStream inputStream = storageFile.getInputStream()) {
                     this.initialData = objectMapper.readValue(inputStream, StorageWrapper.class);
                     log.info(
-                            "Parsed initial data from storage file: {}. Trainees: {}, Trainers: {}, Trainings: {}",
+                            "Parsed initial data from: {}. Trainees: {}, Trainers: {}, Trainings: {}",
                             storageFile.getFilename(),
                             initialData.trainees() != null ? initialData.trainees().size() : 0,
                             initialData.trainers() != null ? initialData.trainers().size() : 0,
