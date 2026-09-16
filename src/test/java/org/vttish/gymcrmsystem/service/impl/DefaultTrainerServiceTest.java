@@ -8,7 +8,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.vttish.gymcrmsystem.dto.CreateTrainerDto;
 import org.vttish.gymcrmsystem.dto.TrainerCardDto;
 import org.vttish.gymcrmsystem.dto.TrainerDetailsDto;
-import org.vttish.gymcrmsystem.dto.TrainerDto;
 import org.vttish.gymcrmsystem.dto.UpdateTrainerDto;
 import org.vttish.gymcrmsystem.entity.Trainer;
 import org.vttish.gymcrmsystem.entity.TrainingType;
@@ -49,15 +48,16 @@ class DefaultTrainerServiceTest {
                 TrainingType.YOGA
         );
         Trainer trainer = new Trainer();
-        TrainerDto expectedResult = new TrainerDto();
+        TrainerDetailsDto expectedResult = new TrainerDetailsDto();
 
-        when(profileGenerationService.generateUniqueUsername("firstName", "lastName")).thenReturn("firstName.lastName");
+        when(profileGenerationService.generateUniqueUsername("firstName", "lastName"))
+                .thenReturn("firstName.lastName");
         when(profileGenerationService.generateRandomPassword()).thenReturn("password12");
         when(mapper.create(dto)).thenReturn(trainer);
         when(trainerDao.create(trainer)).thenReturn(trainer);
-        when(mapper.toTrainerDto(trainer)).thenReturn(expectedResult);
+        when(mapper.toTrainerDetailsDto(trainer)).thenReturn(expectedResult);
 
-        TrainerDto result = trainerService.create(dto);
+        TrainerDetailsDto result = trainerService.create(dto);
 
         assertEquals(expectedResult, result);
         assertEquals("firstName.lastName", trainer.getUsername());
