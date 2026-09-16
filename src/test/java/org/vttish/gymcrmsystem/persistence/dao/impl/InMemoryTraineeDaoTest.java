@@ -97,6 +97,24 @@ class InMemoryTraineeDaoTest {
     }
 
     @Test
+    public void existsById_shouldReturnTrue_whenIdMatches() {
+        testStorage.put(testTrainee.getUserId(), testTrainee);
+
+        boolean exists = traineeDao.existsById(testTrainee.getUserId());
+
+        assertTrue(exists);
+    }
+
+    @Test
+    public void existsById_shouldReturnFalse_whenIdDoesNotMatch() {
+        testStorage.put(testTrainee.getUserId(), testTrainee);
+
+        boolean exists = traineeDao.existsById(UUID.randomUUID());
+
+        assertFalse(exists);
+    }
+
+    @Test
     public void existsByUsername_shouldReturnTrue_whenUsernameMatches() {
         testStorage.put(testTrainee.getUserId(), testTrainee);
 

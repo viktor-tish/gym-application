@@ -47,6 +47,13 @@ public class InMemoryTraineeDao implements TraineeDao {
     }
 
     @Override
+    public boolean existsById(UUID id) {
+        Assert.notNull(id, "Trainee ID must not be null");
+
+        return traineeStorage.containsKey(id);
+    }
+
+    @Override
     public boolean existsByUsername(String username) {
         return traineeStorage.values().stream()
                 .anyMatch(trainee -> trainee.getUsername().equals(username));

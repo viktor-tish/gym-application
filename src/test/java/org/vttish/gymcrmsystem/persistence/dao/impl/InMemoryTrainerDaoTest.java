@@ -87,6 +87,24 @@ class InMemoryTrainerDaoTest {
     }
 
     @Test
+    public void existsById_shouldReturnTrue_whenIdMatches() {
+        testStorage.put(testTrainer.getUserId(), testTrainer);
+
+        boolean exists = trainerDao.existsById(testTrainer.getUserId());
+
+        assertTrue(exists);
+    }
+
+    @Test
+    public void existsById_shouldReturnFalse_whenIdDoesNotMatch() {
+        testStorage.put(testTrainer.getUserId(), testTrainer);
+
+        boolean exists = trainerDao.existsById(UUID.randomUUID());
+
+        assertFalse(exists);
+    }
+
+    @Test
     public void existsByUsername_shouldReturnTrue_whenUsernameMatches() {
         testStorage.put(testTrainer.getUserId(), testTrainer);
 

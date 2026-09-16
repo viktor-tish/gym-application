@@ -11,5 +11,6 @@ public interface TrainerDao {
     Optional<Trainer> selectById(UUID id);
     List<Trainer> selectAll();
 
+    boolean existsById(UUID id);
     boolean existsByUsername(String username);
 }

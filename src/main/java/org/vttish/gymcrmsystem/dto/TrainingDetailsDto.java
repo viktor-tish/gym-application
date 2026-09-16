@@ -4,7 +4,10 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.vttish.gymcrmsystem.entity.TrainingType;
 
+import java.time.Duration;
+import java.time.LocalDate;
 import java.util.UUID;
 
 @AllArgsConstructor
@@ -14,9 +17,9 @@ import java.util.UUID;
 public class TrainingDetailsDto {
     private UUID id;
     private String trainingName;
-    private String trainingType;
-    private String trainingDate;
-    private String trainingDuration;
+    private TrainingType trainingType;
+    private LocalDate trainingDate;
+    private Duration trainingDuration;
     private UUID trainerId;
     private String trainerUsername;
     private UUID traineeId;
