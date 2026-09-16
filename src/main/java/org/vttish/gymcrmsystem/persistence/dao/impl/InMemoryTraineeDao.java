@@ -21,10 +21,7 @@ public class InMemoryTraineeDao implements TraineeDao {
     public Trainee create(Trainee trainee) {
         Assert.notNull(trainee, "Trainee must not be null");
         Assert.notNull(trainee.getUserId(), "Trainee ID must not be null");
-
-        if (traineeStorage.containsKey(trainee.getUserId())) {
-            throw new IllegalArgumentException("Trainee already exists with such ID");
-        }
+        Assert.isTrue(!traineeStorage.containsKey(trainee.getUserId()), "Trainee already exists with such ID");
 
         traineeStorage.put(trainee.getUserId(), trainee);
         return trainee;
