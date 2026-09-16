@@ -2,6 +2,7 @@ package org.vttish.gymcrmsystem.mapper;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingConstants;
+import org.mapstruct.ObjectFactory;
 import org.vttish.gymcrmsystem.dto.TrainingDto;
 import org.vttish.gymcrmsystem.entity.Training;
 
@@ -9,4 +10,12 @@ import org.vttish.gymcrmsystem.entity.Training;
 public interface TrainingMapper {
     Training toTraining(TrainingDto dto);
     TrainingDto toTrainingDto(Training training);
+
+    @ObjectFactory
+    default Training objectFactory(TrainingDto trainingDto) {
+        if (trainingDto == null) {
+            return null;
+        }
+        return new Training(trainingDto.getId());
+    }
 }
