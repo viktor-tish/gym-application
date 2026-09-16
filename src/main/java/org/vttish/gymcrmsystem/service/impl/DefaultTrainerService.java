@@ -34,7 +34,7 @@ public class DefaultTrainerService implements TrainerService {
 
 
     @Override
-    public TrainerDto create(CreateTrainerDto createTrainerDto) {
+    public TrainerDetailsDto create(CreateTrainerDto createTrainerDto) {
         Assert.notNull(createTrainerDto, "The create DTO must not be null");
         Assert.noNullElements(
                 List.of(
@@ -56,7 +56,7 @@ public class DefaultTrainerService implements TrainerService {
         trainer.setUsername(username);
         trainer.setPassword(password);
 
-        return mapper.toTrainerDto(trainerDao.create(trainer));
+        return mapper.toTrainerDetailsDto(trainerDao.create(trainer));
     }
 
     @Override
