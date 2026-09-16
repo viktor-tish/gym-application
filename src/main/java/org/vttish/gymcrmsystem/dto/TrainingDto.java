@@ -11,6 +11,7 @@ import java.util.UUID;
 @Getter
 @Setter
 public class TrainingDto {
+    private UUID id;
     private UUID traineeId;
     private UUID trainerId;
     private String trainingName;

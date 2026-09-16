@@ -12,5 +12,6 @@ public interface TraineeDao {
     List<Trainee> selectAll();
     void delete(UUID id);
 
+    boolean existsById(UUID id);
     boolean existsByUsername(String username);
 }

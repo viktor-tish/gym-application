@@ -17,9 +17,11 @@ class TrainingMapperTest {
 
     @Test
     public void toTraining_shouldMapAllFields() {
+        UUID expectedId = UUID.randomUUID();
         UUID expectedTraineeId = UUID.randomUUID();
         UUID expectedTrainerId = UUID.randomUUID();
         TrainingDto dto = new TrainingDto();
+        dto.setId(expectedId);
         dto.setTraineeId(expectedTraineeId);
         dto.setTrainerId(expectedTrainerId);
         dto.setTrainingName("trainingName");
@@ -30,6 +32,7 @@ class TrainingMapperTest {
         Training entity = mapper.toTraining(dto);
 
         assertNotNull(entity, "The mapped entity should not be null");
+        assertEquals(expectedId, entity.getId());
         assertEquals(expectedTraineeId, entity.getTraineeId());
         assertEquals(expectedTrainerId, entity.getTrainerId());
         assertEquals("trainingName", entity.getTrainingName());
@@ -40,9 +43,10 @@ class TrainingMapperTest {
 
     @Test
     public void toTrainingDto_shouldMapAllFields() {
+        UUID expectedId = UUID.randomUUID();
         UUID expectedTraineeId = UUID.randomUUID();
         UUID expectedTrainerId = UUID.randomUUID();
-        Training entity = new Training();
+        Training entity = new Training(expectedId);
         entity.setTraineeId(expectedTraineeId);
         entity.setTrainerId(expectedTrainerId);
         entity.setTrainingName("trainingName");
@@ -53,6 +57,7 @@ class TrainingMapperTest {
         TrainingDto dto = mapper.toTrainingDto(entity);
 
         assertNotNull(dto, "The mapped DTO should not be null");
+        assertEquals(expectedId, dto.getId());
         assertEquals(expectedTraineeId, dto.getTraineeId());
         assertEquals(expectedTrainerId, dto.getTrainerId());
         assertEquals("trainingName", dto.getTrainingName());

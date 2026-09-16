@@ -8,13 +8,12 @@ import java.util.UUID;
 
 @RequiredArgsConstructor
 @Getter
+@Setter
 public class Trainer extends User {
     private final UUID userId;
+    private TrainingType specialization;
 
     public Trainer() {
         userId = UUID.randomUUID();
     }
-
-    @Setter
-    private TrainingType specialization;
 }

@@ -4,6 +4,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.vttish.gymcrmsystem.entity.Trainee;
 import org.vttish.gymcrmsystem.entity.Trainer;
+import org.vttish.gymcrmsystem.entity.Training;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -23,7 +24,7 @@ public class StorageConfig {
     }
 
     @Bean
-    public Map<UUID, Trainee> trainingStorage() {
+    public Map<UUID, Training> trainingStorage() {
         return new HashMap<>();
     }
 }
