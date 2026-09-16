@@ -8,7 +8,12 @@ import java.util.UUID;
 
 @Getter
 @Setter
-public class TrainerDto extends BaseUserDto {
+public class TrainerDto {
+    private String firstName;
+    private String lastName;
+    private String username;
+    private String password;
+    private boolean isActive;
     private UUID userId;
     private TrainingType specialization;
 }
