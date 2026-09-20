@@ -1,8 +1,11 @@
 package org.vttish.gymcrmsystem.dto;
 
-import lombok.*;
-
 import java.util.UUID;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -10,8 +13,8 @@ import java.util.UUID;
 @Setter
 @ToString
 public class TraineeCardDto {
-    private String firstName;
-    private String lastName;
-    private String username;
-    private UUID userId;
+  private String firstName;
+  private String lastName;
+  private String username;
+  private UUID userId;
 }

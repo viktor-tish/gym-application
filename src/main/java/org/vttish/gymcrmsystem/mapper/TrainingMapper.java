@@ -11,18 +11,21 @@ import org.vttish.gymcrmsystem.entity.Training;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface TrainingMapper {
-    Training toTraining(TrainingDto dto);
-    TrainingDto toTrainingDto(Training training);
-    TrainingCardDto toTrainingCardDto(Training training);
-    TrainingDetailsDto toTrainingDetailsDto(Training training);
+  Training toTraining(TrainingDto dto);
 
-    Training create(CreateTrainingDto createTrainingDto);
+  TrainingDto toTrainingDto(Training training);
 
-    @ObjectFactory
-    default Training objectFactory(TrainingDto trainingDto) {
-        if (trainingDto == null) {
-            return null;
-        }
-        return new Training(trainingDto.getId());
+  TrainingCardDto toTrainingCardDto(Training training);
+
+  TrainingDetailsDto toTrainingDetailsDto(Training training);
+
+  Training create(CreateTrainingDto createTrainingDto);
+
+  @ObjectFactory
+  default Training objectFactory(TrainingDto trainingDto) {
+    if (trainingDto == null) {
+      return null;
     }
+    return new Training(trainingDto.getId());
+  }
 }
