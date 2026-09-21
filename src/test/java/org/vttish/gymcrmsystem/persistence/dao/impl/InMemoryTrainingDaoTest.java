@@ -1,6 +1,8 @@
 package org.vttish.gymcrmsystem.persistence.dao.impl;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -84,5 +86,38 @@ class InMemoryTrainingDaoTest {
     assertEquals(2, result.size());
     assertTrue(result.contains(testTraining));
     assertTrue(result.contains(training2));
+  }
+
+  @Test
+  public void delete_shouldRemoveTraining_whenExists() {
+    testStorage.put(testTraining.getId(), testTraining);
+
+    trainingDao.delete(testTraining.getId());
+
+    assertFalse(testStorage.containsKey(testTraining.getId()));
+    assertEquals(0, testStorage.size());
+  }
+
+  @Test
+  public void delete_shouldNotFail_whenDoesNotExist() {
+    assertDoesNotThrow(() -> trainingDao.delete(UUID.randomUUID()));
+  }
+
+  @Test
+  public void existsById_shouldReturnTrue_whenIdMatches() {
+    testStorage.put(testTraining.getId(), testTraining);
+
+    boolean exists = trainingDao.existsById(testTraining.getId());
+
+    assertTrue(exists);
+  }
+
+  @Test
+  public void existsById_shouldReturnFalse_whenIdDoesNotMatch() {
+    testStorage.put(testTraining.getId(), testTraining);
+
+    boolean exists = trainingDao.existsById(UUID.randomUUID());
+
+    assertFalse(exists);
   }
 }

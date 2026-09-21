@@ -1,5 +1,6 @@
 package org.vttish.gymcrmsystem.persistence.dao.impl;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -123,5 +124,20 @@ class InMemoryTrainerDaoTest {
     boolean exists = trainerDao.existsByUsername("newFirstName.lastName");
 
     assertFalse(exists);
+  }
+
+  @Test
+  public void delete_shouldRemoveTrainer_whenExists() {
+    testStorage.put(testTrainer.getUserId(), testTrainer);
+
+    trainerDao.delete(testTrainer.getUserId());
+
+    assertFalse(testStorage.containsKey(testTrainer.getUserId()));
+    assertEquals(0, testStorage.size());
+  }
+
+  @Test
+  public void delete_shouldNotFail_whenDoesNotExist() {
+    assertDoesNotThrow(() -> trainerDao.delete(UUID.randomUUID()));
   }
 }
