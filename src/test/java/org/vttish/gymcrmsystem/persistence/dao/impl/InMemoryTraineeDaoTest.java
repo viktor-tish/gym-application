@@ -1,16 +1,10 @@
 package org.vttish.gymcrmsystem.persistence.dao.impl;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,120 +13,26 @@ import org.vttish.gymcrmsystem.entity.Trainee;
 class InMemoryTraineeDaoTest {
 
   private InMemoryTraineeDao traineeDao;
-  private Map<UUID, Trainee> testStorage;
-  private Trainee testTrainee;
+  private Map<UUID, Trainee> storage;
+  private Trainee trainee;
 
   @BeforeEach
-  public void setUp() {
+  void setUp() {
     traineeDao = new InMemoryTraineeDao();
-    testStorage = new HashMap<>();
-    traineeDao.setTraineeStorage(testStorage);
-
-    testTrainee = new Trainee();
-    testTrainee.setFirstName("firstName");
-    testTrainee.setLastName("lastName");
-    testTrainee.setUsername("firstName.lastName");
+    storage = new HashMap<>();
+    traineeDao.setTraineeStorage(storage);
+    trainee = new Trainee();
   }
 
   @Test
-  public void create_shouldAddTrainee_whenValidAndNew() {
-    Trainee result = traineeDao.create(testTrainee);
-
-    assertSame(testTrainee, result);
-    assertTrue(testStorage.containsKey(testTrainee.getUserId()));
-    assertEquals(1, testStorage.size());
+  void getEntityId_shouldReturnUserId() {
+    assertSame(trainee.getUserId(), traineeDao.getEntityId(trainee));
   }
 
   @Test
-  public void create_shouldThrowException_whenIdAlreadyExists() {
-    testStorage.put(testTrainee.getUserId(), testTrainee);
+  void setTraineeStorage_shouldWireStorageCorrectly() {
+    traineeDao.create(trainee);
 
-    assertThrows(IllegalArgumentException.class, () -> traineeDao.create(testTrainee));
-  }
-
-  @Test
-  public void create_shouldThrowException_whenTraineeIsNull() {
-    assertThrows(IllegalArgumentException.class, () -> traineeDao.create(null));
-  }
-
-  @Test
-  public void selectById_shouldReturnTrainee_whenExists() {
-    testStorage.put(testTrainee.getUserId(), testTrainee);
-
-    Optional<Trainee> result = traineeDao.selectById(testTrainee.getUserId());
-
-    assertTrue(result.isPresent());
-    assertSame(testTrainee, result.get());
-  }
-
-  @Test
-  public void selectById_shouldReturnEmpty_whenDoesNotExist() {
-    Optional<Trainee> result = traineeDao.selectById(UUID.randomUUID());
-
-    assertTrue(result.isEmpty());
-  }
-
-  @Test
-  public void selectAll_shouldReturnAllTrainees() {
-    Trainee trainee2 = new Trainee();
-    testStorage.put(testTrainee.getUserId(), testTrainee);
-    testStorage.put(trainee2.getUserId(), trainee2);
-
-    List<Trainee> result = traineeDao.selectAll();
-
-    assertEquals(2, result.size());
-    assertTrue(result.contains(testTrainee));
-    assertTrue(result.contains(trainee2));
-  }
-
-  @Test
-  public void delete_shouldRemoveTrainee_whenExists() {
-    testStorage.put(testTrainee.getUserId(), testTrainee);
-
-    traineeDao.delete(testTrainee.getUserId());
-
-    assertFalse(testStorage.containsKey(testTrainee.getUserId()));
-    assertEquals(0, testStorage.size());
-  }
-
-  @Test
-  public void delete_shouldNotFail_whenDoesNotExist() {
-    assertDoesNotThrow(() -> traineeDao.delete(UUID.randomUUID()));
-  }
-
-  @Test
-  public void existsById_shouldReturnTrue_whenIdMatches() {
-    testStorage.put(testTrainee.getUserId(), testTrainee);
-
-    boolean exists = traineeDao.existsById(testTrainee.getUserId());
-
-    assertTrue(exists);
-  }
-
-  @Test
-  public void existsById_shouldReturnFalse_whenIdDoesNotMatch() {
-    testStorage.put(testTrainee.getUserId(), testTrainee);
-
-    boolean exists = traineeDao.existsById(UUID.randomUUID());
-
-    assertFalse(exists);
-  }
-
-  @Test
-  public void existsByUsername_shouldReturnTrue_whenUsernameMatches() {
-    testStorage.put(testTrainee.getUserId(), testTrainee);
-
-    boolean exists = traineeDao.existsByUsername("firstName.lastName");
-
-    assertTrue(exists);
-  }
-
-  @Test
-  public void existsByUsername_shouldReturnFalse_whenUsernameDoesNotMatch() {
-    testStorage.put(testTrainee.getUserId(), testTrainee);
-
-    boolean exists = traineeDao.existsByUsername("newFirstName.lastName");
-
-    assertFalse(exists);
+    assertTrue(storage.containsKey(trainee.getUserId()));
   }
 }
