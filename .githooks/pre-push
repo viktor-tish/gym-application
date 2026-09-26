@@ -1,0 +1,27 @@
+#!/bin/bash
+
+CURRENT_BRANCH=$(git branch --show-current)
+
+if [[ "$CURRENT_BRANCH" != "develop" && "$CURRENT_BRANCH" != feat/* ]]; then
+  echo "Branch is $CURRENT_BRANCH. Skipping local CI checks..."
+  exit 0
+fi
+
+echo "Running CI checks before push..."
+
+docker run --rm \
+  -v "$(pwd)":/app \
+  -v "$HOME/.m2":/root/.m2 \
+  -w /app \
+  eclipse-temurin:17-jdk \
+  ./mvnw clean test
+
+RESULT=$?
+if [ $RESULT -ne 0 ]; then
+  echo "Build or tests failed. Push aborted."
+  echo "To bypass this check for a WIP commit, use: git push --no-verify"
+  exit 1
+fi
+
+echo "All checks passed. Pushing..."
+exit 0
