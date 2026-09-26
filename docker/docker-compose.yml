@@ -1,0 +1,9 @@
+services:
+  java-server:
+    build:
+      context: ../java-server
+      dockerfile: Dockerfile
+    container_name: gym-java-server
+    ports:
+      - "8080:8080"
+    restart: unless-stopped

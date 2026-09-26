@@ -12,6 +12,7 @@ RUN --mount=type=cache,target=/root/.m2/repository \
     ./mvnw dependency:go-offline
 
 COPY src/ ./src
+COPY config/ ./config
 
 RUN --mount=type=cache,target=/root/.m2/repository \
     ./mvnw package -DskipTests

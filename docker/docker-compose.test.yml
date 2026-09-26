@@ -1,0 +1,6 @@
+services:
+  java-server-test:
+    build:
+      context: ../java-server
+      dockerfile: test.Dockerfile
+    container_name: gym-java-server-test
