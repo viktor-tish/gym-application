@@ -1,6 +1,23 @@
 services:
   java-server-test:
+    container_name: gym-java-server-test
     build:
       context: ../java-server
-      dockerfile: test.Dockerfile
-    container_name: gym-java-server-test
+      dockerfile: docker/test.Dockerfile
+    environment:
+      SONAR_LOGIN: ${SONAR_LOGIN}
+      SONAR_PASSWORD: ${SONAR_PASSWORD}
+      SONAR_PROJECT_KEY: gym-java-server
+      SONAR_PROJECT_NAME: "Gym Java Server"
+    networks:
+      - gym-network
+    volumes:
+      - maven-repo:/root/.m2/repository
+
+networks:
+  gym-network:
+    external: true
+    name: gym-network
+
+volumes:
+  maven-repo:

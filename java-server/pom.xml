@@ -19,6 +19,14 @@
         <logback.version>1.5.34</logback.version>
         <mapstruct.version>1.6.3</mapstruct.version>
         <aspectj.version>1.9.22</aspectj.version>
+        
+        <!-- Exclude data objects and configs from SonarQube coverage -->
+        <sonar.coverage.exclusions>
+            **/dto/**,
+            **/entity/**,
+            **/config/**,
+            **/mapper/**
+        </sonar.coverage.exclusions>
     </properties>
 
     <dependencies>
@@ -151,6 +159,42 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.12</version>
+                <configuration>
+                    <excludes>
+                        <exclude>**/dto/**</exclude>
+                        <exclude>**/aspect/**</exclude>
+                        <exclude>**/facade/**</exclude>
+                        <exclude>**/entity/**</exclude>
+                        <exclude>**/config/**</exclude>
+                        <exclude>**/mapper/**</exclude>
+                    </excludes>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.sonarsource.scanner.maven</groupId>
+                <artifactId>sonar-maven-plugin</artifactId>
+                <version>4.0.0.4121</version>
             </plugin>
         </plugins>
     </build>

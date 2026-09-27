@@ -13,9 +13,8 @@ fi
 
 echo "Running CI checks before push..."
 
-docker compose -f docker/docker-compose.test.yml up --build
+./run test
 RESULT=$?
-docker compose -f docker/docker-compose.test.yml down
 
 if [ $RESULT -ne 0 ]; then
   echo "Build or tests failed. Push aborted."

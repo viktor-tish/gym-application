@@ -1,21 +1,71 @@
 #!/bin/bash
 
+ENV_PATH="env/.env"
+
 case "$1" in
+  infra)
+    echo "Running infrastructure..."
+
+    docker compose -f docker/docker-compose.infra.yml --env-file "$ENV_PATH" up --build -d
+    ;;
+
   test)
     echo "Running tests..."
 
-    docker compose -f docker/docker-compose.test.yml up --build
-    docker compose -f docker/docker-compose.test.yml down
+    docker compose -f docker/docker-compose.test.yml --env-file "$ENV_PATH" up --build
+    UP_EXIT_CODE=$?
+
+    FAILURES=0
+    FAILED_CONTAINERS=""
+    TEST_SERVICES=$(docker compose -f docker/docker-compose.test.yml --env-file "$ENV_PATH" config --services)
+    for container in $(docker compose -f docker/docker-compose.test.yml --env-file "$ENV_PATH" ps -a -q $TEST_SERVICES); do
+      EXIT_CODE=$(docker inspect -f '{{.State.ExitCode}}' "$container")
+      if [ "$EXIT_CODE" -ne 0 ]; then
+        FAILURES=$((FAILURES + 1))
+        CONTAINER_NAME=$(docker inspect -f '{{.Name}}' "$container" | sed 's/^\///')
+        FAILED_CONTAINERS="$FAILED_CONTAINERS\n - $CONTAINER_NAME (Exit Code: $EXIT_CODE)"
+      fi
+    done
+
+    if [ "$UP_EXIT_CODE" -ne 0 ] || [ "$FAILURES" -gt 0 ]; then
+      echo -e "\n[ERROR] One or more test containers failed!"
+      if [ -n "$FAILED_CONTAINERS" ]; then
+        echo -e "The following containers reported errors:$FAILED_CONTAINERS"
+        echo -e "\nTo view logs of failed container, run:"
+        echo -e "  docker logs <container_name>"
+      fi
+      exit 1
+    fi
+
+    docker compose -f docker/docker-compose.test.yml --env-file "$ENV_PATH" down
     ;;
 
   start)
-    echo "Building and running the application..."
+    echo "Building and running the application in the background..."
 
-    docker compose -f docker/docker-compose.yml up --build
+    docker compose -f docker/docker-compose.yml --env-file "$ENV_PATH" up --build -d
+
+    echo ""
+    echo "To view the live logs, run:"
+    echo "  docker logs -f <container_name>"
+    ;;
+
+  down)
+    echo "Stopping and cleaning up all containers..."
+    
+    DOWN_ARGS=""
+    if [[ "$2" == "-v" || "$2" == "--volumes" ]]; then
+      DOWN_ARGS="-v"
+      echo "All volumes will be permanently deleted"
+    fi
+
+    docker compose -f docker/docker-compose.test.yml --env-file "$ENV_PATH" down $DOWN_ARGS
+    docker compose -f docker/docker-compose.yml --env-file "$ENV_PATH" down $DOWN_ARGS
+    docker compose -f docker/docker-compose.infra.yml --env-file "$ENV_PATH" down $DOWN_ARGS
     ;;
 
   *)
-    echo "Usage: $0 [test|start]"
+    echo "Usage: $0 [infra|test|start|down] (-v to remove volumes on down)"
     exit 1
     ;;
 esac

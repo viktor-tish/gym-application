@@ -1,9 +1,20 @@
 services:
   java-server:
+    container_name: gym-java-server
     build:
       context: ../java-server
-      dockerfile: Dockerfile
-    container_name: gym-java-server
+      dockerfile: docker/Dockerfile
     ports:
       - "8080:8080"
-    restart: unless-stopped
+    environment:
+      POSTGRES_HOST: ${POSTGRES_HOST}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    networks:
+      - gym-network
+
+networks:
+  gym-network:
+    external: true
+    name: gym-network
