@@ -20,12 +20,13 @@
         <mapstruct.version>1.6.3</mapstruct.version>
         <aspectj.version>1.9.22</aspectj.version>
         
-        <!-- Exclude data objects and configs from SonarQube coverage -->
         <sonar.coverage.exclusions>
             **/dto/**,
             **/entity/**,
             **/config/**,
-            **/mapper/**
+            **/mapper/**,
+            **/aspect/**,
+            **/facade/**
         </sonar.coverage.exclusions>
     </properties>
 
