@@ -17,6 +17,7 @@ case "$1" in
 
     FAILURES=0
     FAILED_CONTAINERS=""
+    
     TEST_SERVICES=$(docker compose -f docker/docker-compose.test.yml --env-file "$ENV_PATH" config --services)
     for container in $(docker compose -f docker/docker-compose.test.yml --env-file "$ENV_PATH" ps -a -q $TEST_SERVICES); do
       EXIT_CODE=$(docker inspect -f '{{.State.ExitCode}}' "$container")
@@ -64,8 +65,19 @@ case "$1" in
     docker compose -f docker/docker-compose.infra.yml --env-file "$ENV_PATH" down $DOWN_ARGS
     ;;
 
+  clean-db)
+    echo "Cleaning up the database..."
+
+    DATABASE_SERVICE_NAME="db"
+
+    docker compose -f docker/docker-compose.infra.yml --env-file "$ENV_PATH" stop "$DATABASE_SERVICE_NAME"
+    docker compose -f docker/docker-compose.infra.yml --env-file "$ENV_PATH" rm -f "$DATABASE_SERVICE_NAME"
+    docker volume rm docker_postgres-data
+    docker compose -f docker/docker-compose.infra.yml --env-file "$ENV_PATH" up -d "$DATABASE_SERVICE_NAME"
+    ;;
+
   *)
-    echo "Usage: $0 [infra|test|start|down] (-v to remove volumes on down)"
+    echo "Usage: $0 [infra|test|start|clean-db|down] (-v to remove volumes on down)"
     exit 1
     ;;
 esac
