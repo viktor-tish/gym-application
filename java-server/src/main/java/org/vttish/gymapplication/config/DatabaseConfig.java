@@ -62,6 +62,12 @@ public class DatabaseConfig {
         "hibernate.hbm2ddl.auto",
         env.getRequiredProperty("hibernate.hbm2ddl.auto")
     );
+    
+    // Automatically converts camelCase fields (firstName) to snake_case columns (first_name)
+    properties.setProperty(
+        "hibernate.physical_naming_strategy", 
+        "org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy"
+    );
 
     em.setJpaProperties(properties);
 
