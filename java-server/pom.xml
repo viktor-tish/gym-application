@@ -19,6 +19,9 @@
         <logback.version>1.5.34</logback.version>
         <mapstruct.version>1.6.3</mapstruct.version>
         <aspectj.version>1.9.22</aspectj.version>
+        <hibernate.version>6.6.1.Final</hibernate.version>
+        <postgres.version>42.7.3</postgres.version>
+        <hikaricp.version>5.1.0</hikaricp.version>
         
         <sonar.coverage.exclusions>
             **/dto/**,
@@ -86,6 +89,30 @@
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjweaver</artifactId>
             <version>${aspectj.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-orm</artifactId>
+            <version>${spring.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.hibernate.orm</groupId>
+            <artifactId>hibernate-core</artifactId>
+            <version>${hibernate.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>${postgres.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+            <version>${hikaricp.version}</version>
         </dependency>
     </dependencies>
 
