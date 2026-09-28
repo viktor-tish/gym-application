@@ -22,6 +22,7 @@
         <hibernate.version>6.6.1.Final</hibernate.version>
         <postgres.version>42.7.3</postgres.version>
         <hikaricp.version>5.1.0</hikaricp.version>
+        <flyway.version>10.17.2</flyway.version>
         
         <sonar.coverage.exclusions>
             **/dto/**,
@@ -113,6 +114,18 @@
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>
             <version>${hikaricp.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+            <version>${flyway.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-database-postgresql</artifactId>
+            <version>${flyway.version}</version>
         </dependency>
     </dependencies>
 
