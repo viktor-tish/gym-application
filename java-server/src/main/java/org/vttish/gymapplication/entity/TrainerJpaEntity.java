@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.Set;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.BatchSize;
 
 @Entity
 @Table(name = "trainers")
@@ -27,5 +28,6 @@ public class TrainerJpaEntity extends BaseJpaEntity {
   private TrainingTypeJpaEntity specialization;
 
   @ManyToMany(mappedBy = "trainers", fetch = FetchType.LAZY)
+  @BatchSize(size = 50)
   private Set<TraineeJpaEntity> trainees = new HashSet<>();
 }

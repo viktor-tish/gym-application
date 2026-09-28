@@ -12,6 +12,7 @@ import java.util.HashSet;
 import java.util.Set;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.BatchSize;
 
 @Entity
 @Table(name = "trainees")
@@ -32,5 +33,16 @@ public class TraineeJpaEntity extends BaseJpaEntity {
       joinColumns = @JoinColumn(name = "trainee_id"),
       inverseJoinColumns = @JoinColumn(name = "trainer_id")
   )
+  @BatchSize(size = 50)
   private Set<TrainerJpaEntity> trainers = new HashSet<>();
+
+  public void addTrainer(TrainerJpaEntity trainer) {
+    this.trainers.add(trainer);
+    trainer.getTrainees().add(this);
+  }
+
+  public void removeTrainer(TrainerJpaEntity trainer) {
+    this.trainers.remove(trainer);
+    trainer.getTrainees().remove(this);
+  }
 }
