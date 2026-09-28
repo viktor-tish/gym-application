@@ -8,15 +8,18 @@ import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import java.time.Instant;
+import java.util.Objects;
 import java.util.UUID;
 import lombok.Getter;
+import org.hibernate.proxy.HibernateProxy;
 
 @MappedSuperclass
 @Getter
 public abstract class BaseJpaEntity {
 
   @Id
-  private UUID id = UUID.randomUUID();
+  @GeneratedValue(strategy = GenerationType.UUID)
+  private UUID id;
 
   @Column(updatable = false, nullable = false)
   private Instant createdAt;
@@ -35,21 +38,39 @@ public abstract class BaseJpaEntity {
     updatedAt = Instant.now();
   }
 
+  @SuppressWarnings("java:S8947")
   @Override
-  public boolean equals(Object obj) {
+  public final boolean equals(Object obj) {
     if (this == obj) {
       return true;
     }
 
-    if (!(obj instanceof BaseJpaEntity other)) {
+    if (obj == null) {
       return false;
     }
 
-    return id != null && id.equals(other.getId());
+    Class<?> objEffectiveClass = obj instanceof HibernateProxy hibernateProxy
+        ? hibernateProxy.getHibernateLazyInitializer().getPersistentClass()
+        : obj.getClass();
+
+    Class<?> thisEffectiveClass = this instanceof HibernateProxy hibernateProxy
+        ? hibernateProxy.getHibernateLazyInitializer().getPersistentClass()
+        : this.getClass();
+
+    if (thisEffectiveClass != objEffectiveClass) {
+      return false;
+    }
+
+    BaseJpaEntity that = (BaseJpaEntity) obj;
+
+    return getId() != null && Objects.equals(getId(), that.getId());
   }
 
+  @SuppressWarnings("java:S8947")
   @Override
-  public int hashCode() {
-    return id.hashCode();
+  public final int hashCode() {
+    return this instanceof HibernateProxy hibernateProxy
+        ? hibernateProxy.getHibernateLazyInitializer().getPersistentClass().hashCode()
+        : getClass().hashCode();
   }
 }
