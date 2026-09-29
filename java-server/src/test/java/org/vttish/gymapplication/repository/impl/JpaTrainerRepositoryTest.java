@@ -55,7 +55,7 @@ class JpaTrainerRepositoryTest {
     assertEquals(1, result.size());
     verify(entityManager).createQuery(
         "SELECT tr FROM Trainer tr "
-        + "JOIN FETCH tr.user u JOIN FETCH tr.specialization s",
+            + "JOIN FETCH tr.user u JOIN FETCH tr.specialization s",
         Trainer.class
     );
   }
@@ -71,7 +71,7 @@ class JpaTrainerRepositoryTest {
   void findByUsername_WhenExists_ShouldReturnEntity() {
     String username = "firstName.lastName";
     Trainer trainer = new Trainer();
-    
+
     when(entityManager.createQuery(anyString(), eq(Trainer.class)))
         .thenReturn(queryMock);
     when(queryMock.setParameter("username", username)).thenReturn(queryMock);
@@ -95,7 +95,7 @@ class JpaTrainerRepositoryTest {
   void findTrainersNotAssignedToTrainee_ShouldExecuteSubquery() {
     String traineeUsername = "firstName.lastName";
     List<Trainer> expectedList = List.of(new Trainer());
-    
+
     when(entityManager.createQuery(anyString(), eq(Trainer.class)))
         .thenReturn(queryMock);
     when(queryMock.setParameter("traineeUsername", traineeUsername))
@@ -108,7 +108,7 @@ class JpaTrainerRepositoryTest {
     assertEquals(1, result.size());
     verify(entityManager).createQuery(
         ArgumentMatchers.contains(
-            "SELECT assignedTr FROM Trainee te"), 
+            "SELECT assignedTr FROM Trainee te"),
         eq(Trainer.class)
     );
   }

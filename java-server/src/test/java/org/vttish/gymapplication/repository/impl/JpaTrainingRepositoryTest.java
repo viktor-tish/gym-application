@@ -43,17 +43,17 @@ class JpaTrainingRepositoryTest {
   @Test
   void findTraineeTrainingsByFilter_ShouldBuildCorrectJpql() {
     UUID typeId = UUID.randomUUID();
-    
+
     TraineeTrainingFilterDto filter = new TraineeTrainingFilterDto();
-    filter.setFromDate(LocalDate.of(2023, 1, 1));
-    filter.setToDate(LocalDate.of(2023, 12, 31));
-    filter.setTrainerName("trainer.user");
+    filter.setFromDate(LocalDate.of(2000, 1, 1));
+    filter.setToDate(LocalDate.of(2000, 12, 31));
+    filter.setTrainerName("firstName.lastName1");
     filter.setTrainingTypeId(typeId);
 
     when(entityManager.createQuery(anyString(), eq(Training.class))).thenReturn(queryMock);
     when(queryMock.getResultList()).thenReturn(List.of(new Training()));
 
-    String traineeUsername = "trainee.user";
+    String traineeUsername = "firstName.lastName";
     List<Training> result = trainingRepository.findTraineeTrainingsByFilter(
         traineeUsername, filter);
 
@@ -80,7 +80,7 @@ class JpaTrainingRepositoryTest {
 
   @Test
   void findTraineeTrainingsByFilter_WithNullFilter_ShouldBuildCorrectJpql() {
-    String traineeUsername = "trainee.user";
+    String traineeUsername = "firstName.lastName";
 
     when(entityManager.createQuery(anyString(), eq(Training.class))).thenReturn(queryMock);
     when(queryMock.getResultList()).thenReturn(List.of(new Training()));
@@ -103,14 +103,14 @@ class JpaTrainingRepositoryTest {
   @Test
   void findTrainerTrainingsByFilter_ShouldBuildCorrectJpql() {
     TrainerTrainingFilterDto filter = new TrainerTrainingFilterDto();
-    filter.setFromDate(LocalDate.of(2023, 1, 1));
-    filter.setToDate(LocalDate.of(2023, 12, 31));
-    filter.setTraineeName("trainee.user");
+    filter.setFromDate(LocalDate.of(2000, 1, 1));
+    filter.setToDate(LocalDate.of(2000, 12, 31));
+    filter.setTraineeName("firstName.lastName");
 
     when(entityManager.createQuery(anyString(), eq(Training.class))).thenReturn(queryMock);
     when(queryMock.getResultList()).thenReturn(List.of(new Training()));
 
-    String trainerUsername = "trainer.user";
+    String trainerUsername = "firstName.lastName1";
     List<Training> result = trainingRepository.findTrainerTrainingsByFilter(
         trainerUsername, filter);
 

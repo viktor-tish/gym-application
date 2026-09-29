@@ -36,16 +36,16 @@ class DefaultTrainerServiceTest {
 
   @Mock
   private TrainerRepository trainerRepository;
-  
+
   @Mock
   private TrainingTypeRepository trainingTypeRepository;
-  
+
   @Mock
   private ProfileGenerationService profileGenerationService;
-  
+
   @Mock
   private TrainerMapper trainerMapper;
-  
+
   @Mock
   private PasswordHasher passwordHasher;
 
@@ -117,7 +117,7 @@ class DefaultTrainerServiceTest {
   @Test
   void getByUsername_ShouldReturnDetailsDto_WhenTrainerExists() {
     TrainerDetailsDto detailsDto = new TrainerDetailsDto();
-    
+
     when(trainerRepository.findByUsername("firstName.lastName"))
         .thenReturn(Optional.of(testTrainer));
     when(trainerMapper.toTrainerDetailsDto(testTrainer)).thenReturn(detailsDto);
@@ -139,7 +139,7 @@ class DefaultTrainerServiceTest {
   void update_ShouldUpdateAndReturnDetails_WhenTrainerExists() {
     UpdateTrainerDto dto = new UpdateTrainerDto();
     dto.setSpecializationId(specializationId);
-    
+
     TrainerDetailsDto detailsDto = new TrainerDetailsDto();
 
     when(trainerRepository.findByUsername("firstName.lastName"))

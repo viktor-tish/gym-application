@@ -125,7 +125,7 @@ class JpaUserRepositoryTest {
         "firstName.lastName",
         "firstName.lastName1"
     );
-    
+
     when(entityManager.createQuery(anyString(), eq(String.class)))
         .thenReturn(stringQueryMock);
     when(stringQueryMock.setParameter("prefix", prefix + "%"))
@@ -137,7 +137,7 @@ class JpaUserRepositoryTest {
     assertEquals(2, result.size());
     verify(entityManager).createQuery(
         "SELECT u.username FROM User u "
-        + "WHERE u.username LIKE :prefix",
+            + "WHERE u.username LIKE :prefix",
         String.class
     );
   }
