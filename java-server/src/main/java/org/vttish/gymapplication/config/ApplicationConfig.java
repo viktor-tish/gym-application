@@ -18,14 +18,6 @@ import org.springframework.validation.beanvalidation.MethodValidationPostProcess
 public class ApplicationConfig {
 
   @Bean
-  public ObjectMapper objectMapper() {
-    ObjectMapper objectMapper = new ObjectMapper();
-    objectMapper.registerModule(new JavaTimeModule());
-
-    return objectMapper;
-  }
-
-  @Bean
   public static PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
     return new PropertySourcesPlaceholderConfigurer();
   }
