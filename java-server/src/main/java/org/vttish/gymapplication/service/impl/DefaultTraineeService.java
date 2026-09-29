@@ -75,8 +75,10 @@ public class DefaultTraineeService implements TraineeService {
 
   @Override
   @Transactional
-  public List<TrainerCardDto> updateTrainersList(String username, List<String> trainerUsernames) {
-    Trainee trainee = findTraineeByUsername(username);
+  public List<TrainerCardDto> updateTrainersList(
+      String traineeUsername, List<String> trainerUsernames
+  ) {
+    Trainee trainee = findTraineeByUsername(traineeUsername);
 
     List<Trainer> trainers = trainerUsernames.stream()
         .map(trainerUsername -> trainerRepository.findByUsername(trainerUsername)

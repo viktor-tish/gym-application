@@ -37,19 +37,19 @@ class DefaultTraineeServiceTest {
 
   @Mock
   private TraineeRepository traineeRepository;
-  
+
   @Mock
   private TrainerRepository trainerRepository;
-  
+
   @Mock
   private ProfileGenerationService profileGenerationService;
-  
+
   @Mock
   private TraineeMapper traineeMapper;
-  
+
   @Mock
   private TrainerMapper trainerMapper;
-  
+
   @Mock
   private PasswordHasher passwordHasher;
 
@@ -92,7 +92,7 @@ class DefaultTraineeServiceTest {
   @Test
   void getByUsername_ShouldReturnDetailsDto_WhenTraineeExists() {
     TraineeDetailsDto detailsDto = new TraineeDetailsDto();
-    
+
     when(traineeRepository.findByUsername("firstName.lastName"))
         .thenReturn(Optional.of(testTrainee));
     when(traineeMapper.toTraineeDetailsDto(testTrainee)).thenReturn(detailsDto);
@@ -135,17 +135,17 @@ class DefaultTraineeServiceTest {
   void updateTrainersList_ShouldUpdateTrainers_WhenValid() {
     Trainer trainer1 = new Trainer();
     trainer1.setTrainees(new HashSet<>());
-    
+
     TrainerCardDto cardDto = new TrainerCardDto();
 
     when(traineeRepository.findByUsername("firstName.lastName"))
         .thenReturn(Optional.of(testTrainee));
-    when(trainerRepository.findByUsername("trainer.firstName.lastName"))
+    when(trainerRepository.findByUsername("firstName.lastName1"))
         .thenReturn(Optional.of(trainer1));
     when(trainerMapper.toTrainerCardDto(trainer1)).thenReturn(cardDto);
 
     List<TrainerCardDto> result = traineeService.updateTrainersList(
-        "firstName.lastName", List.of("trainer.firstName.lastName"));
+        "firstName.lastName", List.of("firstName.lastName1"));
 
     assertEquals(1, result.size());
     assertTrue(testTrainee.getTrainers().contains(trainer1));

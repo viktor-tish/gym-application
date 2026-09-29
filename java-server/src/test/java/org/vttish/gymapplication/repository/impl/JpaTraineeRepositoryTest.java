@@ -67,7 +67,7 @@ class JpaTraineeRepositoryTest {
   void findByUsername_WhenExists_ShouldReturnEntity() {
     String username = "firstName.lastName";
     Trainee trainee = new Trainee();
-    
+
     when(entityManager.createQuery(anyString(), eq(Trainee.class)))
         .thenReturn(queryMock);
     when(queryMock.setParameter("username", username)).thenReturn(queryMock);
@@ -79,7 +79,7 @@ class JpaTraineeRepositoryTest {
     assertEquals(trainee, result.get());
     verify(entityManager).createQuery(
         "SELECT t FROM Trainee t "
-        + "JOIN FETCH t.user u WHERE u.username = :username",
+            + "JOIN FETCH t.user u WHERE u.username = :username",
         Trainee.class
     );
   }
@@ -95,7 +95,7 @@ class JpaTraineeRepositoryTest {
   void deleteByUsername_WhenExists_ShouldCallRemove() {
     String username = "firstName.lastName";
     Trainee trainee = new Trainee();
-    
+
     when(entityManager.createQuery(anyString(), eq(Trainee.class)))
         .thenReturn(queryMock);
     when(queryMock.setParameter("username", username)).thenReturn(queryMock);
