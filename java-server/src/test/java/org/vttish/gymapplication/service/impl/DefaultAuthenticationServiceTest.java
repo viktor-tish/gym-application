@@ -47,7 +47,8 @@ class DefaultAuthenticationServiceTest {
     CredentialsDto dto = new CredentialsDto("firstName.lastName", "plainPassword");
 
     when(userRepository.findByUsername("firstName.lastName")).thenReturn(Optional.of(testUser));
-    when(passwordHasher.matches("plainPassword", "hashedPassword")).thenReturn(true);
+    when(passwordHasher.matches("plainPassword", "hashedPassword"))
+        .thenReturn(true);
 
     assertTrue(authenticationService.authenticate(dto));
   }
@@ -57,7 +58,8 @@ class DefaultAuthenticationServiceTest {
     CredentialsDto dto = new CredentialsDto("firstName.lastName", "wrongPassword");
 
     when(userRepository.findByUsername("firstName.lastName")).thenReturn(Optional.of(testUser));
-    when(passwordHasher.matches("wrongPassword", "hashedPassword")).thenReturn(false);
+    when(passwordHasher.matches("wrongPassword", "hashedPassword"))
+        .thenReturn(false);
 
     assertFalse(authenticationService.authenticate(dto));
   }
@@ -79,7 +81,8 @@ class DefaultAuthenticationServiceTest {
     dto.setNewPassword("newPlainPassword");
 
     when(userRepository.findByUsername("firstName.lastName")).thenReturn(Optional.of(testUser));
-    when(passwordHasher.matches("plainPassword", "hashedPassword")).thenReturn(true);
+    when(passwordHasher.matches("plainPassword", "hashedPassword"))
+        .thenReturn(true);
     when(passwordHasher.hash("newPlainPassword")).thenReturn("newHashedPassword");
 
     authenticationService.changePassword(dto);
@@ -95,7 +98,8 @@ class DefaultAuthenticationServiceTest {
     dto.setNewPassword("newPlainPassword");
 
     when(userRepository.findByUsername("firstName.lastName")).thenReturn(Optional.of(testUser));
-    when(passwordHasher.matches("wrongPassword", "hashedPassword")).thenReturn(false);
+    when(passwordHasher.matches("wrongPassword", "hashedPassword"))
+        .thenReturn(false);
 
     assertThrows(
         IllegalArgumentException.class, () -> authenticationService.changePassword(dto));

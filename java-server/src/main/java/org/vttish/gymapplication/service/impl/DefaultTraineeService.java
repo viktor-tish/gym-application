@@ -75,23 +75,26 @@ public class DefaultTraineeService implements TraineeService {
 
   @Override
   @Transactional
-  public List<TrainerCardDto> updateTrainersList(
-      String traineeUsername, List<String> trainerUsernames
-  ) {
+  public List<TrainerCardDto> addTrainer(String traineeUsername, String trainerUsername) {
     Trainee trainee = findTraineeByUsername(traineeUsername);
+    Trainer trainer = trainerRepository.findByUsername(trainerUsername)
+        .orElseThrow(() -> new EntityNotFoundException("Trainer not found: " + trainerUsername));
 
-    List<Trainer> trainers = trainerUsernames.stream()
-        .map(trainerUsername -> trainerRepository.findByUsername(trainerUsername)
-            .orElseThrow(() -> new EntityNotFoundException(
-                "Trainer not found: " + trainerUsername)))
+    trainee.addTrainer(trainer);
+
+    return trainee.getTrainers().stream()
+        .map(trainerMapper::toTrainerCardDto)
         .toList();
+  }
 
-    trainee.getTrainers().forEach(trainer -> trainer.getTrainees().remove(trainee));
-    trainee.getTrainers().clear();
+  @Override
+  @Transactional
+  public List<TrainerCardDto> removeTrainer(String traineeUsername, String trainerUsername) {
+    Trainee trainee = findTraineeByUsername(traineeUsername);
+    Trainer trainer = trainerRepository.findByUsername(trainerUsername)
+        .orElseThrow(() -> new EntityNotFoundException("Trainer not found: " + trainerUsername));
 
-    for (Trainer trainer : trainers) {
-      trainee.addTrainer(trainer);
-    }
+    trainee.removeTrainer(trainer);
 
     return trainee.getTrainers().stream()
         .map(trainerMapper::toTrainerCardDto)
