@@ -20,7 +20,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.vttish.gymapplication.entity.TraineeJpaEntity;
+import org.vttish.gymapplication.entity.Trainee;
 
 @ExtendWith(MockitoExtension.class)
 class JpaTraineeRepositoryTest {
@@ -29,7 +29,7 @@ class JpaTraineeRepositoryTest {
   private EntityManager entityManager;
 
   @Mock
-  private TypedQuery<TraineeJpaEntity> queryMock;
+  private TypedQuery<Trainee> queryMock;
 
   @InjectMocks
   private JpaTraineeRepository traineeRepository;
@@ -37,28 +37,28 @@ class JpaTraineeRepositoryTest {
   @BeforeEach
   void setUp() {
     ReflectionTestUtils.setField(traineeRepository, "entityManager", entityManager);
-    ReflectionTestUtils.setField(traineeRepository, "entityClass", TraineeJpaEntity.class);
+    ReflectionTestUtils.setField(traineeRepository, "entityClass", Trainee.class);
   }
 
   @Test
   void findAll_ShouldUseJoinFetch() {
-    List<TraineeJpaEntity> expectedList = List.of(new TraineeJpaEntity());
-    when(entityManager.createQuery(anyString(), eq(TraineeJpaEntity.class)))
+    List<Trainee> expectedList = List.of(new Trainee());
+    when(entityManager.createQuery(anyString(), eq(Trainee.class)))
         .thenReturn(queryMock);
     when(queryMock.getResultList()).thenReturn(expectedList);
 
-    List<TraineeJpaEntity> result = traineeRepository.findAll();
+    List<Trainee> result = traineeRepository.findAll();
 
     assertEquals(1, result.size());
     verify(entityManager).createQuery(
-        "SELECT t FROM TraineeJpaEntity t JOIN FETCH t.user u",
-        TraineeJpaEntity.class
+        "SELECT t FROM Trainee t JOIN FETCH t.user u",
+        Trainee.class
     );
   }
 
   @Test
   void findByUsername_WhenUsernameIsNull_ShouldReturnEmpty() {
-    Optional<TraineeJpaEntity> result = traineeRepository.findByUsername(null);
+    Optional<Trainee> result = traineeRepository.findByUsername(null);
     assertTrue(result.isEmpty());
     verify(entityManager, never()).createQuery(anyString(), any());
   }
@@ -66,21 +66,21 @@ class JpaTraineeRepositoryTest {
   @Test
   void findByUsername_WhenExists_ShouldReturnEntity() {
     String username = "firstName.lastName";
-    TraineeJpaEntity trainee = new TraineeJpaEntity();
+    Trainee trainee = new Trainee();
     
-    when(entityManager.createQuery(anyString(), eq(TraineeJpaEntity.class)))
+    when(entityManager.createQuery(anyString(), eq(Trainee.class)))
         .thenReturn(queryMock);
     when(queryMock.setParameter("username", username)).thenReturn(queryMock);
     when(queryMock.getResultList()).thenReturn(List.of(trainee));
 
-    Optional<TraineeJpaEntity> result = traineeRepository.findByUsername(username);
+    Optional<Trainee> result = traineeRepository.findByUsername(username);
 
     assertTrue(result.isPresent());
     assertEquals(trainee, result.get());
     verify(entityManager).createQuery(
-        "SELECT t FROM TraineeJpaEntity t "
+        "SELECT t FROM Trainee t "
         + "JOIN FETCH t.user u WHERE u.username = :username",
-        TraineeJpaEntity.class
+        Trainee.class
     );
   }
 
@@ -94,9 +94,9 @@ class JpaTraineeRepositoryTest {
   @Test
   void deleteByUsername_WhenExists_ShouldCallRemove() {
     String username = "firstName.lastName";
-    TraineeJpaEntity trainee = new TraineeJpaEntity();
+    Trainee trainee = new Trainee();
     
-    when(entityManager.createQuery(anyString(), eq(TraineeJpaEntity.class)))
+    when(entityManager.createQuery(anyString(), eq(Trainee.class)))
         .thenReturn(queryMock);
     when(queryMock.setParameter("username", username)).thenReturn(queryMock);
     when(queryMock.getResultList()).thenReturn(List.of(trainee));

@@ -15,7 +15,7 @@ import org.hibernate.proxy.HibernateProxy;
 
 @MappedSuperclass
 @Getter
-public abstract class BaseJpaEntity {
+public abstract class BaseEntity {
 
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
@@ -61,7 +61,7 @@ public abstract class BaseJpaEntity {
       return false;
     }
 
-    BaseJpaEntity that = (BaseJpaEntity) obj;
+    BaseEntity that = (BaseEntity) obj;
 
     return getId() != null && Objects.equals(getId(), that.getId());
   }

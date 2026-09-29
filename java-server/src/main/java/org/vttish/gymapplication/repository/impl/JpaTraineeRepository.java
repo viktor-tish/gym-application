@@ -3,20 +3,20 @@ package org.vttish.gymapplication.repository.impl;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.stereotype.Repository;
-import org.vttish.gymapplication.entity.TraineeJpaEntity;
+import org.vttish.gymapplication.entity.Trainee;
 import org.vttish.gymapplication.repository.TraineeRepository;
 
 @Repository
-public class JpaTraineeRepository extends JpaBaseRepository<TraineeJpaEntity>
+public class JpaTraineeRepository extends JpaBaseRepository<Trainee>
     implements TraineeRepository {
 
   public JpaTraineeRepository() {
-    super(TraineeJpaEntity.class);
+    super(Trainee.class);
   }
 
   @SuppressWarnings("java:S2077")
   @Override
-  public List<TraineeJpaEntity> findAll() {
+  public List<Trainee> findAll() {
     String query = String.format(
         "SELECT t FROM %s t JOIN FETCH t.user u",
         entityClass.getSimpleName()
@@ -27,7 +27,7 @@ public class JpaTraineeRepository extends JpaBaseRepository<TraineeJpaEntity>
 
   @SuppressWarnings("java:S2077")
   @Override
-  public Optional<TraineeJpaEntity> findByUsername(String username) {
+  public Optional<Trainee> findByUsername(String username) {
     if (username == null) {
       return Optional.empty();
     }
@@ -37,7 +37,7 @@ public class JpaTraineeRepository extends JpaBaseRepository<TraineeJpaEntity>
         entityClass.getSimpleName()
     );
                   
-    List<TraineeJpaEntity> results = entityManager.createQuery(query, entityClass)
+    List<Trainee> results = entityManager.createQuery(query, entityClass)
         .setParameter("username", username)
         .getResultList();
         

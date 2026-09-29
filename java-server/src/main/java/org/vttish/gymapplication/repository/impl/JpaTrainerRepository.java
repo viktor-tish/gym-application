@@ -3,21 +3,21 @@ package org.vttish.gymapplication.repository.impl;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.stereotype.Repository;
-import org.vttish.gymapplication.entity.TraineeJpaEntity;
-import org.vttish.gymapplication.entity.TrainerJpaEntity;
+import org.vttish.gymapplication.entity.Trainee;
+import org.vttish.gymapplication.entity.Trainer;
 import org.vttish.gymapplication.repository.TrainerRepository;
 
 @Repository
-public class JpaTrainerRepository extends JpaBaseRepository<TrainerJpaEntity>
+public class JpaTrainerRepository extends JpaBaseRepository<Trainer>
     implements TrainerRepository {
 
   public JpaTrainerRepository() {
-    super(TrainerJpaEntity.class);
+    super(Trainer.class);
   }
 
   @SuppressWarnings("java:S2077")
   @Override
-  public List<TrainerJpaEntity> findAll() {
+  public List<Trainer> findAll() {
     String query = String.format(
         "SELECT tr FROM %s tr JOIN FETCH tr.user u JOIN FETCH tr.specialization s",
         entityClass.getSimpleName()
@@ -28,7 +28,7 @@ public class JpaTrainerRepository extends JpaBaseRepository<TrainerJpaEntity>
 
   @SuppressWarnings("java:S2077")
   @Override
-  public Optional<TrainerJpaEntity> findByUsername(String username) {
+  public Optional<Trainer> findByUsername(String username) {
     if (username == null) {
       return Optional.empty();
     }
@@ -40,7 +40,7 @@ public class JpaTrainerRepository extends JpaBaseRepository<TrainerJpaEntity>
             + "WHERE u.username = :username",
         entityClass.getSimpleName());
 
-    List<TrainerJpaEntity> results = entityManager.createQuery(query, entityClass)
+    List<Trainer> results = entityManager.createQuery(query, entityClass)
         .setParameter("username", username)
         .getResultList();
 
@@ -49,7 +49,7 @@ public class JpaTrainerRepository extends JpaBaseRepository<TrainerJpaEntity>
 
   @SuppressWarnings("java:S2077")
   @Override
-  public List<TrainerJpaEntity> findTrainersNotAssignedToTrainee(String traineeUsername) {
+  public List<Trainer> findTrainersNotAssignedToTrainee(String traineeUsername) {
     if (traineeUsername == null) {
       return List.of();
     }
@@ -65,7 +65,7 @@ public class JpaTrainerRepository extends JpaBaseRepository<TrainerJpaEntity>
             + "  WHERE tu.username = :traineeUsername"
             + ")",
         entityClass.getSimpleName(),
-        TraineeJpaEntity.class.getSimpleName()
+        Trainee.class.getSimpleName()
     );
 
     return entityManager.createQuery(query, entityClass)

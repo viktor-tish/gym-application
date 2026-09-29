@@ -23,7 +23,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.vttish.gymapplication.entity.BaseJpaEntity;
+import org.vttish.gymapplication.entity.BaseEntity;
 
 @ExtendWith(MockitoExtension.class)
 class JpaBaseRepositoryTest {
@@ -37,7 +37,7 @@ class JpaBaseRepositoryTest {
   @Mock
   private TypedQuery<Long> countQueryMock;
 
-  static class DummyEntity extends BaseJpaEntity {
+  static class DummyEntity extends BaseEntity {
   }
 
   static class DummyRepository extends JpaBaseRepository<DummyEntity> {

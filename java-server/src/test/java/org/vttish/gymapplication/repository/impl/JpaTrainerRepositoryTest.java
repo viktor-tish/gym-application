@@ -21,7 +21,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.vttish.gymapplication.entity.TrainerJpaEntity;
+import org.vttish.gymapplication.entity.Trainer;
 
 @ExtendWith(MockitoExtension.class)
 class JpaTrainerRepositoryTest {
@@ -30,7 +30,7 @@ class JpaTrainerRepositoryTest {
   private EntityManager entityManager;
 
   @Mock
-  private TypedQuery<TrainerJpaEntity> queryMock;
+  private TypedQuery<Trainer> queryMock;
 
   @InjectMocks
   private JpaTrainerRepository trainerRepository;
@@ -40,29 +40,29 @@ class JpaTrainerRepositoryTest {
     ReflectionTestUtils.setField(
         trainerRepository, "entityManager", entityManager);
     ReflectionTestUtils.setField(
-        trainerRepository, "entityClass", TrainerJpaEntity.class);
+        trainerRepository, "entityClass", Trainer.class);
   }
 
   @Test
   void findAll_ShouldUseJoinFetch() {
-    List<TrainerJpaEntity> expectedList = List.of(new TrainerJpaEntity());
-    when(entityManager.createQuery(anyString(), eq(TrainerJpaEntity.class)))
+    List<Trainer> expectedList = List.of(new Trainer());
+    when(entityManager.createQuery(anyString(), eq(Trainer.class)))
         .thenReturn(queryMock);
     when(queryMock.getResultList()).thenReturn(expectedList);
 
-    List<TrainerJpaEntity> result = trainerRepository.findAll();
+    List<Trainer> result = trainerRepository.findAll();
 
     assertEquals(1, result.size());
     verify(entityManager).createQuery(
-        "SELECT tr FROM TrainerJpaEntity tr "
+        "SELECT tr FROM Trainer tr "
         + "JOIN FETCH tr.user u JOIN FETCH tr.specialization s",
-        TrainerJpaEntity.class
+        Trainer.class
     );
   }
 
   @Test
   void findByUsername_WhenUsernameIsNull_ShouldReturnEmpty() {
-    Optional<TrainerJpaEntity> result = trainerRepository.findByUsername(null);
+    Optional<Trainer> result = trainerRepository.findByUsername(null);
     assertTrue(result.isEmpty());
     verify(entityManager, never()).createQuery(anyString(), any());
   }
@@ -70,14 +70,14 @@ class JpaTrainerRepositoryTest {
   @Test
   void findByUsername_WhenExists_ShouldReturnEntity() {
     String username = "firstName.lastName";
-    TrainerJpaEntity trainer = new TrainerJpaEntity();
+    Trainer trainer = new Trainer();
     
-    when(entityManager.createQuery(anyString(), eq(TrainerJpaEntity.class)))
+    when(entityManager.createQuery(anyString(), eq(Trainer.class)))
         .thenReturn(queryMock);
     when(queryMock.setParameter("username", username)).thenReturn(queryMock);
     when(queryMock.getResultList()).thenReturn(List.of(trainer));
 
-    Optional<TrainerJpaEntity> result = trainerRepository.findByUsername(username);
+    Optional<Trainer> result = trainerRepository.findByUsername(username);
 
     assertTrue(result.isPresent());
     assertEquals(trainer, result.get());
@@ -85,7 +85,7 @@ class JpaTrainerRepositoryTest {
 
   @Test
   void findTrainersNotAssignedToTrainee_WhenUsernameIsNull_ShouldReturnEmpty() {
-    List<TrainerJpaEntity> result = 
+    List<Trainer> result =
         trainerRepository.findTrainersNotAssignedToTrainee(null);
     assertTrue(result.isEmpty());
     verify(entityManager, never()).createQuery(anyString(), any());
@@ -94,22 +94,22 @@ class JpaTrainerRepositoryTest {
   @Test
   void findTrainersNotAssignedToTrainee_ShouldExecuteSubquery() {
     String traineeUsername = "firstName.lastName";
-    List<TrainerJpaEntity> expectedList = List.of(new TrainerJpaEntity());
+    List<Trainer> expectedList = List.of(new Trainer());
     
-    when(entityManager.createQuery(anyString(), eq(TrainerJpaEntity.class)))
+    when(entityManager.createQuery(anyString(), eq(Trainer.class)))
         .thenReturn(queryMock);
     when(queryMock.setParameter("traineeUsername", traineeUsername))
         .thenReturn(queryMock);
     when(queryMock.getResultList()).thenReturn(expectedList);
 
-    List<TrainerJpaEntity> result = 
+    List<Trainer> result =
         trainerRepository.findTrainersNotAssignedToTrainee(traineeUsername);
 
     assertEquals(1, result.size());
     verify(entityManager).createQuery(
         ArgumentMatchers.contains(
-            "SELECT assignedTr FROM TraineeJpaEntity te"), 
-        eq(TrainerJpaEntity.class)
+            "SELECT assignedTr FROM Trainee te"), 
+        eq(Trainer.class)
     );
   }
 }

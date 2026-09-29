@@ -6,11 +6,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.vttish.gymapplication.entity.BaseJpaEntity;
+import org.vttish.gymapplication.entity.BaseEntity;
 import org.vttish.gymapplication.repository.BaseRepository;
 
 @RequiredArgsConstructor
-public abstract class JpaBaseRepository<T extends BaseJpaEntity>
+public abstract class JpaBaseRepository<T extends BaseEntity>
     implements BaseRepository<T, UUID> {
 
   @PersistenceContext

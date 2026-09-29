@@ -3,15 +3,15 @@ package org.vttish.gymapplication.repository.impl;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.stereotype.Repository;
-import org.vttish.gymapplication.entity.UserJpaEntity;
+import org.vttish.gymapplication.entity.User;
 import org.vttish.gymapplication.repository.UserRepository;
 
 @Repository
-public class JpaUserRepository extends JpaBaseRepository<UserJpaEntity>
+public class JpaUserRepository extends JpaBaseRepository<User>
     implements UserRepository {
 
   public JpaUserRepository() {
-    super(UserJpaEntity.class);
+    super(User.class);
   }
 
   @SuppressWarnings("java:S2077")
@@ -35,7 +35,7 @@ public class JpaUserRepository extends JpaBaseRepository<UserJpaEntity>
 
   @SuppressWarnings("java:S2077")
   @Override
-  public Optional<UserJpaEntity> findByUsername(String username) {
+  public Optional<User> findByUsername(String username) {
     if (username == null) {
       return Optional.empty();
     }
@@ -45,7 +45,7 @@ public class JpaUserRepository extends JpaBaseRepository<UserJpaEntity>
         entityClass.getSimpleName()
     );
 
-    List<UserJpaEntity> results = entityManager.createQuery(query, entityClass)
+    List<User> results = entityManager.createQuery(query, entityClass)
         .setParameter("username", username)
         .getResultList();
 

@@ -21,7 +21,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.vttish.gymapplication.entity.UserJpaEntity;
+import org.vttish.gymapplication.entity.User;
 
 @ExtendWith(MockitoExtension.class)
 class JpaUserRepositoryTest {
@@ -33,7 +33,7 @@ class JpaUserRepositoryTest {
   private TypedQuery<Long> countQueryMock;
 
   @Mock
-  private TypedQuery<UserJpaEntity> userQueryMock;
+  private TypedQuery<User> userQueryMock;
 
   @Mock
   private TypedQuery<String> stringQueryMock;
@@ -44,7 +44,7 @@ class JpaUserRepositoryTest {
   @BeforeEach
   void setUp() {
     ReflectionTestUtils.setField(userRepository, "entityManager", entityManager);
-    ReflectionTestUtils.setField(userRepository, "entityClass", UserJpaEntity.class);
+    ReflectionTestUtils.setField(userRepository, "entityClass", User.class);
   }
 
   @Test
@@ -67,14 +67,14 @@ class JpaUserRepositoryTest {
 
     assertTrue(exists);
     verify(entityManager).createQuery(
-        "SELECT COUNT(u) FROM UserJpaEntity u WHERE u.username = :username",
+        "SELECT COUNT(u) FROM User u WHERE u.username = :username",
         Long.class
     );
   }
 
   @Test
   void findByUsername_WhenUsernameIsNull_ShouldReturnEmpty() {
-    Optional<UserJpaEntity> result = userRepository.findByUsername(null);
+    Optional<User> result = userRepository.findByUsername(null);
     assertTrue(result.isEmpty());
     verify(entityManager, never()).createQuery(anyString(), any());
   }
@@ -82,14 +82,14 @@ class JpaUserRepositoryTest {
   @Test
   void findByUsername_WhenUserExists_ShouldReturnUser() {
     String username = "firstName.lastName";
-    UserJpaEntity user = new UserJpaEntity();
-    when(entityManager.createQuery(anyString(), eq(UserJpaEntity.class)))
+    User user = new User();
+    when(entityManager.createQuery(anyString(), eq(User.class)))
         .thenReturn(userQueryMock);
     when(userQueryMock.setParameter("username", username))
         .thenReturn(userQueryMock);
     when(userQueryMock.getResultList()).thenReturn(List.of(user));
 
-    Optional<UserJpaEntity> result = userRepository.findByUsername(username);
+    Optional<User> result = userRepository.findByUsername(username);
 
     assertTrue(result.isPresent());
     assertEquals(user, result.get());
@@ -99,13 +99,13 @@ class JpaUserRepositoryTest {
   void findByUsername_WhenUserDoesNotExist_ShouldReturnEmpty() {
     String username = "nonexistent.username";
 
-    when(entityManager.createQuery(anyString(), eq(UserJpaEntity.class)))
+    when(entityManager.createQuery(anyString(), eq(User.class)))
         .thenReturn(userQueryMock);
     when(userQueryMock.setParameter("username", username))
         .thenReturn(userQueryMock);
     when(userQueryMock.getResultList()).thenReturn(List.of());
 
-    Optional<UserJpaEntity> result = userRepository.findByUsername(username);
+    Optional<User> result = userRepository.findByUsername(username);
 
     assertTrue(result.isEmpty());
   }
@@ -136,7 +136,7 @@ class JpaUserRepositoryTest {
 
     assertEquals(2, result.size());
     verify(entityManager).createQuery(
-        "SELECT u.username FROM UserJpaEntity u "
+        "SELECT u.username FROM User u "
         + "WHERE u.username LIKE :prefix",
         String.class
     );

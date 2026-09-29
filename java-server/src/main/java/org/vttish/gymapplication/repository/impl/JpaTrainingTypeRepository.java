@@ -3,19 +3,19 @@ package org.vttish.gymapplication.repository.impl;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.stereotype.Repository;
-import org.vttish.gymapplication.entity.TrainingTypeJpaEntity;
+import org.vttish.gymapplication.entity.TrainingType;
 import org.vttish.gymapplication.repository.TrainingTypeRepository;
 
 @Repository
-public class JpaTrainingTypeRepository extends JpaBaseRepository<TrainingTypeJpaEntity>
+public class JpaTrainingTypeRepository extends JpaBaseRepository<TrainingType>
     implements TrainingTypeRepository {
   public JpaTrainingTypeRepository() {
-    super(TrainingTypeJpaEntity.class);
+    super(TrainingType.class);
   }
 
   @SuppressWarnings("java:S2077")
   @Override
-  public Optional<TrainingTypeJpaEntity> findByName(String name) {
+  public Optional<TrainingType> findByName(String name) {
     if (name == null) {
       return Optional.empty();
     }
@@ -25,7 +25,7 @@ public class JpaTrainingTypeRepository extends JpaBaseRepository<TrainingTypeJpa
         entityClass.getSimpleName()
     );
 
-    List<TrainingTypeJpaEntity> results = entityManager.createQuery(query, entityClass)
+    List<TrainingType> results = entityManager.createQuery(query, entityClass)
         .setParameter("name", name)
         .getResultList();
 
