@@ -1,114 +1,97 @@
 package org.vttish.gymapplication.service.impl;
 
+import jakarta.persistence.EntityNotFoundException;
 import java.util.List;
 import java.util.UUID;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
 import org.vttish.gymapplication.dto.CreateTrainerDto;
+import org.vttish.gymapplication.dto.CredentialsDto;
 import org.vttish.gymapplication.dto.TrainerCardDto;
 import org.vttish.gymapplication.dto.TrainerDetailsDto;
 import org.vttish.gymapplication.dto.UpdateTrainerDto;
 import org.vttish.gymapplication.entity.Trainer;
+import org.vttish.gymapplication.entity.TrainingType;
 import org.vttish.gymapplication.mapper.TrainerMapper;
-import org.vttish.gymapplication.persistence.dao.TrainerDao;
+import org.vttish.gymapplication.repository.TrainerRepository;
+import org.vttish.gymapplication.repository.TrainingTypeRepository;
 import org.vttish.gymapplication.service.ProfileGenerationService;
 import org.vttish.gymapplication.service.TrainerService;
+import org.vttish.gymapplication.utils.PasswordHasher;
 
 @Service
+@Validated
+@Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class DefaultTrainerService implements TrainerService {
-
-  @Autowired
-  private TrainerDao trainerDao;
-
-  private ProfileGenerationService profileGenerationService;
-  private TrainerMapper mapper;
-
-  @Autowired
-  public void setProfileGenerationService(ProfileGenerationService profileGenerationService) {
-    this.profileGenerationService = profileGenerationService;
-  }
-
-  @Autowired
-  public void setMapper(TrainerMapper mapper) {
-    this.mapper = mapper;
-  }
+  private final TrainerRepository trainerRepository;
+  private final TrainingTypeRepository trainingTypeRepository;
+  private final ProfileGenerationService profileGenerationService;
+  private final TrainerMapper trainerMapper;
+  private final PasswordHasher passwordHasher;
 
   @Override
-  public TrainerDetailsDto create(CreateTrainerDto createTrainerDto) {
-    Assert.notNull(createTrainerDto, "The create DTO must not be null");
-    Assert.noNullElements(
-        List.of(
-            createTrainerDto.getFirstName(),
-            createTrainerDto.getLastName(),
-            createTrainerDto.getSpecialization()
-        ),
-        "One or more fields are null"
-    );
-    Assert.isTrue(!createTrainerDto.getFirstName().isBlank(), "First name must not be blank");
-    Assert.isTrue(!createTrainerDto.getLastName().isBlank(), "Last name must not be blank");
+  @Transactional
+  public CredentialsDto create(CreateTrainerDto createTrainerDto) {
+    Trainer trainer = trainerMapper.create(createTrainerDto);
 
     String username = profileGenerationService.generateUniqueUsername(
         createTrainerDto.getFirstName(), createTrainerDto.getLastName()
     );
     String password = profileGenerationService.generateRandomPassword();
-    Trainer trainer = mapper.create(createTrainerDto);
 
-    trainer.setUsername(username);
-    trainer.setPassword(password);
+    trainer.getUser().setUsername(username);
+    trainer.getUser().setPassword(passwordHasher.hash(password));
+    trainer.getUser().setIsActive(true);
 
-    return mapper.toTrainerDetailsDto(trainerDao.create(trainer));
+    TrainingType specialization = findTrainingTypeById(
+        createTrainerDto.getSpecializationId()
+    );
+    trainer.setSpecialization(specialization);
+
+    trainerRepository.save(trainer);
+
+    return new CredentialsDto(username, password);
   }
 
   @Override
-  public TrainerDetailsDto getById(UUID id) {
-    return mapper.toTrainerDetailsDto(getEntityById(id));
-  }
+  public TrainerDetailsDto getByUsername(String username) {
+    Trainer trainer = findTrainerByUsername(username);
 
-  private Trainer getEntityById(UUID id) {
-    Assert.notNull(id, "Trainer ID must not be null");
-
-    return trainerDao.selectById(id).orElseThrow(
-        () -> new IllegalArgumentException("Trainer ID does not exist")
-    );
+    return trainerMapper.toTrainerDetailsDto(trainer);
   }
 
   @Override
-  public List<TrainerCardDto> getAll() {
-    return trainerDao.selectAll().stream()
-        .map(mapper::toTrainerCardDto).toList();
+  @Transactional
+  public TrainerDetailsDto update(String username, UpdateTrainerDto updateTrainerDto) {
+    Trainer trainer = findTrainerByUsername(username);
+
+    trainerMapper.update(trainer, updateTrainerDto);
+
+    TrainingType specialization = findTrainingTypeById(
+        updateTrainerDto.getSpecializationId()
+    );
+    trainer.setSpecialization(specialization);
+
+    return trainerMapper.toTrainerDetailsDto(trainer);
   }
 
   @Override
-  public TrainerDetailsDto update(UpdateTrainerDto updateTrainerDto) {
-    Assert.notNull(updateTrainerDto, "The update DTO must not be null");
-    Assert.noNullElements(
-        List.of(
-            updateTrainerDto.getFirstName(),
-            updateTrainerDto.getLastName(),
-            updateTrainerDto.getUsername(),
-            updateTrainerDto.getPassword(),
-            updateTrainerDto.getUserId(),
-            updateTrainerDto.getSpecialization()
-        ),
-        "One or more fields are null"
-    );
-    Assert.isTrue(!updateTrainerDto.getFirstName().isBlank(), "First name must not be blank");
-    Assert.isTrue(!updateTrainerDto.getLastName().isBlank(), "Last name must not be blank");
-    Assert.isTrue(!updateTrainerDto.getUsername().isBlank(), "Username must not be blank");
-    Assert.isTrue(!updateTrainerDto.getPassword().isBlank(), "Password must not be blank");
-    Assert.isTrue(
-        updateTrainerDto.getPassword().length() >= 10,
-        "Password must be at least 10 characters long"
-    );
-    Assert.isTrue(
-        profileGenerationService.existsByUsername(updateTrainerDto.getUsername()),
-        "Username already exists"
-    );
+  public List<TrainerCardDto> getUnassigned(String traineeUsername) {
+    return trainerRepository.findTrainersNotAssignedToTrainee(traineeUsername).stream()
+        .map(trainerMapper::toTrainerCardDto)
+        .toList();
+  }
 
-    Trainer trainer = getEntityById(updateTrainerDto.getUserId());
+  private Trainer findTrainerByUsername(String username) {
+    return trainerRepository.findByUsername(username)
+        .orElseThrow(() -> new EntityNotFoundException("Trainer not found"));
+  }
 
-    mapper.update(trainer, updateTrainerDto);
-    return mapper.toTrainerDetailsDto(trainer);
+  private TrainingType findTrainingTypeById(UUID id) {
+    return trainingTypeRepository.findById(id)
+        .orElseThrow(() -> new EntityNotFoundException("Specialization not found"));
   }
 }

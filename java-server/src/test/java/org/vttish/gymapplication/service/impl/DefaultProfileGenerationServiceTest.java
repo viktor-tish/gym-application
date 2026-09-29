@@ -3,85 +3,71 @@ package org.vttish.gymapplication.service.impl;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.vttish.gymapplication.persistence.dao.TraineeDao;
-import org.vttish.gymapplication.persistence.dao.TrainerDao;
+import org.vttish.gymapplication.repository.UserRepository;
 
 @ExtendWith(MockitoExtension.class)
 class DefaultProfileGenerationServiceTest {
 
   @Mock
-  private TraineeDao traineeDao;
-
-  @Mock
-  private TrainerDao trainerDao;
+  private UserRepository userRepository;
 
   @InjectMocks
   private DefaultProfileGenerationService profileGenerationService;
 
   @Test
-  void generateUniqueUsername_shouldReturnBaseName_whenNoCollisions() {
-    when(traineeDao.existsByUsername("firstName.lastName")).thenReturn(false);
-    when(trainerDao.existsByUsername("firstName.lastName")).thenReturn(false);
+  void generateUniqueUsername_ShouldReturnBaseName_WhenNoMatchesExist() {
+    String firstName = "firstName";
+    String lastName = "lastName";
+    String expected = "firstName.lastName";
 
-    String result = profileGenerationService.generateUniqueUsername("firstName", "lastName");
+    when(userRepository.findUsernamesByPrefix(expected)).thenReturn(List.of());
 
-    assertEquals("firstName.lastName", result);
-    verify(traineeDao).existsByUsername("firstName.lastName");
-    verify(trainerDao).existsByUsername("firstName.lastName");
+    String result = profileGenerationService.generateUniqueUsername(firstName, lastName);
+
+    assertEquals(expected, result);
   }
 
   @Test
-  void generateUniqueUsername_shouldAddSuffix_whenExistsInTraineeDao() {
-    when(traineeDao.existsByUsername("firstName.lastName")).thenReturn(true);
+  void generateUniqueUsername_ShouldReturnNextSuffix_WhenMatchesExist() {
+    String firstName = "firstName";
+    String lastName = "lastName";
+    String baseName = "firstName.lastName";
 
-    when(traineeDao.existsByUsername("firstName.lastName1")).thenReturn(false);
-    when(trainerDao.existsByUsername("firstName.lastName1")).thenReturn(false);
+    when(userRepository.findUsernamesByPrefix(baseName))
+        .thenReturn(List.of("firstName.lastName", "firstName.lastName1", "firstName.lastName2"));
 
-    String result = profileGenerationService.generateUniqueUsername("firstName", "lastName");
+    String result = profileGenerationService.generateUniqueUsername(firstName, lastName);
+
+    assertEquals("firstName.lastName3", result);
+  }
+
+  @Test
+  void generateUniqueUsername_ShouldReturnBaseName1_WhenOnlyExactMatchExists() {
+    String firstName = "firstName";
+    String lastName = "lastName";
+    String baseName = "firstName.lastName";
+
+    when(userRepository.findUsernamesByPrefix(baseName)).thenReturn(List.of("firstName.lastName"));
+
+    String result = profileGenerationService.generateUniqueUsername(firstName, lastName);
 
     assertEquals("firstName.lastName1", result);
   }
 
   @Test
-  void generateUniqueUsername_shouldAddSuffix_whenExistsInTrainerDao() {
-    when(traineeDao.existsByUsername("firstName.lastName")).thenReturn(false);
-    when(trainerDao.existsByUsername("firstName.lastName")).thenReturn(true);
-    when(traineeDao.existsByUsername("firstName.lastName1")).thenReturn(false);
-    when(trainerDao.existsByUsername("firstName.lastName1")).thenReturn(false);
-
-    String result = profileGenerationService.generateUniqueUsername("firstName", "lastName");
-
-    assertEquals("firstName.lastName1", result);
-  }
-
-  @Test
-  void generateUniqueUsername_shouldIncrementSuffix_whenMultipleCollisionsOccur() {
-    when(traineeDao.existsByUsername("firstName.lastName")).thenReturn(true);
-    when(traineeDao.existsByUsername("firstName.lastName1")).thenReturn(false);
-    when(trainerDao.existsByUsername("firstName.lastName1")).thenReturn(true);
-    when(traineeDao.existsByUsername("firstName.lastName2")).thenReturn(false);
-    when(trainerDao.existsByUsername("firstName.lastName2")).thenReturn(false);
-
-    String result = profileGenerationService.generateUniqueUsername("firstName", "lastName");
-
-    assertEquals("firstName.lastName2", result);
-  }
-
-  @Test
-  void generateRandomPassword_shouldReturn10CharacterAlphanumericString() {
+  void generateRandomPassword_ShouldReturn10CharacterString() {
     String password = profileGenerationService.generateRandomPassword();
 
     assertNotNull(password);
     assertEquals(10, password.length());
-    assertTrue(password.matches("[a-zA-Z0-9]+"),
-        "Password should only contain alphanumeric or numeric characters");
+    assertTrue(password.matches("^[A-Za-z0-9]+$"));
   }
 }

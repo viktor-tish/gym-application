@@ -1,20 +1,18 @@
 package org.vttish.gymapplication.service.impl;
 
 import java.security.SecureRandom;
-import org.springframework.beans.factory.annotation.Autowired;
+import java.util.List;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.vttish.gymapplication.persistence.dao.TraineeDao;
-import org.vttish.gymapplication.persistence.dao.TrainerDao;
+import org.springframework.transaction.annotation.Transactional;
+import org.vttish.gymapplication.repository.UserRepository;
 import org.vttish.gymapplication.service.ProfileGenerationService;
 
 @Service
+@Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class DefaultProfileGenerationService implements ProfileGenerationService {
-
-  @Autowired
-  private TraineeDao traineeDao;
-
-  @Autowired
-  private TrainerDao trainerDao;
+  private final UserRepository userRepository;
 
   private static final String PASSWORD_CHARS =
       "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -23,19 +21,21 @@ public class DefaultProfileGenerationService implements ProfileGenerationService
 
   @Override
   public String generateUniqueUsername(String firstName, String lastName) {
-    StringBuilder baseUsername = new StringBuilder(firstName).append(".").append(lastName);
-    int baseLength = baseUsername.length();
+    String baseUsername = firstName + "." + lastName;
+    List<String> existingUsernames = userRepository.findUsernamesByPrefix(baseUsername);
 
-    String finalUsername = baseUsername.toString();
-    int serialNumber = 1;
-
-    while (existsByUsername(finalUsername)) {
-      baseUsername.setLength(baseLength);
-      finalUsername = baseUsername.append(serialNumber).toString();
-      serialNumber++;
+    if (!existingUsernames.contains(baseUsername)) {
+      return baseUsername;
     }
 
-    return finalUsername;
+    int maxSerialNumber = existingUsernames.stream()
+        .map(username -> username.substring(baseUsername.length()))
+        .filter(suffix -> suffix.matches("\\d+"))
+        .mapToInt(Integer::parseInt)
+        .max()
+        .orElse(0);
+
+    return baseUsername + (maxSerialNumber + 1);
   }
 
   @Override
@@ -48,10 +48,5 @@ public class DefaultProfileGenerationService implements ProfileGenerationService
     }
 
     return password.toString();
-  }
-
-  @Override
-  public boolean existsByUsername(String username) {
-    return traineeDao.existsByUsername(username) || trainerDao.existsByUsername(username);
   }
 }

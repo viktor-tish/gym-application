@@ -1,36 +1,33 @@
 package org.vttish.gymapplication.mapper;
 
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
 import org.mapstruct.MappingTarget;
-import org.mapstruct.ObjectFactory;
 import org.vttish.gymapplication.dto.CreateTraineeDto;
-import org.vttish.gymapplication.dto.TraineeCardDto;
 import org.vttish.gymapplication.dto.TraineeDetailsDto;
-import org.vttish.gymapplication.dto.TraineeDto;
 import org.vttish.gymapplication.dto.UpdateTraineeDto;
 import org.vttish.gymapplication.entity.Trainee;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface TraineeMapper {
-  Trainee toTrainee(TraineeDto traineeDto);
 
-  TraineeDto toTraineeDto(Trainee trainee);
-
-  TraineeCardDto toTraineeCardDto(Trainee trainee);
-
+  @Mapping(source = "user.firstName", target = "firstName")
+  @Mapping(source = "user.lastName", target = "lastName")
+  @Mapping(source = "user.username", target = "username")
+  @Mapping(source = "user.isActive", target = "active")
   TraineeDetailsDto toTraineeDetailsDto(Trainee trainee);
 
-  Trainee create(CreateTraineeDto updateTraineeDto);
+  @Mapping(target = "user.firstName", source = "firstName")
+  @Mapping(target = "user.lastName", source = "lastName")
+  @Mapping(target = "trainings", ignore = true)
+  @Mapping(target = "trainers", ignore = true)
+  Trainee create(CreateTraineeDto dto);
 
-  void update(@MappingTarget Trainee trainee, UpdateTraineeDto updateTraineeDto);
-
-  @ObjectFactory
-  default Trainee objectFactory(TraineeDto traineeDto) {
-    if (traineeDto == null) {
-      return null;
-    }
-
-    return new Trainee(traineeDto.getUserId());
-  }
+  @Mapping(target = "user.firstName", source = "firstName")
+  @Mapping(target = "user.lastName", source = "lastName")
+  @Mapping(target = "user.isActive", ignore = true)
+  @Mapping(target = "trainings", ignore = true)
+  @Mapping(target = "trainers", ignore = true)
+  void update(@MappingTarget Trainee trainee, UpdateTraineeDto dto);
 }
