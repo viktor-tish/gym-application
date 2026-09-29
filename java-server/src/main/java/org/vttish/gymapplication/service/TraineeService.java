@@ -22,9 +22,14 @@ public interface TraineeService {
 
   void deleteByUsername(@NotBlank(message = "Username is mandatory") String username);
 
-  List<TrainerCardDto> updateTrainersList(
+  List<TrainerCardDto> addTrainer(
       @NotBlank(message = "Trainee username is mandatory") String traineeUsername,
-      List<String> trainerUsernames
+      @NotBlank(message = "Trainer username is mandatory") String trainerUsername
+  );
+
+  List<TrainerCardDto> removeTrainer(
+      @NotBlank(message = "Trainee username is mandatory") String traineeUsername,
+      @NotBlank(message = "Trainer username is mandatory") String trainerUsername
   );
 }
 

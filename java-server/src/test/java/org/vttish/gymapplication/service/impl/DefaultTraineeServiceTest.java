@@ -1,6 +1,7 @@
 package org.vttish.gymapplication.service.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -84,8 +85,8 @@ class DefaultTraineeServiceTest {
     CredentialsDto result = traineeService.create(dto);
 
     assertEquals("firstName.lastName", result.getUsername());
-    assertEquals("plainPassword", result.getPassword()); // returns plain
-    assertEquals("hashedPassword", testTrainee.getUser().getPassword()); // saves hashed
+    assertEquals("plainPassword", result.getPassword());
+    assertEquals("hashedPassword", testTrainee.getUser().getPassword());
     verify(traineeRepository).save(testTrainee);
   }
 
@@ -132,22 +133,41 @@ class DefaultTraineeServiceTest {
   }
 
   @Test
-  void updateTrainersList_ShouldUpdateTrainers_WhenValid() {
-    Trainer trainer1 = new Trainer();
-    trainer1.setTrainees(new HashSet<>());
+  void addTrainer_ShouldAddTrainer_WhenValid() {
+    Trainer trainer = new Trainer();
+    trainer.setTrainees(new HashSet<>());
 
     TrainerCardDto cardDto = new TrainerCardDto();
 
     when(traineeRepository.findByUsername("firstName.lastName"))
         .thenReturn(Optional.of(testTrainee));
     when(trainerRepository.findByUsername("firstName.lastName1"))
-        .thenReturn(Optional.of(trainer1));
-    when(trainerMapper.toTrainerCardDto(trainer1)).thenReturn(cardDto);
+        .thenReturn(Optional.of(trainer));
+    when(trainerMapper.toTrainerCardDto(trainer)).thenReturn(cardDto);
 
-    List<TrainerCardDto> result = traineeService.updateTrainersList(
-        "firstName.lastName", List.of("firstName.lastName1"));
+    List<TrainerCardDto> result = traineeService.addTrainer(
+        "firstName.lastName", "firstName.lastName1");
 
     assertEquals(1, result.size());
-    assertTrue(testTrainee.getTrainers().contains(trainer1));
+    assertTrue(testTrainee.getTrainers().contains(trainer));
+  }
+
+  @Test
+  void removeTrainer_ShouldRemoveTrainer_WhenValid() {
+    Trainer trainer = new Trainer();
+    trainer.setTrainees(new HashSet<>());
+    testTrainee.addTrainer(trainer);
+
+    when(traineeRepository.findByUsername("firstName.lastName"))
+        .thenReturn(Optional.of(testTrainee));
+    when(trainerRepository.findByUsername("firstName.lastName1"))
+        .thenReturn(Optional.of(trainer));
+
+    List<TrainerCardDto> result = traineeService.removeTrainer(
+        "firstName.lastName", "firstName.lastName1"
+    );
+
+    assertEquals(0, result.size());
+    assertFalse(testTrainee.getTrainers().contains(trainer));
   }
 }
