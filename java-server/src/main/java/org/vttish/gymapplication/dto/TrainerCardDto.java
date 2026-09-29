@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import org.vttish.gymapplication.entity.TrainingType;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -17,6 +16,6 @@ public class TrainerCardDto {
   private String firstName;
   private String lastName;
   private String username;
-  private UUID userId;
-  private TrainingType specialization;
+  private String specialization;
+  private UUID specializationId;
 }
