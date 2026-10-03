@@ -28,11 +28,11 @@
 
         <sonar.coverage.exclusions>
             **/dto/**,
+            **/aspect/**,
+            **/facade/**,
             **/entity/**,
             **/config/**,
-            **/mapper/**,
-            **/aspect/**,
-            **/facade/**
+            **/mapper/**
         </sonar.coverage.exclusions>
     </properties>
 
