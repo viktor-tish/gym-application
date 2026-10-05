@@ -1,81 +1,65 @@
 package org.vttish.gymapplication.service.impl;
 
 import java.util.List;
-import java.util.UUID;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
 import org.vttish.gymapplication.dto.CreateTrainingDto;
-import org.vttish.gymapplication.dto.TrainingCardDto;
+import org.vttish.gymapplication.dto.TraineeTrainingFilterDto;
+import org.vttish.gymapplication.dto.TrainerTrainingFilterDto;
 import org.vttish.gymapplication.dto.TrainingDetailsDto;
+import org.vttish.gymapplication.entity.Trainee;
+import org.vttish.gymapplication.entity.Trainer;
 import org.vttish.gymapplication.entity.Training;
 import org.vttish.gymapplication.mapper.TrainingMapper;
-import org.vttish.gymapplication.persistence.dao.TraineeDao;
-import org.vttish.gymapplication.persistence.dao.TrainerDao;
-import org.vttish.gymapplication.persistence.dao.TrainingDao;
+import org.vttish.gymapplication.repository.TraineeRepository;
+import org.vttish.gymapplication.repository.TrainerRepository;
+import org.vttish.gymapplication.repository.TrainingRepository;
 import org.vttish.gymapplication.service.TrainingService;
 
 @Service
+@Validated
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class DefaultTrainingService implements TrainingService {
+  private final TrainingRepository trainingRepository;
+  private final TraineeRepository traineeRepository;
+  private final TrainerRepository trainerRepository;
+  private final TrainingMapper trainingMapper;
 
-  @Autowired
-  private TrainingDao trainingDao;
+  @Override
+  @Transactional
+  public void create(CreateTrainingDto createTrainingDto) {
+    Trainee trainee = traineeRepository.findByUsername(createTrainingDto.getTraineeUsername())
+        .orElseThrow(() -> new IllegalArgumentException("Trainee not found"));
 
-  @Autowired
-  private TrainerDao trainerDao;
+    Trainer trainer = trainerRepository.findByUsername(createTrainingDto.getTrainerUsername())
+        .orElseThrow(() -> new IllegalArgumentException("Trainer not found"));
 
-  @Autowired
-  private TraineeDao traineeDao;
+    Training training = trainingMapper.create(createTrainingDto);
+    training.setTrainee(trainee);
+    training.setTrainer(trainer);
+    training.setType(trainer.getSpecialization());
 
-  private TrainingMapper mapper;
-
-  @Autowired
-  public void setMapper(TrainingMapper mapper) {
-    this.mapper = mapper;
+    trainingRepository.save(training);
   }
 
   @Override
-  public TrainingDetailsDto create(CreateTrainingDto createTrainingDto) {
-    Assert.notNull(createTrainingDto, "The create DTO must not be null");
-    Assert.noNullElements(
-        List.of(
-            createTrainingDto.getTraineeId(),
-            createTrainingDto.getTrainerId(),
-            createTrainingDto.getTrainingName(),
-            createTrainingDto.getTrainingType(),
-            createTrainingDto.getTrainingDate(),
-            createTrainingDto.getTrainingDuration()
-        ),
-        "One or more fields are null"
-    );
-    Assert.isTrue(!createTrainingDto.getTrainingName().isBlank(),
-        "Training name must not be blank");
-
-    Assert.isTrue(traineeDao.existsById(createTrainingDto.getTraineeId()),
-        "Trainee ID does not exist");
-    Assert.isTrue(trainerDao.existsById(createTrainingDto.getTrainerId()),
-        "Trainer ID does not exist");
-
-    Training training = mapper.create(createTrainingDto);
-    return mapper.toTrainingDetailsDto(trainingDao.create(training));
+  public List<TrainingDetailsDto> getTraineeTrainings(
+      String traineeUsername, TraineeTrainingFilterDto filter
+  ) {
+    return trainingRepository.findTraineeTrainingsByFilter(traineeUsername, filter).stream()
+        .map(trainingMapper::toTrainingDetailsDto)
+        .toList();
   }
 
   @Override
-  public TrainingDetailsDto getById(UUID id) {
-    return mapper.toTrainingDetailsDto(getEntityById(id));
-  }
-
-  private Training getEntityById(UUID id) {
-    Assert.notNull(id, "Training ID must not be null");
-
-    return trainingDao.selectById(id).orElseThrow(
-        () -> new IllegalArgumentException("Training ID does not exist")
-    );
-  }
-
-  @Override
-  public List<TrainingCardDto> getAll() {
-    return trainingDao.selectAll().stream()
-        .map(mapper::toTrainingCardDto).toList();
+  public List<TrainingDetailsDto> getTrainerTrainings(
+      String trainerUsername, TrainerTrainingFilterDto filter
+  ) {
+    return trainingRepository.findTrainerTrainingsByFilter(trainerUsername, filter).stream()
+        .map(trainingMapper::toTrainingDetailsDto)
+        .toList();
   }
 }

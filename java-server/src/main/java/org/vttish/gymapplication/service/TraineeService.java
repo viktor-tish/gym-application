@@ -1,20 +1,35 @@
 package org.vttish.gymapplication.service;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import java.util.List;
-import java.util.UUID;
 import org.vttish.gymapplication.dto.CreateTraineeDto;
-import org.vttish.gymapplication.dto.TraineeCardDto;
+import org.vttish.gymapplication.dto.CredentialsDto;
 import org.vttish.gymapplication.dto.TraineeDetailsDto;
+import org.vttish.gymapplication.dto.TrainerCardDto;
 import org.vttish.gymapplication.dto.UpdateTraineeDto;
 
 public interface TraineeService {
-  TraineeDetailsDto create(CreateTraineeDto createTraineeDto);
 
-  TraineeDetailsDto getById(UUID id);
+  CredentialsDto create(@Valid CreateTraineeDto createTraineeDto);
 
-  List<TraineeCardDto> getAll();
+  TraineeDetailsDto getByUsername(@NotBlank(message = "Username is mandatory") String username);
 
-  TraineeDetailsDto update(UpdateTraineeDto updateTraineeDto);
+  TraineeDetailsDto update(
+      @NotBlank(message = "Username is mandatory") String username,
+      @Valid UpdateTraineeDto updateTraineeDto
+  );
 
-  void delete(UUID id);
+  void deleteByUsername(@NotBlank(message = "Username is mandatory") String username);
+
+  List<TrainerCardDto> addTrainer(
+      @NotBlank(message = "Trainee username is mandatory") String traineeUsername,
+      @NotBlank(message = "Trainer username is mandatory") String trainerUsername
+  );
+
+  List<TrainerCardDto> removeTrainer(
+      @NotBlank(message = "Trainee username is mandatory") String traineeUsername,
+      @NotBlank(message = "Trainer username is mandatory") String trainerUsername
+  );
 }
+

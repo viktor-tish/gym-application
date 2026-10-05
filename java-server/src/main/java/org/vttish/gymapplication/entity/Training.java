@@ -1,25 +1,39 @@
 package org.vttish.gymapplication.entity;
 
-import java.time.Duration;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import java.time.LocalDate;
-import java.util.UUID;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
-@RequiredArgsConstructor
-@Setter
+@Entity
+@Table(name = "trainings")
 @Getter
-public class Training {
-  private final UUID id;
-  private UUID traineeId;
-  private UUID trainerId;
-  private String trainingName;
-  private TrainingType trainingType;
-  private LocalDate trainingDate;
-  private Duration trainingDuration;
+@Setter
+public class Training extends BaseEntity {
 
-  public Training() {
-    id = UUID.randomUUID();
-  }
+  @ManyToOne(fetch = FetchType.LAZY, optional = false)
+  @JoinColumn(name = "trainee_id", nullable = false)
+  private Trainee trainee;
+
+  @ManyToOne(fetch = FetchType.LAZY, optional = false)
+  @JoinColumn(name = "trainer_id", nullable = false)
+  private Trainer trainer;
+
+  @Column(nullable = false)
+  private String name;
+
+  @ManyToOne(fetch = FetchType.LAZY, optional = false)
+  @JoinColumn(name = "type_id", nullable = false)
+  private TrainingType type;
+
+  @Column(nullable = false)
+  private LocalDate date;
+
+  @Column(nullable = false)
+  private Integer duration;
 }
