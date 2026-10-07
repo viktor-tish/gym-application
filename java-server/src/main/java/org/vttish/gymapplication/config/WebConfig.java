@@ -22,14 +22,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
     useDefaultFilters = false,
     includeFilters = @ComponentScan.Filter(type = FilterType.ANNOTATION, classes = Controller.class)
 )
-@RequiredArgsConstructor
 public class WebConfig implements WebMvcConfigurer {
-  private final Validator validator;
-
-  @Override
-  public Validator getValidator() {
-    return validator;
-  }
 
   @Override
   public void extendMessageConverters(List<HttpMessageConverter<?>> converters) {

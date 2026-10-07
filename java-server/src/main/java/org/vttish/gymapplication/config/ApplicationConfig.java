@@ -27,14 +27,4 @@ public class ApplicationConfig {
   public static PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
     return new PropertySourcesPlaceholderConfigurer();
   }
-
-  @Bean
-  public LocalValidatorFactoryBean validator() {
-    return new LocalValidatorFactoryBean();
-  }
-
-  @Bean
-  public MethodValidationPostProcessor methodValidationPostProcessor() {
-    return new MethodValidationPostProcessor();
-  }
 }
