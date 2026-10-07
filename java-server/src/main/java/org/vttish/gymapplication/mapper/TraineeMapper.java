@@ -4,9 +4,9 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
 import org.mapstruct.MappingTarget;
-import org.vttish.gymapplication.dto.CreateTraineeDto;
-import org.vttish.gymapplication.dto.TraineeDetailsDto;
-import org.vttish.gymapplication.dto.UpdateTraineeDto;
+import org.vttish.gymapplication.dto.trainee.CreateTraineeDto;
+import org.vttish.gymapplication.dto.trainee.TraineeDetailsDto;
+import org.vttish.gymapplication.dto.trainee.UpdateTraineeDto;
 import org.vttish.gymapplication.entity.Trainee;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)

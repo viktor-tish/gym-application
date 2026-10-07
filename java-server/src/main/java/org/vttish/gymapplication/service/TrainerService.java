@@ -3,11 +3,11 @@ package org.vttish.gymapplication.service;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import java.util.List;
-import org.vttish.gymapplication.dto.CreateTrainerDto;
-import org.vttish.gymapplication.dto.CredentialsDto;
-import org.vttish.gymapplication.dto.TrainerCardDto;
-import org.vttish.gymapplication.dto.TrainerDetailsDto;
-import org.vttish.gymapplication.dto.UpdateTrainerDto;
+import org.vttish.gymapplication.dto.auth.CredentialsDto;
+import org.vttish.gymapplication.dto.trainer.CreateTrainerDto;
+import org.vttish.gymapplication.dto.trainer.TrainerCardDto;
+import org.vttish.gymapplication.dto.trainer.TrainerDetailsDto;
+import org.vttish.gymapplication.dto.trainer.UpdateTrainerDto;
 
 public interface TrainerService {
   CredentialsDto create(@Valid CreateTrainerDto createTrainerDto);

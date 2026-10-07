@@ -1,4 +1,4 @@
-package org.vttish.gymapplication.dto;
+package org.vttish.gymapplication.dto.training;
 
 import java.time.LocalDate;
 import java.util.UUID;

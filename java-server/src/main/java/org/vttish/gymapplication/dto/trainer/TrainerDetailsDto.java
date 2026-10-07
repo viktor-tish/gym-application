@@ -1,4 +1,4 @@
-package org.vttish.gymapplication.dto;
+package org.vttish.gymapplication.dto.trainer;
 
 import java.util.UUID;
 import lombok.AllArgsConstructor;

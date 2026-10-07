@@ -1,7 +1,6 @@
-package org.vttish.gymapplication.dto;
+package org.vttish.gymapplication.dto.training;
 
 import java.time.LocalDate;
-import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,9 +15,8 @@ import org.vttish.gymapplication.validation.ValidDateRange;
 @Setter
 @ToString
 @ValidDateRange(message = "Invalid date range")
-public class TraineeTrainingFilterDto implements DateRange {
+public class TrainerTrainingFilterDto implements DateRange {
   private LocalDate fromDate;
   private LocalDate toDate;
-  private String trainerName;
-  private UUID trainingTypeId;
+  private String traineeName;
 }

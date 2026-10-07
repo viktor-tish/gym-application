@@ -3,10 +3,10 @@ package org.vttish.gymapplication.service;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import java.util.List;
-import org.vttish.gymapplication.dto.CreateTrainingDto;
-import org.vttish.gymapplication.dto.TraineeTrainingFilterDto;
-import org.vttish.gymapplication.dto.TrainerTrainingFilterDto;
-import org.vttish.gymapplication.dto.TrainingDetailsDto;
+import org.vttish.gymapplication.dto.training.CreateTrainingDto;
+import org.vttish.gymapplication.dto.training.TraineeTrainingFilterDto;
+import org.vttish.gymapplication.dto.training.TrainerTrainingFilterDto;
+import org.vttish.gymapplication.dto.training.TrainingDetailsDto;
 
 public interface TrainingService {
 

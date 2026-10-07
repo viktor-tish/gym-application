@@ -53,7 +53,7 @@ public class JpaTrainerRepository extends JpaBaseRepository<Trainer>
     if (traineeUsername == null) {
       return List.of();
     }
-    
+
     String query = String.format(
         "SELECT tr FROM %s tr "
             + "JOIN FETCH tr.user u "

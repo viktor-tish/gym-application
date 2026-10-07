@@ -3,8 +3,8 @@ package org.vttish.gymapplication.mapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
-import org.vttish.gymapplication.dto.CreateTrainingDto;
-import org.vttish.gymapplication.dto.TrainingDetailsDto;
+import org.vttish.gymapplication.dto.training.CreateTrainingDto;
+import org.vttish.gymapplication.dto.training.TrainingDetailsDto;
 import org.vttish.gymapplication.entity.Training;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
