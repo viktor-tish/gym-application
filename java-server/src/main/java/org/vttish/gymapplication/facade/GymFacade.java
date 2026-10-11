@@ -1,19 +1,19 @@
 package org.vttish.gymapplication.facade;
 
 import java.util.List;
-import org.vttish.gymapplication.dto.ChangePasswordDto;
-import org.vttish.gymapplication.dto.CreateTraineeDto;
-import org.vttish.gymapplication.dto.CreateTrainerDto;
-import org.vttish.gymapplication.dto.CreateTrainingDto;
-import org.vttish.gymapplication.dto.CredentialsDto;
-import org.vttish.gymapplication.dto.TraineeDetailsDto;
-import org.vttish.gymapplication.dto.TraineeTrainingFilterDto;
-import org.vttish.gymapplication.dto.TrainerCardDto;
-import org.vttish.gymapplication.dto.TrainerDetailsDto;
-import org.vttish.gymapplication.dto.TrainerTrainingFilterDto;
-import org.vttish.gymapplication.dto.TrainingDetailsDto;
-import org.vttish.gymapplication.dto.UpdateTraineeDto;
-import org.vttish.gymapplication.dto.UpdateTrainerDto;
+import org.vttish.gymapplication.dto.auth.ChangePasswordDto;
+import org.vttish.gymapplication.dto.auth.CredentialsDto;
+import org.vttish.gymapplication.dto.trainee.CreateTraineeDto;
+import org.vttish.gymapplication.dto.trainee.TraineeDetailsDto;
+import org.vttish.gymapplication.dto.trainee.UpdateTraineeDto;
+import org.vttish.gymapplication.dto.trainer.CreateTrainerDto;
+import org.vttish.gymapplication.dto.trainer.TrainerCardDto;
+import org.vttish.gymapplication.dto.trainer.TrainerDetailsDto;
+import org.vttish.gymapplication.dto.trainer.UpdateTrainerDto;
+import org.vttish.gymapplication.dto.training.CreateTrainingDto;
+import org.vttish.gymapplication.dto.training.TraineeTrainingFilterDto;
+import org.vttish.gymapplication.dto.training.TrainerTrainingFilterDto;
+import org.vttish.gymapplication.dto.training.TrainingDetailsDto;
 
 public interface GymFacade {
 

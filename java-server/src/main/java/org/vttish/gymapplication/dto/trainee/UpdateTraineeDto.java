@@ -1,4 +1,4 @@
-package org.vttish.gymapplication.dto;
+package org.vttish.gymapplication.dto.trainee;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Past;
@@ -14,7 +14,7 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-public class CreateTraineeDto {
+public class UpdateTraineeDto {
 
   @NotBlank(message = "First name is mandatory")
   private String firstName;
@@ -22,8 +22,8 @@ public class CreateTraineeDto {
   @NotBlank(message = "Last name is mandatory")
   private String lastName;
 
-  private String address;
-
   @Past(message = "Date of birth must be in the past")
   private LocalDate dateOfBirth;
+
+  private String address;
 }

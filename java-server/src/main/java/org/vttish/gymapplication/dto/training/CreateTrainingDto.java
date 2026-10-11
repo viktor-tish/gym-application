@@ -1,4 +1,4 @@
-package org.vttish.gymapplication.dto;
+package org.vttish.gymapplication.dto.training;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

@@ -5,8 +5,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
-import org.vttish.gymapplication.dto.ChangePasswordDto;
-import org.vttish.gymapplication.dto.CredentialsDto;
+import org.vttish.gymapplication.dto.auth.ChangePasswordDto;
+import org.vttish.gymapplication.dto.auth.CredentialsDto;
 import org.vttish.gymapplication.entity.User;
 import org.vttish.gymapplication.repository.UserRepository;
 import org.vttish.gymapplication.service.AuthenticationService;
@@ -46,7 +46,7 @@ public class DefaultAuthenticationService implements AuthenticationService {
   public void toggleActivation(String username) {
     User user = userRepository.findByUsername(username)
         .orElseThrow(() -> new EntityNotFoundException("User not found"));
-    
+
     user.setIsActive(!user.getIsActive());
   }
 }

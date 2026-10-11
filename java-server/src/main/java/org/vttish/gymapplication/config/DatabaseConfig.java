@@ -63,7 +63,7 @@ public class DatabaseConfig {
         env.getRequiredProperty("hibernate.hbm2ddl.auto")
     );
     properties.setProperty(
-        "hibernate.physical_naming_strategy", 
+        "hibernate.physical_naming_strategy",
         "org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy"
     );
 

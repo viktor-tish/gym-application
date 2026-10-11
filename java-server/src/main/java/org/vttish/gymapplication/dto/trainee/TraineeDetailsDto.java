@@ -1,6 +1,6 @@
-package org.vttish.gymapplication.dto;
+package org.vttish.gymapplication.dto.trainee;
 
-import java.util.UUID;
+import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,10 +12,11 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-public class TrainerCardDto {
+public class TraineeDetailsDto {
   private String firstName;
   private String lastName;
   private String username;
-  private String specialization;
-  private UUID specializationId;
+  private boolean isActive;
+  private LocalDate dateOfBirth;
+  private String address;
 }
