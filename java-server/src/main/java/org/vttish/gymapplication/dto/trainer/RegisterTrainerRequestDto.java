@@ -14,4 +14,5 @@ public record RegisterTrainerRequestDto(
 
     @NotNull(message = "Specialization is mandatory")
     UUID specializationId
-) {}
+) {
+}

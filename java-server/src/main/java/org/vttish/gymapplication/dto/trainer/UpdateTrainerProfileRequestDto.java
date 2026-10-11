@@ -13,4 +13,5 @@ public record UpdateTrainerProfileRequestDto(
 
     @NotNull(message = "Active status is mandatory")
     Boolean isActive
-) {}
+) {
+}

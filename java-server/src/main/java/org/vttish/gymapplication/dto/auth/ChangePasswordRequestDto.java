@@ -15,4 +15,5 @@ public record ChangePasswordRequestDto(
     @NotBlank(message = "New password is mandatory")
     @Size(min = 10, message = "Password must be at least 10 characters")
     String newPassword
-) {}
+) {
+}

@@ -8,4 +8,5 @@ public record UpdateTraineeTrainersRequestDto(
 
     @NotEmpty(message = "Trainers username list is mandatory")
     List<@NotBlank(message = "Username cannot be blank") String> trainers
-) {}
+) {
+}

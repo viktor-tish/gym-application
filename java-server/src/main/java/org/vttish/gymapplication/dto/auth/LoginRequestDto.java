@@ -11,4 +11,5 @@ public record LoginRequestDto(
     @NotBlank(message = "Password is mandatory")
     @Size(min = 10, message = "Password must be at least 10 characters")
     String password
-) {}
+) {
+}

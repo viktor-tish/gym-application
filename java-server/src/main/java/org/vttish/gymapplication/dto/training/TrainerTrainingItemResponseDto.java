@@ -8,4 +8,5 @@ public record TrainerTrainingItemResponseDto(
     TrainingTypeResponseDto type,
     Integer duration,
     String traineeUsername
-) {}
+) {
+}

@@ -16,4 +16,5 @@ public record RegisterTraineeRequestDto(
     LocalDate dateOfBirth,
 
     String address
-) {}
+) {
+}

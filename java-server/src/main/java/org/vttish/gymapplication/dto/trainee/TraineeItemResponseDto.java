@@ -4,4 +4,5 @@ public record TraineeItemResponseDto(
     String username,
     String firstName,
     String lastName
-) {}
+) {
+}

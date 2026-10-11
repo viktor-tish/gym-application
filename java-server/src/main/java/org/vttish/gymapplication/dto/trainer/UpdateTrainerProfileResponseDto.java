@@ -11,4 +11,5 @@ public record UpdateTrainerProfileResponseDto(
     TrainingTypeResponseDto specialization,
     Boolean isActive,
     List<TraineeItemResponseDto> trainees
-) {}
+) {
+}

@@ -6,4 +6,5 @@ public record UpdateUserStatusRequestDto(
 
     @NotNull(message = "Active status is mandatory")
     Boolean isActive
-) {}
+) {
+}

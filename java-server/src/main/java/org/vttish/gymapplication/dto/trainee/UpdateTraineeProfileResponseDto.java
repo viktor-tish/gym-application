@@ -12,4 +12,5 @@ public record UpdateTraineeProfileResponseDto(
     String address,
     Boolean isActive,
     List<TrainerItemResponseDto> trainers
-) {}
+) {
+}

@@ -10,4 +10,5 @@ public record TrainerProfileResponseDto(
     TrainingTypeResponseDto specialization,
     Boolean isActive,
     List<TraineeItemResponseDto> trainees
-) {}
+) {
+}
