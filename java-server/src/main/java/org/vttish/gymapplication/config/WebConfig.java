@@ -12,6 +12,7 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
@@ -25,6 +26,12 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
     )
 )
 public class WebConfig implements WebMvcConfigurer {
+
+  @Override
+  public void addResourceHandlers(ResourceHandlerRegistry registry) {
+    registry.addResourceHandler("/swagger-ui/**")
+        .addResourceLocations("classpath:/META-INF/resources/webjars/swagger-ui/");
+  }
 
   @Override
   public void extendMessageConverters(List<HttpMessageConverter<?>> converters) {
