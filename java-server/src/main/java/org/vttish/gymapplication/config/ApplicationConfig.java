@@ -18,7 +18,10 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
             type = FilterType.ANNOTATION,
             classes = { Controller.class, ControllerAdvice.class }
         ),
-        @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = WebConfig.class)
+        @ComponentScan.Filter(
+            type = FilterType.ASSIGNABLE_TYPE,
+            classes = { WebConfig.class, OpenApiConfig.class }
+        )
     }
 )
 @PropertySource("classpath:application.properties")
