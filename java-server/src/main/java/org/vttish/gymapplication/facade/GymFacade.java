@@ -1,8 +1,10 @@
 package org.vttish.gymapplication.facade;
 
 import java.util.List;
-import org.vttish.gymapplication.dto.auth.ChangePasswordDto;
+import org.vttish.gymapplication.dto.auth.ChangePasswordRequestDto;
 import org.vttish.gymapplication.dto.auth.CredentialsDto;
+import org.vttish.gymapplication.dto.auth.LoginRequestDto;
+import org.vttish.gymapplication.dto.auth.UpdateUserStatusRequestDto;
 import org.vttish.gymapplication.dto.trainee.CreateTraineeDto;
 import org.vttish.gymapplication.dto.trainee.TraineeDetailsDto;
 import org.vttish.gymapplication.dto.trainee.UpdateTraineeDto;
@@ -17,11 +19,11 @@ import org.vttish.gymapplication.dto.training.TrainingDetailsDto;
 
 public interface GymFacade {
 
-  boolean authenticate(CredentialsDto credentialsDto);
+  void login(LoginRequestDto request);
 
-  void changePassword(ChangePasswordDto changePasswordDto);
+  void changePassword(ChangePasswordRequestDto request);
 
-  void toggleActivation(String username);
+  void updateStatus(String username, UpdateUserStatusRequestDto request);
 
 
   CredentialsDto createTrainee(CreateTraineeDto createTraineeDto);

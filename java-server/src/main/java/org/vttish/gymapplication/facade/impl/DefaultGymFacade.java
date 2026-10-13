@@ -3,8 +3,10 @@ package org.vttish.gymapplication.facade.impl;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.vttish.gymapplication.dto.auth.ChangePasswordDto;
+import org.vttish.gymapplication.dto.auth.ChangePasswordRequestDto;
 import org.vttish.gymapplication.dto.auth.CredentialsDto;
+import org.vttish.gymapplication.dto.auth.LoginRequestDto;
+import org.vttish.gymapplication.dto.auth.UpdateUserStatusRequestDto;
 import org.vttish.gymapplication.dto.trainee.CreateTraineeDto;
 import org.vttish.gymapplication.dto.trainee.TraineeDetailsDto;
 import org.vttish.gymapplication.dto.trainee.UpdateTraineeDto;
@@ -31,18 +33,18 @@ public class DefaultGymFacade implements GymFacade {
   private final AuthenticationService authenticationService;
 
   @Override
-  public boolean authenticate(CredentialsDto credentialsDto) {
-    return authenticationService.authenticate(credentialsDto);
+  public void login(LoginRequestDto request) {
+    authenticationService.login(request);
   }
 
   @Override
-  public void changePassword(ChangePasswordDto changePasswordDto) {
-    authenticationService.changePassword(changePasswordDto);
+  public void changePassword(ChangePasswordRequestDto request) {
+    authenticationService.changePassword(request);
   }
 
   @Override
-  public void toggleActivation(String username) {
-    authenticationService.toggleActivation(username);
+  public void updateStatus(String username, UpdateUserStatusRequestDto request) {
+    authenticationService.updateStatus(username, request);
   }
 
   @Override
