@@ -12,6 +12,9 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 import org.vttish.gymapplication.dto.error.ErrorResponseDto;
+import org.vttish.gymapplication.exception.AuthenticationException;
+import org.vttish.gymapplication.exception.BadRequestException;
+import org.vttish.gymapplication.exception.ResourceNotFoundException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -49,7 +52,7 @@ public class GlobalExceptionHandler {
   }
 
   @ExceptionHandler(HttpMessageNotReadableException.class)
-  public ResponseEntity<ErrorResponseDto> handleHttpMessageNotReadable(
+  public ResponseEntity<ErrorResponseDto> handleHttpMessageNotReadableException(
       HttpServletRequest request
   ) {
     ErrorResponseDto errorResponse = ErrorResponseDto.of(
@@ -63,7 +66,7 @@ public class GlobalExceptionHandler {
   }
 
   @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
-  public ResponseEntity<ErrorResponseDto> handleMethodNotSupported(
+  public ResponseEntity<ErrorResponseDto> handleHttpMethodNotSupportedException(
       HttpRequestMethodNotSupportedException ex,
       HttpServletRequest request
   ) {
@@ -77,9 +80,9 @@ public class GlobalExceptionHandler {
     return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(errorResponse);
   }
 
-  @ExceptionHandler(NoResourceFoundException.class)
-  public ResponseEntity<ErrorResponseDto> handleNoResourceFound(
-      NoResourceFoundException ex,
+  @ExceptionHandler({ NoResourceFoundException.class, ResourceNotFoundException.class })
+  public ResponseEntity<ErrorResponseDto> handleNotFoundException(
+      Exception ex,
       HttpServletRequest request
   ) {
     ErrorResponseDto errorResponse = ErrorResponseDto.of(
@@ -90,6 +93,36 @@ public class GlobalExceptionHandler {
     );
 
     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+  }
+
+  @ExceptionHandler(BadRequestException.class)
+  public ResponseEntity<ErrorResponseDto> handleBadRequestException(
+      BadRequestException ex,
+      HttpServletRequest request
+  ) {
+    ErrorResponseDto errorResponse = ErrorResponseDto.of(
+        HttpStatus.BAD_REQUEST.value(),
+        HttpStatus.BAD_REQUEST.getReasonPhrase(),
+        ex.getMessage(),
+        request.getRequestURI()
+    );
+
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+  }
+
+  @ExceptionHandler(AuthenticationException.class)
+  public ResponseEntity<ErrorResponseDto> handleAuthenticationException(
+      AuthenticationException ex,
+      HttpServletRequest request
+  ) {
+    ErrorResponseDto errorResponse = ErrorResponseDto.of(
+        HttpStatus.UNAUTHORIZED.value(),
+        HttpStatus.UNAUTHORIZED.getReasonPhrase(),
+        ex.getMessage(),
+        request.getRequestURI()
+    );
+
+    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
   }
 
   @ExceptionHandler(Exception.class)
