@@ -4,62 +4,96 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.validation.annotation.Validated;
-import org.vttish.gymapplication.dto.training.CreateTrainingDto;
-import org.vttish.gymapplication.dto.training.TraineeTrainingFilterDto;
-import org.vttish.gymapplication.dto.training.TrainerTrainingFilterDto;
-import org.vttish.gymapplication.dto.training.TrainingDetailsDto;
+import org.vttish.gymapplication.dto.trainee.GetTraineeTrainingsRequestDto;
+import org.vttish.gymapplication.dto.trainer.GetTrainerTrainingsRequestDto;
+import org.vttish.gymapplication.dto.training.CreateTrainingRequestDto;
+import org.vttish.gymapplication.dto.training.TraineeTrainingItemResponseDto;
+import org.vttish.gymapplication.dto.training.TrainerTrainingItemResponseDto;
+import org.vttish.gymapplication.dto.training.TrainingTypeResponseDto;
 import org.vttish.gymapplication.entity.Trainee;
 import org.vttish.gymapplication.entity.Trainer;
 import org.vttish.gymapplication.entity.Training;
+import org.vttish.gymapplication.exception.ResourceNotFoundException;
 import org.vttish.gymapplication.mapper.TrainingMapper;
+import org.vttish.gymapplication.mapper.TrainingTypeMapper;
 import org.vttish.gymapplication.repository.TraineeRepository;
 import org.vttish.gymapplication.repository.TrainerRepository;
 import org.vttish.gymapplication.repository.TrainingRepository;
+import org.vttish.gymapplication.repository.TrainingTypeRepository;
+import org.vttish.gymapplication.repository.filter.TraineeTrainingsFilter;
+import org.vttish.gymapplication.repository.filter.TrainerTrainingsFilter;
 import org.vttish.gymapplication.service.TrainingService;
 
 @Service
-@Validated
-@RequiredArgsConstructor
 @Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class DefaultTrainingService implements TrainingService {
   private final TrainingRepository trainingRepository;
   private final TraineeRepository traineeRepository;
   private final TrainerRepository trainerRepository;
+  private final TrainingTypeRepository trainingTypeRepository;
+  private final TrainingTypeMapper trainingTypeMapper;
   private final TrainingMapper trainingMapper;
 
   @Override
   @Transactional
-  public void create(CreateTrainingDto createTrainingDto) {
-    Trainee trainee = traineeRepository.findByUsername(createTrainingDto.getTraineeUsername())
-        .orElseThrow(() -> new IllegalArgumentException("Trainee not found"));
+  public void create(CreateTrainingRequestDto request) {
+    Trainer trainer = trainerRepository.findByUsername(request.trainerUsername()).orElseThrow(
+        () -> new ResourceNotFoundException(
+            "Trainer not found with username: " + request.trainerUsername()
+        )
+    );
+    Trainee trainee = traineeRepository.findByUsername(request.traineeUsername()).orElseThrow(
+        () -> new ResourceNotFoundException(
+            "Trainee not found with username: " + request.traineeUsername()
+        )
+    );
 
-    Trainer trainer = trainerRepository.findByUsername(createTrainingDto.getTrainerUsername())
-        .orElseThrow(() -> new IllegalArgumentException("Trainer not found"));
+    Training training = trainingMapper.create(request);
 
-    Training training = trainingMapper.create(createTrainingDto);
-    training.setTrainee(trainee);
     training.setTrainer(trainer);
+    training.setTrainee(trainee);
     training.setType(trainer.getSpecialization());
 
     trainingRepository.save(training);
   }
 
   @Override
-  public List<TrainingDetailsDto> getTraineeTrainings(
-      String traineeUsername, TraineeTrainingFilterDto filter
+  public List<TraineeTrainingItemResponseDto> getTraineeTrainings(
+      String traineeUsername,
+      GetTraineeTrainingsRequestDto request
   ) {
+    if (!traineeRepository.existsByUsername(traineeUsername)) {
+      throw new ResourceNotFoundException("Trainee not found with username: " + traineeUsername);
+    }
+
+    TraineeTrainingsFilter filter = trainingMapper.toTraineeTrainingsFilter(request);
+
     return trainingRepository.findTraineeTrainingsByFilter(traineeUsername, filter).stream()
-        .map(trainingMapper::toTrainingDetailsDto)
+        .map(trainingMapper::toTraineeTrainingItemResponseDto)
         .toList();
   }
 
   @Override
-  public List<TrainingDetailsDto> getTrainerTrainings(
-      String trainerUsername, TrainerTrainingFilterDto filter
+  public List<TrainerTrainingItemResponseDto> getTrainerTrainings(
+      String trainerUsername,
+      GetTrainerTrainingsRequestDto request
   ) {
+    if (!trainerRepository.existsByUsername(trainerUsername)) {
+      throw new ResourceNotFoundException("Trainer not found with username: " + trainerUsername);
+    }
+
+    TrainerTrainingsFilter filter = trainingMapper.toTrainerTrainingsFilter(request);
+
     return trainingRepository.findTrainerTrainingsByFilter(trainerUsername, filter).stream()
-        .map(trainingMapper::toTrainingDetailsDto)
+        .map(trainingMapper::toTrainerTrainingItemResponseDto)
+        .toList();
+  }
+
+  @Override
+  public List<TrainingTypeResponseDto> getTypes() {
+    return trainingTypeRepository.findAll().stream()
+        .map(trainingTypeMapper::toTrainingTypeResponseDto)
         .toList();
   }
 }

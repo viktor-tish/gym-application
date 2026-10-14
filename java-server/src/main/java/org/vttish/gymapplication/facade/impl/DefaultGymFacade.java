@@ -7,20 +7,22 @@ import org.vttish.gymapplication.dto.auth.ChangePasswordRequestDto;
 import org.vttish.gymapplication.dto.auth.CredentialsResponseDto;
 import org.vttish.gymapplication.dto.auth.LoginRequestDto;
 import org.vttish.gymapplication.dto.auth.UpdateUserStatusRequestDto;
+import org.vttish.gymapplication.dto.trainee.GetTraineeTrainingsRequestDto;
 import org.vttish.gymapplication.dto.trainee.RegisterTraineeRequestDto;
 import org.vttish.gymapplication.dto.trainee.TraineeProfileResponseDto;
 import org.vttish.gymapplication.dto.trainee.UpdateTraineeProfileRequestDto;
 import org.vttish.gymapplication.dto.trainee.UpdateTraineeProfileResponseDto;
 import org.vttish.gymapplication.dto.trainee.UpdateTraineeTrainersRequestDto;
+import org.vttish.gymapplication.dto.trainer.GetTrainerTrainingsRequestDto;
 import org.vttish.gymapplication.dto.trainer.RegisterTrainerRequestDto;
 import org.vttish.gymapplication.dto.trainer.TrainerItemResponseDto;
 import org.vttish.gymapplication.dto.trainer.TrainerProfileResponseDto;
 import org.vttish.gymapplication.dto.trainer.UpdateTrainerProfileRequestDto;
 import org.vttish.gymapplication.dto.trainer.UpdateTrainerProfileResponseDto;
-import org.vttish.gymapplication.dto.training.CreateTrainingDto;
-import org.vttish.gymapplication.dto.training.TraineeTrainingFilterDto;
-import org.vttish.gymapplication.dto.training.TrainerTrainingFilterDto;
-import org.vttish.gymapplication.dto.training.TrainingDetailsDto;
+import org.vttish.gymapplication.dto.training.CreateTrainingRequestDto;
+import org.vttish.gymapplication.dto.training.TraineeTrainingItemResponseDto;
+import org.vttish.gymapplication.dto.training.TrainerTrainingItemResponseDto;
+import org.vttish.gymapplication.dto.training.TrainingTypeResponseDto;
 import org.vttish.gymapplication.facade.GymFacade;
 import org.vttish.gymapplication.service.AuthenticationService;
 import org.vttish.gymapplication.service.TraineeService;
@@ -49,7 +51,6 @@ public class DefaultGymFacade implements GymFacade {
   public void updateStatus(String username, UpdateUserStatusRequestDto request) {
     authenticationService.updateStatus(username, request);
   }
-
 
   @Override
   public CredentialsResponseDto registerTrainee(RegisterTraineeRequestDto request) {
@@ -82,7 +83,6 @@ public class DefaultGymFacade implements GymFacade {
     return traineeService.updateTrainers(username, request);
   }
 
-
   @Override
   public CredentialsResponseDto registerTrainer(RegisterTrainerRequestDto request) {
     return trainerService.register(request);
@@ -106,21 +106,29 @@ public class DefaultGymFacade implements GymFacade {
     return trainerService.getUnassignedActiveTrainers(traineeUsername);
   }
 
-
   @Override
-  public void createTraining(CreateTrainingDto createTrainingDto) {
-    trainingService.create(createTrainingDto);
+  public void createTraining(CreateTrainingRequestDto request) {
+    trainingService.create(request);
   }
 
   @Override
-  public List<TrainingDetailsDto> getTraineeTrainings(
-      String traineeUsername, TraineeTrainingFilterDto filter) {
-    return trainingService.getTraineeTrainings(traineeUsername, filter);
+  public List<TraineeTrainingItemResponseDto> getTraineeTrainings(
+      String traineeUsername,
+      GetTraineeTrainingsRequestDto request
+  ) {
+    return trainingService.getTraineeTrainings(traineeUsername, request);
   }
 
   @Override
-  public List<TrainingDetailsDto> getTrainerTrainings(
-      String trainerUsername, TrainerTrainingFilterDto filter) {
-    return trainingService.getTrainerTrainings(trainerUsername, filter);
+  public List<TrainerTrainingItemResponseDto> getTrainerTrainings(
+      String trainerUsername,
+      GetTrainerTrainingsRequestDto request
+  ) {
+    return trainingService.getTrainerTrainings(trainerUsername, request);
+  }
+
+  @Override
+  public List<TrainingTypeResponseDto> getTrainingTypes() {
+    return trainingService.getTypes();
   }
 }

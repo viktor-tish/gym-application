@@ -18,9 +18,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.vttish.gymapplication.dto.training.TraineeTrainingFilterDto;
-import org.vttish.gymapplication.dto.training.TrainerTrainingFilterDto;
 import org.vttish.gymapplication.entity.Training;
+import org.vttish.gymapplication.repository.filter.TraineeTrainingsFilter;
+import org.vttish.gymapplication.repository.filter.TrainerTrainingsFilter;
 
 @ExtendWith(MockitoExtension.class)
 class JpaTrainingRepositoryTest {
@@ -44,11 +44,12 @@ class JpaTrainingRepositoryTest {
   void findTraineeTrainingsByFilter_ShouldBuildCorrectJpql() {
     UUID typeId = UUID.randomUUID();
 
-    TraineeTrainingFilterDto filter = new TraineeTrainingFilterDto();
-    filter.setFromDate(LocalDate.of(2000, 1, 1));
-    filter.setToDate(LocalDate.of(2000, 12, 31));
-    filter.setTrainerName("firstName.lastName1");
-    filter.setTrainingTypeId(typeId);
+    TraineeTrainingsFilter filter = new TraineeTrainingsFilter(
+        LocalDate.of(2000, 1, 1),
+        LocalDate.of(2000, 12, 31),
+        "firstName.lastName1",
+        typeId
+    );
 
     when(entityManager.createQuery(anyString(), eq(Training.class))).thenReturn(queryMock);
     when(queryMock.getResultList()).thenReturn(List.of(new Training()));
@@ -72,9 +73,9 @@ class JpaTrainingRepositoryTest {
 
     verify(entityManager).createQuery(expectedJpql, Training.class);
     verify(queryMock).setParameter("traineeUsername", traineeUsername);
-    verify(queryMock).setParameter("fromDate", filter.getFromDate());
-    verify(queryMock).setParameter("toDate", filter.getToDate());
-    verify(queryMock).setParameter("trainerName", filter.getTrainerName());
+    verify(queryMock).setParameter("fromDate", filter.fromDate());
+    verify(queryMock).setParameter("toDate", filter.toDate());
+    verify(queryMock).setParameter("trainerName", filter.trainerName());
     verify(queryMock).setParameter("trainingTypeId", typeId);
   }
 
@@ -102,10 +103,11 @@ class JpaTrainingRepositoryTest {
 
   @Test
   void findTrainerTrainingsByFilter_ShouldBuildCorrectJpql() {
-    TrainerTrainingFilterDto filter = new TrainerTrainingFilterDto();
-    filter.setFromDate(LocalDate.of(2000, 1, 1));
-    filter.setToDate(LocalDate.of(2000, 12, 31));
-    filter.setTraineeName("firstName.lastName");
+    TrainerTrainingsFilter filter = new TrainerTrainingsFilter(
+        LocalDate.of(2000, 1, 1),
+        LocalDate.of(2000, 12, 31),
+        "firstName.lastName"
+    );
 
     when(entityManager.createQuery(anyString(), eq(Training.class))).thenReturn(queryMock);
     when(queryMock.getResultList()).thenReturn(List.of(new Training()));
@@ -128,8 +130,30 @@ class JpaTrainingRepositoryTest {
 
     verify(entityManager).createQuery(expectedJpql, Training.class);
     verify(queryMock).setParameter("trainerUsername", trainerUsername);
-    verify(queryMock).setParameter("fromDate", filter.getFromDate());
-    verify(queryMock).setParameter("toDate", filter.getToDate());
-    verify(queryMock).setParameter("traineeName", filter.getTraineeName());
+    verify(queryMock).setParameter("fromDate", filter.fromDate());
+    verify(queryMock).setParameter("toDate", filter.toDate());
+    verify(queryMock).setParameter("traineeName", filter.traineeName());
+  }
+
+  @Test
+  void findTrainerTrainingsByFilter_WithNullFilter_ShouldBuildCorrectJpql() {
+    String trainerUsername = "firstName.lastName1";
+
+    when(entityManager.createQuery(anyString(), eq(Training.class))).thenReturn(queryMock);
+    when(queryMock.getResultList()).thenReturn(List.of(new Training()));
+
+    List<Training> result = trainingRepository.findTrainerTrainingsByFilter(
+        trainerUsername, null);
+
+    assertEquals(1, result.size());
+
+    String expectedJpql = "SELECT t FROM Training t "
+        + "JOIN FETCH t.trainee tr JOIN FETCH tr.user tru "
+        + "JOIN FETCH t.trainer trn JOIN FETCH trn.user trnu "
+        + "JOIN FETCH t.type ty "
+        + "WHERE trnu.username = :trainerUsername";
+
+    verify(entityManager).createQuery(expectedJpql, Training.class);
+    verify(queryMock).setParameter("trainerUsername", trainerUsername);
   }
 }

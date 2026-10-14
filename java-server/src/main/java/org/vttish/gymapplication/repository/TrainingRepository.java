@@ -2,17 +2,16 @@ package org.vttish.gymapplication.repository;
 
 import java.util.List;
 import java.util.UUID;
-import org.vttish.gymapplication.dto.training.TraineeTrainingFilterDto;
-import org.vttish.gymapplication.dto.training.TrainerTrainingFilterDto;
 import org.vttish.gymapplication.entity.Training;
+import org.vttish.gymapplication.repository.filter.TraineeTrainingsFilter;
+import org.vttish.gymapplication.repository.filter.TrainerTrainingsFilter;
 
 public interface TrainingRepository extends BaseRepository<Training, UUID> {
-
   List<Training> findTraineeTrainingsByFilter(
-      String traineeUsername, TraineeTrainingFilterDto filter
+      String traineeUsername, TraineeTrainingsFilter filter
   );
 
   List<Training> findTrainerTrainingsByFilter(
-      String trainerUsername, TrainerTrainingFilterDto filter
+      String trainerUsername, TrainerTrainingsFilter filter
   );
 }

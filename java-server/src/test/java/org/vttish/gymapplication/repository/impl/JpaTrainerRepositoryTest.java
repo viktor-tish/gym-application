@@ -1,6 +1,7 @@
 package org.vttish.gymapplication.repository.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -28,6 +29,9 @@ class JpaTrainerRepositoryTest {
 
   @Mock
   private EntityManager entityManager;
+
+  @Mock
+  private TypedQuery<Long> countQueryMock;
 
   @Mock
   private TypedQuery<Trainer> queryMock;
@@ -142,5 +146,44 @@ class JpaTrainerRepositoryTest {
             + "WHERE u.username IN (:usernames)",
         Trainer.class
     );
+  }
+
+  @Test
+  void existsByUsername_WhenUsernameIsNull_ShouldReturnFalse() {
+    boolean exists = trainerRepository.existsByUsername(null);
+    assertFalse(exists);
+    verify(entityManager, never()).createQuery(anyString(), any());
+  }
+
+  @Test
+  void existsByUsername_WhenTrainerExists_ShouldReturnTrue() {
+    String username = "firstName.lastName";
+    when(entityManager.createQuery(anyString(), eq(Long.class)))
+        .thenReturn(countQueryMock);
+    when(countQueryMock.setParameter("username", username))
+        .thenReturn(countQueryMock);
+    when(countQueryMock.getSingleResult()).thenReturn(1L);
+
+    boolean exists = trainerRepository.existsByUsername(username);
+
+    assertTrue(exists);
+    verify(entityManager).createQuery(
+        "SELECT COUNT(tr) FROM Trainer tr JOIN tr.user u WHERE u.username = :username",
+        Long.class
+    );
+  }
+
+  @Test
+  void existsByUsername_WhenTrainerDoesNotExist_ShouldReturnFalse() {
+    String username = "nonexistent.username";
+    when(entityManager.createQuery(anyString(), eq(Long.class)))
+        .thenReturn(countQueryMock);
+    when(countQueryMock.setParameter("username", username))
+        .thenReturn(countQueryMock);
+    when(countQueryMock.getSingleResult()).thenReturn(0L);
+
+    boolean exists = trainerRepository.existsByUsername(username);
+
+    assertFalse(exists);
   }
 }
