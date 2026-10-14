@@ -16,25 +16,6 @@ public class JpaUserRepository extends JpaBaseRepository<User>
 
   @SuppressWarnings("java:S2077")
   @Override
-  public boolean existsByUsername(String username) {
-    if (username == null) {
-      return false;
-    }
-
-    String query = String.format(
-        "SELECT COUNT(u) FROM %s u WHERE u.username = :username",
-        entityClass.getSimpleName()
-    );
-
-    Long count = entityManager.createQuery(query, Long.class)
-        .setParameter("username", username)
-        .getSingleResult();
-
-    return count > 0;
-  }
-
-  @SuppressWarnings("java:S2077")
-  @Override
   public Optional<User> findByUsername(String username) {
     if (username == null) {
       return Optional.empty();

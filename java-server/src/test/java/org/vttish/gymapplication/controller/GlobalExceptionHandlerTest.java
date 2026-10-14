@@ -24,6 +24,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 import org.vttish.gymapplication.dto.error.ErrorResponseDto;
+import org.vttish.gymapplication.exception.AuthenticationException;
+import org.vttish.gymapplication.exception.BadRequestException;
+import org.vttish.gymapplication.exception.ResourceNotFoundException;
 
 class GlobalExceptionHandlerTest {
   private static MockMvc mockMvc;
@@ -46,6 +49,21 @@ class GlobalExceptionHandlerTest {
     @GetMapping("/not-found")
     public void testNotFound() throws NoResourceFoundException {
       throw new NoResourceFoundException(HttpMethod.GET, "/test/not-found");
+    }
+
+    @GetMapping("/resource-not-found")
+    public void testResourceNotFound() {
+      throw new ResourceNotFoundException("Resource not found");
+    }
+
+    @GetMapping("/bad-request")
+    public void testBadRequest() {
+      throw new BadRequestException("Custom bad request");
+    }
+
+    @GetMapping("/unauthorized")
+    public void testUnauthorized() {
+      throw new AuthenticationException("Unauthorized access");
     }
 
     @GetMapping("/server-error")
@@ -125,6 +143,60 @@ class GlobalExceptionHandlerTest {
     assertEquals(404, response.status());
     assertEquals("Not Found", response.error());
     assertEquals("/test/not-found", response.path());
+    assertNotNull(response.timestamp());
+  }
+
+  @Test
+  void shouldReturnNotFoundWhenResourceNotFoundExceptionThrown() throws Exception {
+    MvcResult result = mockMvc.perform(get("/test/resource-not-found"))
+        .andExpect(status().isNotFound())
+        .andReturn();
+
+    ErrorResponseDto response = objectMapper.readValue(
+        result.getResponse().getContentAsString(),
+        ErrorResponseDto.class
+    );
+
+    assertEquals(404, response.status());
+    assertEquals("Not Found", response.error());
+    assertEquals("Resource not found", response.message());
+    assertEquals("/test/resource-not-found", response.path());
+    assertNotNull(response.timestamp());
+  }
+
+  @Test
+  void shouldReturnBadRequestWhenBadRequestExceptionThrown() throws Exception {
+    MvcResult result = mockMvc.perform(get("/test/bad-request"))
+        .andExpect(status().isBadRequest())
+        .andReturn();
+
+    ErrorResponseDto response = objectMapper.readValue(
+        result.getResponse().getContentAsString(),
+        ErrorResponseDto.class
+    );
+
+    assertEquals(400, response.status());
+    assertEquals("Bad Request", response.error());
+    assertEquals("Custom bad request", response.message());
+    assertEquals("/test/bad-request", response.path());
+    assertNotNull(response.timestamp());
+  }
+
+  @Test
+  void shouldReturnUnauthorizedWhenAuthenticationExceptionThrown() throws Exception {
+    MvcResult result = mockMvc.perform(get("/test/unauthorized"))
+        .andExpect(status().isUnauthorized())
+        .andReturn();
+
+    ErrorResponseDto response = objectMapper.readValue(
+        result.getResponse().getContentAsString(),
+        ErrorResponseDto.class
+    );
+
+    assertEquals(401, response.status());
+    assertEquals("Unauthorized", response.error());
+    assertEquals("Unauthorized access", response.message());
+    assertEquals("/test/unauthorized", response.path());
     assertNotNull(response.timestamp());
   }
 

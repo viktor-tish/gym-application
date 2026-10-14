@@ -1,13 +1,13 @@
 package org.vttish.gymapplication.repository.impl;
 
 import jakarta.persistence.TypedQuery;
+import java.time.LocalDate;
 import java.util.List;
 import org.springframework.stereotype.Repository;
-import org.vttish.gymapplication.dto.training.TraineeTrainingFilterDto;
-import org.vttish.gymapplication.dto.training.TrainerTrainingFilterDto;
 import org.vttish.gymapplication.entity.Training;
 import org.vttish.gymapplication.repository.TrainingRepository;
-import org.vttish.gymapplication.validation.DateRange;
+import org.vttish.gymapplication.repository.filter.TraineeTrainingsFilter;
+import org.vttish.gymapplication.repository.filter.TrainerTrainingsFilter;
 
 @Repository
 public class JpaTrainingRepository extends JpaBaseRepository<Training>
@@ -19,7 +19,7 @@ public class JpaTrainingRepository extends JpaBaseRepository<Training>
 
   @Override
   public List<Training> findTraineeTrainingsByFilter(
-      String traineeUsername, TraineeTrainingFilterDto filter
+      String traineeUsername, TraineeTrainingsFilter filter
   ) {
 
     StringBuilder queryBuilder = new StringBuilder("SELECT t FROM Training t "
@@ -40,7 +40,7 @@ public class JpaTrainingRepository extends JpaBaseRepository<Training>
 
   @Override
   public List<Training> findTrainerTrainingsByFilter(
-      String trainerUsername, TrainerTrainingFilterDto filter
+      String trainerUsername, TrainerTrainingsFilter filter
   ) {
 
     StringBuilder queryBuilder = new StringBuilder("SELECT t FROM Training t "
@@ -59,81 +59,81 @@ public class JpaTrainingRepository extends JpaBaseRepository<Training>
     return query.getResultList();
   }
 
-  private void appendTraineeConditions(StringBuilder jpql, TraineeTrainingFilterDto filter) {
+  private void appendTraineeConditions(StringBuilder jpql, TraineeTrainingsFilter filter) {
     if (filter == null) {
       return;
     }
 
-    appendDateConditions(jpql, filter);
+    appendDateConditions(jpql, filter.fromDate(), filter.toDate());
 
-    if (filter.getTrainerName() != null && !filter.getTrainerName().isBlank()) {
+    if (filter.trainerName() != null && !filter.trainerName().isBlank()) {
       jpql.append(" AND (trnu.firstName = :trainerName OR trnu.lastName = :trainerName "
           + "OR trnu.username = :trainerName)");
     }
 
-    if (filter.getTrainingTypeId() != null) {
+    if (filter.trainingTypeId() != null) {
       jpql.append(" AND ty.id = :trainingTypeId");
     }
   }
 
-  private void setTraineeParameters(TypedQuery<?> query, TraineeTrainingFilterDto filter) {
+  private void setTraineeParameters(TypedQuery<?> query, TraineeTrainingsFilter filter) {
     if (filter == null) {
       return;
     }
 
-    setDateParameters(query, filter);
+    setDateParameters(query, filter.fromDate(), filter.toDate());
 
-    if (filter.getTrainerName() != null && !filter.getTrainerName().isBlank()) {
-      query.setParameter("trainerName", filter.getTrainerName());
+    if (filter.trainerName() != null && !filter.trainerName().isBlank()) {
+      query.setParameter("trainerName", filter.trainerName());
     }
 
-    if (filter.getTrainingTypeId() != null) {
-      query.setParameter("trainingTypeId", filter.getTrainingTypeId());
+    if (filter.trainingTypeId() != null) {
+      query.setParameter("trainingTypeId", filter.trainingTypeId());
     }
   }
 
-  private void appendTrainerConditions(StringBuilder jpql, TrainerTrainingFilterDto filter) {
+  private void appendTrainerConditions(StringBuilder jpql, TrainerTrainingsFilter filter) {
     if (filter == null) {
       return;
     }
 
-    appendDateConditions(jpql, filter);
+    appendDateConditions(jpql, filter.fromDate(), filter.toDate());
 
-    if (filter.getTraineeName() != null && !filter.getTraineeName().isBlank()) {
+    if (filter.traineeName() != null && !filter.traineeName().isBlank()) {
       jpql.append(" AND (tru.firstName = :traineeName OR tru.lastName = :traineeName "
           + "OR tru.username = :traineeName)");
     }
   }
 
-  private void setTrainerParameters(TypedQuery<?> query, TrainerTrainingFilterDto filter) {
+  private void setTrainerParameters(TypedQuery<?> query, TrainerTrainingsFilter filter) {
     if (filter == null) {
       return;
     }
 
-    setDateParameters(query, filter);
+    setDateParameters(query, filter.fromDate(), filter.toDate());
 
-    if (filter.getTraineeName() != null && !filter.getTraineeName().isBlank()) {
-      query.setParameter("traineeName", filter.getTraineeName());
+    if (filter.traineeName() != null && !filter.traineeName().isBlank()) {
+      query.setParameter("traineeName", filter.traineeName());
     }
   }
 
-  private void appendDateConditions(StringBuilder jpql, DateRange filter) {
-    if (filter.getFromDate() != null) {
+  private void appendDateConditions(StringBuilder jpql, LocalDate fromDate, LocalDate toDate) {
+    if (fromDate != null) {
       jpql.append(" AND t.date >= :fromDate");
     }
 
-    if (filter.getToDate() != null) {
+    if (toDate != null) {
       jpql.append(" AND t.date <= :toDate");
     }
   }
 
-  private void setDateParameters(TypedQuery<?> query, DateRange filter) {
-    if (filter.getFromDate() != null) {
-      query.setParameter("fromDate", filter.getFromDate());
+  private void setDateParameters(TypedQuery<?> query, LocalDate fromDate, LocalDate toDate) {
+    if (fromDate != null) {
+      query.setParameter("fromDate", fromDate);
     }
 
-    if (filter.getToDate() != null) {
-      query.setParameter("toDate", filter.getToDate());
+    if (toDate != null) {
+      query.setParameter("toDate", toDate);
     }
   }
 }
