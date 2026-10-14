@@ -138,17 +138,12 @@ public class TraineeController {
       description = "Hard deletes a trainee profile and cascades deletion to all related trainings"
   )
   @ApiResponse(
-      responseCode = "200",
+      responseCode = "204",
       description = "Trainee deleted successfully"
   )
   @ApiResponse(
       responseCode = "401",
       description = "Unauthorized - authentication required or invalid credentials",
-      content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
-  )
-  @ApiResponse(
-      responseCode = "404",
-      description = "Trainee not found",
       content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
   )
   @ApiResponse(
