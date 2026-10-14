@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import jakarta.persistence.EntityNotFoundException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -17,15 +16,20 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.vttish.gymapplication.dto.trainer.CreateTrainerDto;
-import org.vttish.gymapplication.dto.auth.CredentialsDto;
-import org.vttish.gymapplication.dto.trainer.TrainerCardDto;
-import org.vttish.gymapplication.dto.trainer.TrainerDetailsDto;
-import org.vttish.gymapplication.dto.trainer.UpdateTrainerDto;
+import org.vttish.gymapplication.dto.auth.CredentialsResponseDto;
+import org.vttish.gymapplication.dto.trainer.RegisterTrainerRequestDto;
+import org.vttish.gymapplication.dto.trainer.TrainerItemResponseDto;
+import org.vttish.gymapplication.dto.trainer.TrainerProfileResponseDto;
+import org.vttish.gymapplication.dto.trainer.UpdateTrainerProfileRequestDto;
+import org.vttish.gymapplication.dto.trainer.UpdateTrainerProfileResponseDto;
+import org.vttish.gymapplication.dto.training.TrainingTypeResponseDto;
 import org.vttish.gymapplication.entity.Trainer;
 import org.vttish.gymapplication.entity.TrainingType;
 import org.vttish.gymapplication.entity.User;
+import org.vttish.gymapplication.exception.ResourceNotFoundException;
+import org.vttish.gymapplication.mapper.TrainerItemMapper;
 import org.vttish.gymapplication.mapper.TrainerMapper;
+import org.vttish.gymapplication.repository.TraineeRepository;
 import org.vttish.gymapplication.repository.TrainerRepository;
 import org.vttish.gymapplication.repository.TrainingTypeRepository;
 import org.vttish.gymapplication.service.ProfileGenerationService;
@@ -38,6 +42,9 @@ class DefaultTrainerServiceTest {
   private TrainerRepository trainerRepository;
 
   @Mock
+  private TraineeRepository traineeRepository;
+
+  @Mock
   private TrainingTypeRepository trainingTypeRepository;
 
   @Mock
@@ -45,6 +52,9 @@ class DefaultTrainerServiceTest {
 
   @Mock
   private TrainerMapper trainerMapper;
+
+  @Mock
+  private TrainerItemMapper trainerItemMapper;
 
   @Mock
   private PasswordHasher passwordHasher;
@@ -74,13 +84,12 @@ class DefaultTrainerServiceTest {
   }
 
   @Test
-  void create_ShouldGenerateCredentialsAndSave() {
-    CreateTrainerDto dto = new CreateTrainerDto();
-    dto.setFirstName("firstName");
-    dto.setLastName("lastName");
-    dto.setSpecializationId(specializationId);
+  void register_ShouldGenerateCredentialsAndSave() {
+    RegisterTrainerRequestDto request = new RegisterTrainerRequestDto(
+        "firstName", "lastName", specializationId
+    );
 
-    when(trainerMapper.create(dto)).thenReturn(testTrainer);
+    when(trainerMapper.create(request)).thenReturn(testTrainer);
     when(profileGenerationService.generateUniqueUsername("firstName", "lastName"))
         .thenReturn("firstName.lastName");
     when(profileGenerationService.generateRandomPassword()).thenReturn("plainPassword");
@@ -88,83 +97,121 @@ class DefaultTrainerServiceTest {
     when(trainingTypeRepository.findById(specializationId))
         .thenReturn(Optional.of(testSpecialization));
 
-    CredentialsDto result = trainerService.create(dto);
+    CredentialsResponseDto result = trainerService.register(request);
 
-    assertEquals("firstName.lastName", result.getUsername());
-    assertEquals("plainPassword", result.getPassword());
+    assertEquals("firstName.lastName", result.username());
+    assertEquals("plainPassword", result.password());
     assertEquals("hashedPassword", testTrainer.getUser().getPassword());
     verify(trainerRepository).save(testTrainer);
   }
 
   @Test
-  void create_ShouldThrowException_WhenSpecializationNotFound() {
+  void register_ShouldThrowException_WhenSpecializationNotFound() {
     UUID invalidUuid = UUID.randomUUID();
-    CreateTrainerDto dto = new CreateTrainerDto();
-    dto.setFirstName("firstName");
-    dto.setLastName("lastName");
-    dto.setSpecializationId(invalidUuid);
+    RegisterTrainerRequestDto request = new RegisterTrainerRequestDto(
+        "firstName", "lastName", invalidUuid
+    );
 
-    when(trainerMapper.create(dto)).thenReturn(testTrainer);
+    when(trainerMapper.create(request)).thenReturn(testTrainer);
     when(profileGenerationService.generateUniqueUsername("firstName", "lastName"))
         .thenReturn("firstName.lastName");
     when(profileGenerationService.generateRandomPassword()).thenReturn("plainPassword");
     when(passwordHasher.hash("plainPassword")).thenReturn("hashedPassword");
     when(trainingTypeRepository.findById(invalidUuid)).thenReturn(Optional.empty());
 
-    assertThrows(EntityNotFoundException.class, () -> trainerService.create(dto));
+    assertThrows(
+        ResourceNotFoundException.class, () -> trainerService.register(request)
+    );
   }
 
   @Test
-  void getByUsername_ShouldReturnDetailsDto_WhenTrainerExists() {
-    TrainerDetailsDto detailsDto = new TrainerDetailsDto();
+  void getProfile_ShouldReturnProfile_WhenTrainerExists() {
+    TrainingTypeResponseDto specDto = new TrainingTypeResponseDto(specializationId, "Fitness");
+    TrainerProfileResponseDto profileDto = new TrainerProfileResponseDto(
+        "firstName", "lastName", specDto, true, List.of()
+    );
 
     when(trainerRepository.findByUsername("firstName.lastName"))
         .thenReturn(Optional.of(testTrainer));
-    when(trainerMapper.toTrainerDetailsDto(testTrainer)).thenReturn(detailsDto);
+    when(trainerMapper.toTrainerProfileResponseDto(testTrainer)).thenReturn(profileDto);
 
-    TrainerDetailsDto result = trainerService.getByUsername("firstName.lastName");
+    TrainerProfileResponseDto result = trainerService.getProfile("firstName.lastName");
 
     assertNotNull(result);
+    assertEquals("firstName", result.firstName());
   }
 
   @Test
-  void getByUsername_ShouldThrowException_WhenTrainerNotFound() {
+  void getProfile_ShouldThrowException_WhenTrainerNotFound() {
     when(trainerRepository.findByUsername("nonexistent.username")).thenReturn(Optional.empty());
 
     assertThrows(
-        EntityNotFoundException.class, () -> trainerService.getByUsername("nonexistent.username"));
+        ResourceNotFoundException.class, () -> trainerService.getProfile("nonexistent.username")
+    );
   }
 
   @Test
-  void update_ShouldUpdateAndReturnDetails_WhenTrainerExists() {
-    UpdateTrainerDto dto = new UpdateTrainerDto();
-    dto.setSpecializationId(specializationId);
-
-    TrainerDetailsDto detailsDto = new TrainerDetailsDto();
+  void updateProfile_ShouldUpdateAndReturnProfile_WhenTrainerExists() {
+    UpdateTrainerProfileRequestDto request = new UpdateTrainerProfileRequestDto(
+        "firstName", "lastName", true
+    );
+    TrainingTypeResponseDto specDto = new TrainingTypeResponseDto(specializationId, "Fitness");
+    UpdateTrainerProfileResponseDto responseDto = new UpdateTrainerProfileResponseDto(
+        "firstName.lastName", "firstName", "lastName", specDto, true, List.of()
+    );
 
     when(trainerRepository.findByUsername("firstName.lastName"))
         .thenReturn(Optional.of(testTrainer));
-    when(trainingTypeRepository.findById(specializationId))
-        .thenReturn(Optional.of(testSpecialization));
-    when(trainerMapper.toTrainerDetailsDto(testTrainer)).thenReturn(detailsDto);
+    when(trainerMapper.toUpdateTrainerProfileResponseDto(testTrainer)).thenReturn(responseDto);
 
-    TrainerDetailsDto result = trainerService.update("firstName.lastName", dto);
+    UpdateTrainerProfileResponseDto result = trainerService.updateProfile(
+        "firstName.lastName", request
+    );
 
     assertNotNull(result);
-    verify(trainerMapper).update(testTrainer, dto);
+    assertEquals("firstName.lastName", result.username());
+    verify(trainerMapper).update(testTrainer, request);
   }
 
   @Test
-  void getUnassigned_ShouldReturnTrainerCards() {
-    List<Trainer> unassignedTrainers = List.of(testTrainer);
-    TrainerCardDto cardDto = new TrainerCardDto();
+  void updateProfile_ShouldThrowException_WhenTrainerNotFound() {
+    UpdateTrainerProfileRequestDto request = new UpdateTrainerProfileRequestDto(
+        "firstName", "lastName", true
+    );
 
-    when(trainerRepository.findTrainersNotAssignedToTrainee("trainee.firstName.lastName"))
-        .thenReturn(unassignedTrainers);
-    when(trainerMapper.toTrainerCardDto(testTrainer)).thenReturn(cardDto);
+    when(trainerRepository.findByUsername("nonexistent.username")).thenReturn(Optional.empty());
 
-    List<TrainerCardDto> result = trainerService.getUnassigned("trainee.firstName.lastName");
+    assertThrows(
+        ResourceNotFoundException.class,
+        () -> trainerService.updateProfile("nonexistent.username", request)
+    );
+  }
+
+  @Test
+  void getUnassignedActiveTrainers_ShouldReturnTrainers_WhenTraineeExists() {
+    TrainerItemResponseDto itemDto = new TrainerItemResponseDto(
+        "firstName.lastName", "firstName", "lastName", null
+    );
+
+    when(traineeRepository.existsByUsername("trainee.username")).thenReturn(true);
+    when(trainerRepository.findTrainersNotAssignedToTrainee("trainee.username"))
+        .thenReturn(List.of(testTrainer));
+    when(trainerItemMapper.toTrainerItemResponseDto(testTrainer)).thenReturn(itemDto);
+
+    List<TrainerItemResponseDto> result =
+        trainerService.getUnassignedActiveTrainers("trainee.username");
 
     assertEquals(1, result.size());
+    assertEquals("firstName.lastName", result.get(0).username());
+  }
+
+  @Test
+  void getUnassignedActiveTrainers_ShouldThrowException_WhenTraineeNotFound() {
+    when(traineeRepository.existsByUsername("nonexistent.trainee")).thenReturn(false);
+
+    assertThrows(
+        ResourceNotFoundException.class,
+        () -> trainerService.getUnassignedActiveTrainers("nonexistent.trainee")
+    );
   }
 }

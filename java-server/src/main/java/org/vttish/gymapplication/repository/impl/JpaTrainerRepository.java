@@ -78,7 +78,7 @@ public class JpaTrainerRepository extends JpaBaseRepository<Trainer>
         "SELECT tr FROM %s tr "
             + "JOIN FETCH tr.user u "
             + "JOIN FETCH tr.specialization s "
-            + "WHERE tr NOT IN ("
+            + "WHERE u.isActive = true AND tr NOT IN ("
             + " SELECT assignedTr FROM %s te "
             + "  JOIN te.trainers assignedTr "
             + "  JOIN te.user tu "

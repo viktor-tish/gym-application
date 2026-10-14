@@ -4,7 +4,6 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.vttish.gymapplication.dto.auth.ChangePasswordRequestDto;
-import org.vttish.gymapplication.dto.auth.CredentialsDto;
 import org.vttish.gymapplication.dto.auth.CredentialsResponseDto;
 import org.vttish.gymapplication.dto.auth.LoginRequestDto;
 import org.vttish.gymapplication.dto.auth.UpdateUserStatusRequestDto;
@@ -13,11 +12,11 @@ import org.vttish.gymapplication.dto.trainee.TraineeProfileResponseDto;
 import org.vttish.gymapplication.dto.trainee.UpdateTraineeProfileRequestDto;
 import org.vttish.gymapplication.dto.trainee.UpdateTraineeProfileResponseDto;
 import org.vttish.gymapplication.dto.trainee.UpdateTraineeTrainersRequestDto;
-import org.vttish.gymapplication.dto.trainer.CreateTrainerDto;
-import org.vttish.gymapplication.dto.trainer.TrainerCardDto;
-import org.vttish.gymapplication.dto.trainer.TrainerDetailsDto;
+import org.vttish.gymapplication.dto.trainer.RegisterTrainerRequestDto;
 import org.vttish.gymapplication.dto.trainer.TrainerItemResponseDto;
-import org.vttish.gymapplication.dto.trainer.UpdateTrainerDto;
+import org.vttish.gymapplication.dto.trainer.TrainerProfileResponseDto;
+import org.vttish.gymapplication.dto.trainer.UpdateTrainerProfileRequestDto;
+import org.vttish.gymapplication.dto.trainer.UpdateTrainerProfileResponseDto;
 import org.vttish.gymapplication.dto.training.CreateTrainingDto;
 import org.vttish.gymapplication.dto.training.TraineeTrainingFilterDto;
 import org.vttish.gymapplication.dto.training.TrainerTrainingFilterDto;
@@ -85,23 +84,26 @@ public class DefaultGymFacade implements GymFacade {
 
 
   @Override
-  public CredentialsDto createTrainer(CreateTrainerDto createTrainerDto) {
-    return trainerService.create(createTrainerDto);
+  public CredentialsResponseDto registerTrainer(RegisterTrainerRequestDto request) {
+    return trainerService.register(request);
   }
 
   @Override
-  public TrainerDetailsDto getTrainerByUsername(String username) {
-    return trainerService.getByUsername(username);
+  public TrainerProfileResponseDto getTrainerProfile(String username) {
+    return trainerService.getProfile(username);
   }
 
   @Override
-  public TrainerDetailsDto updateTrainer(String username, UpdateTrainerDto updateTrainerDto) {
-    return trainerService.update(username, updateTrainerDto);
+  public UpdateTrainerProfileResponseDto updateTrainerProfile(
+      String username,
+      UpdateTrainerProfileRequestDto request
+  ) {
+    return trainerService.updateProfile(username, request);
   }
 
   @Override
-  public List<TrainerCardDto> getUnassignedTrainers(String traineeUsername) {
-    return trainerService.getUnassigned(traineeUsername);
+  public List<TrainerItemResponseDto> getUnassignedActiveTrainers(String traineeUsername) {
+    return trainerService.getUnassignedActiveTrainers(traineeUsername);
   }
 
 
