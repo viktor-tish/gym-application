@@ -3,14 +3,18 @@ package org.vttish.gymapplication.facade;
 import java.util.List;
 import org.vttish.gymapplication.dto.auth.ChangePasswordRequestDto;
 import org.vttish.gymapplication.dto.auth.CredentialsDto;
+import org.vttish.gymapplication.dto.auth.CredentialsResponseDto;
 import org.vttish.gymapplication.dto.auth.LoginRequestDto;
 import org.vttish.gymapplication.dto.auth.UpdateUserStatusRequestDto;
-import org.vttish.gymapplication.dto.trainee.CreateTraineeDto;
-import org.vttish.gymapplication.dto.trainee.TraineeDetailsDto;
-import org.vttish.gymapplication.dto.trainee.UpdateTraineeDto;
+import org.vttish.gymapplication.dto.trainee.RegisterTraineeRequestDto;
+import org.vttish.gymapplication.dto.trainee.TraineeProfileResponseDto;
+import org.vttish.gymapplication.dto.trainee.UpdateTraineeProfileRequestDto;
+import org.vttish.gymapplication.dto.trainee.UpdateTraineeProfileResponseDto;
+import org.vttish.gymapplication.dto.trainee.UpdateTraineeTrainersRequestDto;
 import org.vttish.gymapplication.dto.trainer.CreateTrainerDto;
 import org.vttish.gymapplication.dto.trainer.TrainerCardDto;
 import org.vttish.gymapplication.dto.trainer.TrainerDetailsDto;
+import org.vttish.gymapplication.dto.trainer.TrainerItemResponseDto;
 import org.vttish.gymapplication.dto.trainer.UpdateTrainerDto;
 import org.vttish.gymapplication.dto.training.CreateTrainingDto;
 import org.vttish.gymapplication.dto.training.TraineeTrainingFilterDto;
@@ -25,19 +29,21 @@ public interface GymFacade {
 
   void updateStatus(String username, UpdateUserStatusRequestDto request);
 
+  CredentialsResponseDto registerTrainee(RegisterTraineeRequestDto request);
 
-  CredentialsDto createTrainee(CreateTraineeDto createTraineeDto);
+  TraineeProfileResponseDto getTraineeProfile(String username);
 
-  TraineeDetailsDto getTraineeByUsername(String username);
+  UpdateTraineeProfileResponseDto updateTraineeProfile(
+      String username,
+      UpdateTraineeProfileRequestDto request
+  );
 
-  TraineeDetailsDto updateTrainee(String username, UpdateTraineeDto updateTraineeDto);
+  void deleteTrainee(String username);
 
-  void deleteTraineeByUsername(String username);
-
-  List<TrainerCardDto> addTrainerToTrainee(String traineeUsername, String trainerUsername);
-
-  List<TrainerCardDto> removeTrainerFromTrainee(String traineeUsername, String trainerUsername);
-
+  List<TrainerItemResponseDto> updateTraineeTrainers(
+      String username,
+      UpdateTraineeTrainersRequestDto request
+  );
 
   CredentialsDto createTrainer(CreateTrainerDto createTrainerDto);
 
@@ -46,7 +52,6 @@ public interface GymFacade {
   TrainerDetailsDto updateTrainer(String username, UpdateTrainerDto updateTrainerDto);
 
   List<TrainerCardDto> getUnassignedTrainers(String traineeUsername);
-
 
   void createTraining(CreateTrainingDto createTrainingDto);
 

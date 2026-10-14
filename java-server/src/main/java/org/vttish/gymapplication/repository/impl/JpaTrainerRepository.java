@@ -49,6 +49,26 @@ public class JpaTrainerRepository extends JpaBaseRepository<Trainer>
 
   @SuppressWarnings("java:S2077")
   @Override
+  public List<Trainer> findAllByUsernameIn(List<String> usernames) {
+    if (usernames == null || usernames.isEmpty()) {
+      return List.of();
+    }
+
+    String query = String.format(
+        "SELECT tr FROM %s tr "
+            + "JOIN FETCH tr.user u "
+            + "JOIN FETCH tr.specialization s "
+            + "WHERE u.username IN (:usernames)",
+        entityClass.getSimpleName()
+    );
+
+    return entityManager.createQuery(query, entityClass)
+        .setParameter("usernames", usernames)
+        .getResultList();
+  }
+
+  @SuppressWarnings("java:S2077")
+  @Override
   public List<Trainer> findTrainersNotAssignedToTrainee(String traineeUsername) {
     if (traineeUsername == null) {
       return List.of();

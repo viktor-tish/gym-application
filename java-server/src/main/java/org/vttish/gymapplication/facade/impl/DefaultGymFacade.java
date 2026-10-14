@@ -5,14 +5,18 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.vttish.gymapplication.dto.auth.ChangePasswordRequestDto;
 import org.vttish.gymapplication.dto.auth.CredentialsDto;
+import org.vttish.gymapplication.dto.auth.CredentialsResponseDto;
 import org.vttish.gymapplication.dto.auth.LoginRequestDto;
 import org.vttish.gymapplication.dto.auth.UpdateUserStatusRequestDto;
-import org.vttish.gymapplication.dto.trainee.CreateTraineeDto;
-import org.vttish.gymapplication.dto.trainee.TraineeDetailsDto;
-import org.vttish.gymapplication.dto.trainee.UpdateTraineeDto;
+import org.vttish.gymapplication.dto.trainee.RegisterTraineeRequestDto;
+import org.vttish.gymapplication.dto.trainee.TraineeProfileResponseDto;
+import org.vttish.gymapplication.dto.trainee.UpdateTraineeProfileRequestDto;
+import org.vttish.gymapplication.dto.trainee.UpdateTraineeProfileResponseDto;
+import org.vttish.gymapplication.dto.trainee.UpdateTraineeTrainersRequestDto;
 import org.vttish.gymapplication.dto.trainer.CreateTrainerDto;
 import org.vttish.gymapplication.dto.trainer.TrainerCardDto;
 import org.vttish.gymapplication.dto.trainer.TrainerDetailsDto;
+import org.vttish.gymapplication.dto.trainer.TrainerItemResponseDto;
 import org.vttish.gymapplication.dto.trainer.UpdateTrainerDto;
 import org.vttish.gymapplication.dto.training.CreateTrainingDto;
 import org.vttish.gymapplication.dto.training.TraineeTrainingFilterDto;
@@ -47,36 +51,38 @@ public class DefaultGymFacade implements GymFacade {
     authenticationService.updateStatus(username, request);
   }
 
+
   @Override
-  public CredentialsDto createTrainee(CreateTraineeDto createTraineeDto) {
-    return traineeService.create(createTraineeDto);
+  public CredentialsResponseDto registerTrainee(RegisterTraineeRequestDto request) {
+    return traineeService.register(request);
   }
 
   @Override
-  public TraineeDetailsDto getTraineeByUsername(String username) {
-    return traineeService.getByUsername(username);
+  public TraineeProfileResponseDto getTraineeProfile(String username) {
+    return traineeService.getProfile(username);
   }
 
   @Override
-  public TraineeDetailsDto updateTrainee(String username, UpdateTraineeDto updateTraineeDto) {
-    return traineeService.update(username, updateTraineeDto);
+  public UpdateTraineeProfileResponseDto updateTraineeProfile(
+      String username,
+      UpdateTraineeProfileRequestDto request
+  ) {
+    return traineeService.updateProfile(username, request);
   }
 
   @Override
-  public void deleteTraineeByUsername(String username) {
-    traineeService.deleteByUsername(username);
+  public void deleteTrainee(String username) {
+    traineeService.delete(username);
   }
 
   @Override
-  public List<TrainerCardDto> addTrainerToTrainee(String traineeUsername, String trainerUsername) {
-    return traineeService.addTrainer(traineeUsername, trainerUsername);
+  public List<TrainerItemResponseDto> updateTraineeTrainers(
+      String username,
+      UpdateTraineeTrainersRequestDto request
+  ) {
+    return traineeService.updateTrainers(username, request);
   }
 
-  @Override
-  public List<TrainerCardDto> removeTrainerFromTrainee(
-      String traineeUsername, String trainerUsername) {
-    return traineeService.removeTrainer(traineeUsername, trainerUsername);
-  }
 
   @Override
   public CredentialsDto createTrainer(CreateTrainerDto createTrainerDto) {
@@ -98,6 +104,7 @@ public class DefaultGymFacade implements GymFacade {
     return trainerService.getUnassigned(traineeUsername);
   }
 
+
   @Override
   public void createTraining(CreateTrainingDto createTrainingDto) {
     trainingService.create(createTrainingDto);
@@ -105,15 +112,13 @@ public class DefaultGymFacade implements GymFacade {
 
   @Override
   public List<TrainingDetailsDto> getTraineeTrainings(
-      String traineeUsername, TraineeTrainingFilterDto filter
-  ) {
+      String traineeUsername, TraineeTrainingFilterDto filter) {
     return trainingService.getTraineeTrainings(traineeUsername, filter);
   }
 
   @Override
   public List<TrainingDetailsDto> getTrainerTrainings(
-      String trainerUsername, TrainerTrainingFilterDto filter
-  ) {
+      String trainerUsername, TrainerTrainingFilterDto filter) {
     return trainingService.getTrainerTrainings(trainerUsername, filter);
   }
 }

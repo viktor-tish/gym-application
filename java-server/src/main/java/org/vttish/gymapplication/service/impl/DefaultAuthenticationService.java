@@ -18,7 +18,6 @@ import org.vttish.gymapplication.utils.PasswordHasher;
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class DefaultAuthenticationService implements AuthenticationService {
-
   private final UserRepository userRepository;
   private final PasswordHasher passwordHasher;
 

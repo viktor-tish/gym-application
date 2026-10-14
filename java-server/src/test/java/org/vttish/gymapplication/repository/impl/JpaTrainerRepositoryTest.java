@@ -37,10 +37,8 @@ class JpaTrainerRepositoryTest {
 
   @BeforeEach
   void setUp() {
-    ReflectionTestUtils.setField(
-        trainerRepository, "entityManager", entityManager);
-    ReflectionTestUtils.setField(
-        trainerRepository, "entityClass", Trainer.class);
+    ReflectionTestUtils.setField(trainerRepository, "entityManager", entityManager);
+    ReflectionTestUtils.setField(trainerRepository, "entityClass", Trainer.class);
   }
 
   @Test
@@ -110,6 +108,39 @@ class JpaTrainerRepositoryTest {
         ArgumentMatchers.contains(
             "SELECT assignedTr FROM Trainee te"),
         eq(Trainer.class)
+    );
+  }
+
+  @Test
+  void findAllByUsernameIn_WhenNullOrEmpty_ShouldReturnEmptyList() {
+    List<Trainer> nullResult = trainerRepository.findAllByUsernameIn(null);
+    assertTrue(nullResult.isEmpty());
+
+    List<Trainer> emptyResult = trainerRepository.findAllByUsernameIn(List.of());
+    assertTrue(emptyResult.isEmpty());
+
+    verify(entityManager, never()).createQuery(anyString(), any());
+  }
+
+  @Test
+  void findAllByUsernameIn_WhenValid_ShouldReturnTrainers() {
+    List<String> usernames = List.of("trainer1", "trainer2");
+    List<Trainer> expectedList = List.of(new Trainer(), new Trainer());
+
+    when(entityManager.createQuery(anyString(), eq(Trainer.class)))
+        .thenReturn(queryMock);
+    when(queryMock.setParameter("usernames", usernames)).thenReturn(queryMock);
+    when(queryMock.getResultList()).thenReturn(expectedList);
+
+    List<Trainer> result = trainerRepository.findAllByUsernameIn(usernames);
+
+    assertEquals(2, result.size());
+    verify(entityManager).createQuery(
+        "SELECT tr FROM Trainer tr "
+            + "JOIN FETCH tr.user u "
+            + "JOIN FETCH tr.specialization s "
+            + "WHERE u.username IN (:usernames)",
+        Trainer.class
     );
   }
 }
