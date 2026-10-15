@@ -9,6 +9,8 @@ services:
       SONAR_PASSWORD: ${SONAR_PASSWORD}
       SONAR_PROJECT_KEY: gym-java-server
       SONAR_PROJECT_NAME: "Gym Java Server"
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS}
     networks:
       - gym-network
     volumes:
