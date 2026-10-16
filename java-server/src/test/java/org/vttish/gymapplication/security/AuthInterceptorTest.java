@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,6 +20,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.web.method.HandlerMethod;
+import org.springframework.web.servlet.HandlerMapping;
 import org.vttish.gymapplication.exception.AuthenticationException;
 import org.vttish.gymapplication.exception.ForbiddenException;
 
@@ -235,5 +237,49 @@ class AuthInterceptorTest {
     boolean result = interceptorWithoutWhiteList.preHandle(request, response, handler);
 
     assertTrue(result);
+  }
+
+  @Test
+  void preHandle_ShouldReturnTrue_WhenUsernamePathVariableMatchesPrincipal() throws Exception {
+    request.setMethod("GET");
+    request.setRequestURI("/api/v1/trainees/john.doe");
+    request.addHeader(HttpHeaders.AUTHORIZATION, "Bearer valid.jwt.token");
+    request.setAttribute(
+        HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE,
+        Map.of("username", "john.doe")
+    );
+
+    UserPrincipal principal = new UserPrincipal("john.doe", Role.TRAINEE);
+    when(jwtService.parseToken("valid.jwt.token")).thenReturn(principal);
+
+    Method method = TestOpenController.class.getMethod("openMethod");
+    HandlerMethod handlerMethod = new HandlerMethod(new TestOpenController(), method);
+
+    boolean result = interceptor.preHandle(request, response, handlerMethod);
+
+    assertTrue(result);
+  }
+
+  @Test
+  void preHandle_ShouldThrowForbiddenException_WhenUsernamePathVariableDoesNotMatchPrincipal()
+      throws Exception {
+    request.setMethod("GET");
+    request.setRequestURI("/api/v1/trainees/jane.smith");
+    request.addHeader(HttpHeaders.AUTHORIZATION, "Bearer valid.jwt.token");
+    request.setAttribute(
+        HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE,
+        Map.of("username", "jane.smith")
+    );
+
+    UserPrincipal principal = new UserPrincipal("john.doe", Role.TRAINEE);
+    when(jwtService.parseToken("valid.jwt.token")).thenReturn(principal);
+
+    Method method = TestOpenController.class.getMethod("openMethod");
+    HandlerMethod handlerMethod = new HandlerMethod(new TestOpenController(), method);
+
+    assertThrows(
+        ForbiddenException.class,
+        () -> interceptor.preHandle(request, response, handlerMethod)
+    );
   }
 }
