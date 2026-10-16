@@ -14,6 +14,7 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 import org.vttish.gymapplication.dto.error.ErrorResponseDto;
 import org.vttish.gymapplication.exception.AuthenticationException;
 import org.vttish.gymapplication.exception.BadRequestException;
+import org.vttish.gymapplication.exception.ForbiddenException;
 import org.vttish.gymapplication.exception.ResourceNotFoundException;
 
 @RestControllerAdvice
@@ -123,6 +124,21 @@ public class GlobalExceptionHandler {
     );
 
     return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+  }
+
+  @ExceptionHandler(ForbiddenException.class)
+  public ResponseEntity<ErrorResponseDto> handleForbiddenException(
+      ForbiddenException ex,
+      HttpServletRequest request
+  ) {
+    ErrorResponseDto errorResponse = ErrorResponseDto.of(
+        HttpStatus.FORBIDDEN.value(),
+        HttpStatus.FORBIDDEN.getReasonPhrase(),
+        ex.getMessage(),
+        request.getRequestURI()
+    );
+
+    return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
   }
 
   @ExceptionHandler(Exception.class)

@@ -24,6 +24,7 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 import org.vttish.gymapplication.dto.error.ErrorResponseDto;
 import org.vttish.gymapplication.exception.AuthenticationException;
 import org.vttish.gymapplication.exception.BadRequestException;
+import org.vttish.gymapplication.exception.ForbiddenException;
 import org.vttish.gymapplication.exception.ResourceNotFoundException;
 
 @ExtendWith(MockitoExtension.class)
@@ -160,6 +161,21 @@ class GlobalExceptionHandlerTest {
     assertEquals(401, response.getBody().status());
     assertEquals("Unauthorized", response.getBody().error());
     assertEquals("Unauthorized access", response.getBody().message());
+    assertEquals("/test/path", response.getBody().path());
+    assertNotNull(response.getBody().timestamp());
+  }
+
+  @Test
+  void handleForbiddenException_ShouldReturnForbidden() {
+    ForbiddenException ex = new ForbiddenException("Access denied");
+
+    ResponseEntity<ErrorResponseDto> response = handler.handleForbiddenException(ex, request);
+
+    assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+    assertNotNull(response.getBody());
+    assertEquals(403, response.getBody().status());
+    assertEquals("Forbidden", response.getBody().error());
+    assertEquals("Access denied", response.getBody().message());
     assertEquals("/test/path", response.getBody().path());
     assertNotNull(response.getBody().timestamp());
   }
