@@ -1,10 +1,12 @@
 package org.vttish.gymapplication.controller;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -14,9 +16,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.vttish.gymapplication.dto.auth.ChangePasswordRequestDto;
 import org.vttish.gymapplication.dto.auth.LoginRequestDto;
+import org.vttish.gymapplication.dto.auth.LoginResponseDto;
 import org.vttish.gymapplication.exception.AuthenticationException;
 import org.vttish.gymapplication.exception.ResourceNotFoundException;
 import org.vttish.gymapplication.facade.GymFacade;
@@ -47,13 +51,21 @@ class AuthenticationControllerTest {
   @Test
   void login_ShouldReturnOk_WhenCredentialsAreValid() throws Exception {
     LoginRequestDto request = new LoginRequestDto("firstName.lastName", "password123");
-    doNothing().when(gymFacade).login(request);
+    LoginResponseDto response = new LoginResponseDto("mocked.jwt.token");
+    when(gymFacade.login(request)).thenReturn(response);
 
-    mockMvc.perform(post("/api/v1/auth/login")
+    MvcResult result = mockMvc.perform(post("/api/v1/auth/login")
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(request)))
-        .andExpect(status().isOk());
+        .andExpect(status().isOk())
+        .andReturn();
 
+    LoginResponseDto actual = objectMapper.readValue(
+        result.getResponse().getContentAsString(),
+        LoginResponseDto.class
+    );
+
+    assertEquals(response, actual);
     verify(gymFacade).login(request);
   }
 

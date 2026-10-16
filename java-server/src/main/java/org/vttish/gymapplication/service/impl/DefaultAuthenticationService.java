@@ -5,12 +5,18 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.vttish.gymapplication.dto.auth.ChangePasswordRequestDto;
 import org.vttish.gymapplication.dto.auth.LoginRequestDto;
+import org.vttish.gymapplication.dto.auth.LoginResponseDto;
 import org.vttish.gymapplication.dto.auth.UpdateUserStatusRequestDto;
 import org.vttish.gymapplication.entity.User;
 import org.vttish.gymapplication.exception.AuthenticationException;
 import org.vttish.gymapplication.exception.BadRequestException;
 import org.vttish.gymapplication.exception.ResourceNotFoundException;
+import org.vttish.gymapplication.repository.TraineeRepository;
+import org.vttish.gymapplication.repository.TrainerRepository;
 import org.vttish.gymapplication.repository.UserRepository;
+import org.vttish.gymapplication.security.JwtService;
+import org.vttish.gymapplication.security.Role;
+import org.vttish.gymapplication.security.UserPrincipal;
 import org.vttish.gymapplication.service.AuthenticationService;
 import org.vttish.gymapplication.utils.PasswordHasher;
 
@@ -19,17 +25,21 @@ import org.vttish.gymapplication.utils.PasswordHasher;
 @RequiredArgsConstructor
 public class DefaultAuthenticationService implements AuthenticationService {
   private final UserRepository userRepository;
+  private final TraineeRepository traineeRepository;
+  private final TrainerRepository trainerRepository;
   private final PasswordHasher passwordHasher;
+  private final JwtService jwtService;
 
   @Override
-  public void login(LoginRequestDto request) {
-    boolean matches = userRepository.findByUsername(request.username())
-        .map(user -> passwordHasher.matches(request.password(), user.getPassword()))
-        .orElse(false);
+  public LoginResponseDto login(LoginRequestDto request) {
+    User user = userRepository.findByUsername(request.username())
+        .filter(foundUser -> passwordHasher.matches(request.password(), foundUser.getPassword()))
+        .orElseThrow(() -> new AuthenticationException("Invalid username or password"));
 
-    if (!matches) {
-      throw new AuthenticationException("Invalid username or password");
-    }
+    Role role = resolveRole(user.getUsername());
+    UserPrincipal userPrincipal = new UserPrincipal(user.getUsername(), role);
+
+    return new LoginResponseDto(jwtService.generateToken(userPrincipal));
   }
 
   @Override
@@ -60,5 +70,17 @@ public class DefaultAuthenticationService implements AuthenticationService {
     }
 
     user.setIsActive(request.isActive());
+  }
+
+  private Role resolveRole(String username) {
+    if (traineeRepository.existsByUsername(username)) {
+      return Role.TRAINEE;
+    }
+
+    if (trainerRepository.existsByUsername(username)) {
+      return Role.TRAINER;
+    }
+
+    throw new AuthenticationException("User has no assigned role");
   }
 }

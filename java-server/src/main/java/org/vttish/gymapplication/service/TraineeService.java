@@ -10,7 +10,6 @@ import org.vttish.gymapplication.dto.trainee.UpdateTraineeTrainersRequestDto;
 import org.vttish.gymapplication.dto.trainer.TrainerItemResponseDto;
 
 public interface TraineeService {
-
   CredentialsResponseDto register(RegisterTraineeRequestDto request);
 
   TraineeProfileResponseDto getProfile(String username);

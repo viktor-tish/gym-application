@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import org.vttish.gymapplication.dto.auth.ChangePasswordRequestDto;
 import org.vttish.gymapplication.dto.auth.CredentialsResponseDto;
 import org.vttish.gymapplication.dto.auth.LoginRequestDto;
+import org.vttish.gymapplication.dto.auth.LoginResponseDto;
 import org.vttish.gymapplication.dto.auth.UpdateUserStatusRequestDto;
 import org.vttish.gymapplication.dto.trainee.GetTraineeTrainingsRequestDto;
 import org.vttish.gymapplication.dto.trainee.RegisterTraineeRequestDto;
@@ -38,8 +39,8 @@ public class DefaultGymFacade implements GymFacade {
   private final AuthenticationService authenticationService;
 
   @Override
-  public void login(LoginRequestDto request) {
-    authenticationService.login(request);
+  public LoginResponseDto login(LoginRequestDto request) {
+    return authenticationService.login(request);
   }
 
   @Override
