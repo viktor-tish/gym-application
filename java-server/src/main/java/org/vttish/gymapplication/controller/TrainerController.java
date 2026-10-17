@@ -24,6 +24,8 @@ import org.vttish.gymapplication.dto.trainer.UpdateTrainerProfileRequestDto;
 import org.vttish.gymapplication.dto.trainer.UpdateTrainerProfileResponseDto;
 import org.vttish.gymapplication.dto.training.TrainerTrainingItemResponseDto;
 import org.vttish.gymapplication.facade.GymFacade;
+import org.vttish.gymapplication.security.RequireRole;
+import org.vttish.gymapplication.security.Role;
 
 @RestController
 @RequestMapping("/api/v1/trainers")
@@ -46,6 +48,7 @@ public class TrainerController {
   }
 
   @GetMapping("/{username}")
+  @RequireRole(Role.TRAINER)
   public ResponseEntity<TrainerProfileResponseDto> getProfile(
       @PathVariable("username") String username
   ) {
@@ -53,6 +56,7 @@ public class TrainerController {
   }
 
   @PutMapping("/{username}")
+  @RequireRole(Role.TRAINER)
   public ResponseEntity<UpdateTrainerProfileResponseDto> updateProfile(
       @PathVariable("username") String username,
       @Valid @RequestBody UpdateTrainerProfileRequestDto request
@@ -61,6 +65,7 @@ public class TrainerController {
   }
 
   @GetMapping("/{username}/trainings")
+  @RequireRole(Role.TRAINER)
   public ResponseEntity<List<TrainerTrainingItemResponseDto>> getTrainings(
       @PathVariable("username") String username,
       @Valid @ModelAttribute GetTrainerTrainingsRequestDto request
@@ -69,6 +74,7 @@ public class TrainerController {
   }
 
   @PatchMapping("/{username}/status")
+  @RequireRole(Role.TRAINER)
   public ResponseEntity<Void> updateStatus(
       @PathVariable("username") String username,
       @Valid @RequestBody UpdateUserStatusRequestDto request

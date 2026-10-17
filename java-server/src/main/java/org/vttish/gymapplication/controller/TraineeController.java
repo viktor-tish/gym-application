@@ -34,6 +34,8 @@ import org.vttish.gymapplication.dto.trainee.UpdateTraineeTrainersRequestDto;
 import org.vttish.gymapplication.dto.trainer.TrainerItemResponseDto;
 import org.vttish.gymapplication.dto.training.TraineeTrainingItemResponseDto;
 import org.vttish.gymapplication.facade.GymFacade;
+import org.vttish.gymapplication.security.RequireRole;
+import org.vttish.gymapplication.security.Role;
 
 @Tag(
     name = "Trainee Management",
@@ -91,6 +93,11 @@ public class TraineeController {
       content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
   )
   @ApiResponse(
+      responseCode = "403",
+      description = "Forbidden - access denied or insufficient permissions",
+      content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
+  )
+  @ApiResponse(
       responseCode = "404",
       description = "Trainee not found",
       content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
@@ -101,6 +108,7 @@ public class TraineeController {
       content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
   )
   @GetMapping("/{username}")
+  @RequireRole(Role.TRAINEE)
   public ResponseEntity<TraineeProfileResponseDto> getProfile(
       @Parameter(description = "Trainee username", required = true)
       @PathVariable("username") String username
@@ -127,6 +135,11 @@ public class TraineeController {
       content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
   )
   @ApiResponse(
+      responseCode = "403",
+      description = "Forbidden - access denied or insufficient permissions",
+      content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
+  )
+  @ApiResponse(
       responseCode = "404",
       description = "Trainee not found",
       content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
@@ -137,6 +150,7 @@ public class TraineeController {
       content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
   )
   @PutMapping("/{username}")
+  @RequireRole(Role.TRAINEE)
   public ResponseEntity<UpdateTraineeProfileResponseDto> updateProfile(
       @Parameter(description = "Trainee username", required = true)
       @PathVariable("username") String username,
@@ -159,11 +173,17 @@ public class TraineeController {
       content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
   )
   @ApiResponse(
+      responseCode = "403",
+      description = "Forbidden - access denied or insufficient permissions",
+      content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
+  )
+  @ApiResponse(
       responseCode = "500",
       description = "Internal server error",
       content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
   )
   @DeleteMapping("/{username}")
+  @RequireRole(Role.TRAINEE)
   public ResponseEntity<Void> delete(
       @Parameter(description = "Trainee username", required = true)
       @PathVariable("username") String username
@@ -187,6 +207,11 @@ public class TraineeController {
       content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
   )
   @ApiResponse(
+      responseCode = "403",
+      description = "Forbidden - access denied or insufficient permissions",
+      content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
+  )
+  @ApiResponse(
       responseCode = "404",
       description = "Trainee not found",
       content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
@@ -197,6 +222,7 @@ public class TraineeController {
       content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
   )
   @GetMapping("/{username}/trainers/not-assigned")
+  @RequireRole(Role.TRAINEE)
   public ResponseEntity<List<TrainerItemResponseDto>> getUnassignedActiveTrainers(
       @Parameter(description = "Trainee username", required = true)
       @PathVariable("username") String username
@@ -223,6 +249,11 @@ public class TraineeController {
       content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
   )
   @ApiResponse(
+      responseCode = "403",
+      description = "Forbidden - access denied or insufficient permissions",
+      content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
+  )
+  @ApiResponse(
       responseCode = "404",
       description = "Trainee not found",
       content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
@@ -233,6 +264,7 @@ public class TraineeController {
       content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
   )
   @PutMapping("/{username}/trainers")
+  @RequireRole(Role.TRAINEE)
   public ResponseEntity<List<TrainerItemResponseDto>> updateTrainers(
       @Parameter(description = "Trainee username", required = true)
       @PathVariable("username") String username,
@@ -260,6 +292,11 @@ public class TraineeController {
       content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
   )
   @ApiResponse(
+      responseCode = "403",
+      description = "Forbidden - access denied or insufficient permissions",
+      content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
+  )
+  @ApiResponse(
       responseCode = "404",
       description = "Trainee not found",
       content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
@@ -270,6 +307,7 @@ public class TraineeController {
       content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
   )
   @GetMapping("/{username}/trainings")
+  @RequireRole(Role.TRAINEE)
   public ResponseEntity<List<TraineeTrainingItemResponseDto>> getTrainings(
       @Parameter(description = "Trainee username", required = true)
       @PathVariable("username") String username,
@@ -297,6 +335,11 @@ public class TraineeController {
       content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
   )
   @ApiResponse(
+      responseCode = "403",
+      description = "Forbidden - access denied or insufficient permissions",
+      content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
+  )
+  @ApiResponse(
       responseCode = "404",
       description = "Trainee not found",
       content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
@@ -307,6 +350,7 @@ public class TraineeController {
       content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
   )
   @PatchMapping("/{username}/status")
+  @RequireRole(Role.TRAINEE)
   public ResponseEntity<Void> updateStatus(
       @Parameter(description = "Trainee username", required = true)
       @PathVariable("username") String username,

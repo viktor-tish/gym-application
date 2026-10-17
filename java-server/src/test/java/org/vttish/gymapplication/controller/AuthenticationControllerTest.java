@@ -24,6 +24,9 @@ import org.vttish.gymapplication.dto.auth.LoginResponseDto;
 import org.vttish.gymapplication.exception.AuthenticationException;
 import org.vttish.gymapplication.exception.ResourceNotFoundException;
 import org.vttish.gymapplication.facade.GymFacade;
+import org.vttish.gymapplication.security.Role;
+import org.vttish.gymapplication.security.UserPrincipal;
+import org.vttish.gymapplication.security.UserPrincipalArgumentResolver;
 
 class AuthenticationControllerTest {
   private static GymFacade gymFacade;
@@ -37,6 +40,7 @@ class AuthenticationControllerTest {
 
     mockMvc = MockMvcBuilders
         .standaloneSetup(controller)
+        .setCustomArgumentResolvers(new UserPrincipalArgumentResolver())
         .setControllerAdvice(new GlobalExceptionHandler())
         .build();
 
@@ -99,6 +103,7 @@ class AuthenticationControllerTest {
     doNothing().when(gymFacade).changePassword(request);
 
     mockMvc.perform(post("/api/v1/auth/change-password")
+            .requestAttr("userPrincipal", new UserPrincipal("firstName.lastName", Role.TRAINEE))
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isOk());
@@ -113,6 +118,7 @@ class AuthenticationControllerTest {
     );
 
     mockMvc.perform(post("/api/v1/auth/change-password")
+            .requestAttr("userPrincipal", new UserPrincipal("firstName.lastName", Role.TRAINEE))
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(invalidRequest)))
         .andExpect(status().isBadRequest());
@@ -127,6 +133,7 @@ class AuthenticationControllerTest {
         .when(gymFacade).changePassword(request);
 
     mockMvc.perform(post("/api/v1/auth/change-password")
+            .requestAttr("userPrincipal", new UserPrincipal("firstName.lastName", Role.TRAINEE))
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isUnauthorized());
@@ -141,8 +148,34 @@ class AuthenticationControllerTest {
         .when(gymFacade).changePassword(request);
 
     mockMvc.perform(post("/api/v1/auth/change-password")
+            .requestAttr("userPrincipal", new UserPrincipal("nonexistent.user", Role.TRAINEE))
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isNotFound());
+  }
+
+  @Test
+  void changePassword_ShouldReturnForbidden_WhenUsernameDoesNotMatchPrincipal() throws Exception {
+    ChangePasswordRequestDto request = new ChangePasswordRequestDto(
+        "firstName.lastName", "oldPassword", "newPassword"
+    );
+
+    mockMvc.perform(post("/api/v1/auth/change-password")
+            .requestAttr("userPrincipal", new UserPrincipal("other.user", Role.TRAINEE))
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void changePassword_ShouldReturnForbidden_WhenPrincipalIsNull() throws Exception {
+    ChangePasswordRequestDto request = new ChangePasswordRequestDto(
+        "firstName.lastName", "oldPassword", "newPassword"
+    );
+
+    mockMvc.perform(post("/api/v1/auth/change-password")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isForbidden());
   }
 }

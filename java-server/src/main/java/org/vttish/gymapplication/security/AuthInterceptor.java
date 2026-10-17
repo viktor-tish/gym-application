@@ -81,7 +81,7 @@ public class AuthInterceptor implements HandlerInterceptor {
     }
 
     if (requireRole != null) {
-      List<Role> allowedRoles = List.of(requireRole.roles());
+      List<Role> allowedRoles = List.of(requireRole.value());
 
       if (!allowedRoles.contains(principal.role())) {
         throw new ForbiddenException("Access denied");
