@@ -4,6 +4,7 @@ import java.util.List;
 import org.vttish.gymapplication.dto.auth.ChangePasswordRequestDto;
 import org.vttish.gymapplication.dto.auth.CredentialsResponseDto;
 import org.vttish.gymapplication.dto.auth.LoginRequestDto;
+import org.vttish.gymapplication.dto.auth.LoginResponseDto;
 import org.vttish.gymapplication.dto.auth.UpdateUserStatusRequestDto;
 import org.vttish.gymapplication.dto.trainee.GetTraineeTrainingsRequestDto;
 import org.vttish.gymapplication.dto.trainee.RegisterTraineeRequestDto;
@@ -23,7 +24,7 @@ import org.vttish.gymapplication.dto.training.TrainerTrainingItemResponseDto;
 import org.vttish.gymapplication.dto.training.TrainingTypeResponseDto;
 
 public interface GymFacade {
-  void login(LoginRequestDto request);
+  LoginResponseDto login(LoginRequestDto request);
 
   void changePassword(ChangePasswordRequestDto request);
 

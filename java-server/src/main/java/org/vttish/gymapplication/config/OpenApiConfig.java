@@ -1,7 +1,10 @@
 package org.vttish.gymapplication.config;
 
+import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
 import org.springdoc.core.configuration.SpringDocConfiguration;
 import org.springdoc.core.properties.SwaggerUiConfigProperties;
 import org.springdoc.core.properties.SwaggerUiOAuthProperties;
@@ -24,6 +27,7 @@ import org.springframework.context.annotation.Import;
     JacksonAutoConfiguration.class
 })
 public class OpenApiConfig {
+  private static final String SECURITY_SCHEME_NAME = "Bearer Authentication";
 
   @Bean
   public OpenAPI openApi() {
@@ -31,6 +35,15 @@ public class OpenApiConfig {
         .info(new Info()
             .title("Gym Application API")
             .version("1.0")
-            .description("REST API documentation for Gym Application"));
+            .description("REST API documentation for Gym Application"))
+        .addSecurityItem(new SecurityRequirement().addList(SECURITY_SCHEME_NAME))
+        .components(new Components().addSecuritySchemes(
+            SECURITY_SCHEME_NAME,
+            new SecurityScheme()
+                .name(SECURITY_SCHEME_NAME)
+                .type(SecurityScheme.Type.HTTP)
+                .scheme("bearer")
+                .bearerFormat("JWT")
+        ));
   }
 }

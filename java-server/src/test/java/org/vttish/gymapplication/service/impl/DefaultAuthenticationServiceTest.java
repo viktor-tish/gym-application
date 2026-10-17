@@ -1,7 +1,8 @@
 package org.vttish.gymapplication.service.impl;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -15,12 +16,18 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.vttish.gymapplication.dto.auth.ChangePasswordRequestDto;
 import org.vttish.gymapplication.dto.auth.LoginRequestDto;
+import org.vttish.gymapplication.dto.auth.LoginResponseDto;
 import org.vttish.gymapplication.dto.auth.UpdateUserStatusRequestDto;
 import org.vttish.gymapplication.entity.User;
 import org.vttish.gymapplication.exception.AuthenticationException;
 import org.vttish.gymapplication.exception.BadRequestException;
 import org.vttish.gymapplication.exception.ResourceNotFoundException;
+import org.vttish.gymapplication.repository.TraineeRepository;
+import org.vttish.gymapplication.repository.TrainerRepository;
 import org.vttish.gymapplication.repository.UserRepository;
+import org.vttish.gymapplication.security.JwtService;
+import org.vttish.gymapplication.security.Role;
+import org.vttish.gymapplication.security.UserPrincipal;
 import org.vttish.gymapplication.utils.PasswordHasher;
 
 @ExtendWith(MockitoExtension.class)
@@ -30,7 +37,16 @@ class DefaultAuthenticationServiceTest {
   private UserRepository userRepository;
 
   @Mock
+  private TraineeRepository traineeRepository;
+
+  @Mock
+  private TrainerRepository trainerRepository;
+
+  @Mock
   private PasswordHasher passwordHasher;
+
+  @Mock
+  private JwtService jwtService;
 
   @InjectMocks
   private DefaultAuthenticationService authenticationService;
@@ -46,13 +62,49 @@ class DefaultAuthenticationServiceTest {
   }
 
   @Test
-  void login_ShouldSucceed_WhenCredentialsMatch() {
+  void login_ShouldReturnToken_WhenCredentialsMatchAndUserIsTrainee() {
+    LoginRequestDto dto = new LoginRequestDto("firstName.lastName", "plainPassword");
+    UserPrincipal principal = new UserPrincipal("firstName.lastName", Role.TRAINEE);
+
+    when(userRepository.findByUsername("firstName.lastName")).thenReturn(Optional.of(testUser));
+    when(passwordHasher.matches("plainPassword", "hashedPassword")).thenReturn(true);
+    when(traineeRepository.existsByUsername("firstName.lastName")).thenReturn(true);
+    when(jwtService.generateToken(principal)).thenReturn("jwt.token.trainee");
+
+    LoginResponseDto response = authenticationService.login(dto);
+
+    assertNotNull(response);
+    assertEquals("jwt.token.trainee", response.token());
+  }
+
+  @Test
+  void login_ShouldReturnToken_WhenCredentialsMatchAndUserIsTrainer() {
+    LoginRequestDto dto = new LoginRequestDto("firstName.lastName", "plainPassword");
+    UserPrincipal principal = new UserPrincipal("firstName.lastName", Role.TRAINER);
+
+    when(userRepository.findByUsername("firstName.lastName")).thenReturn(Optional.of(testUser));
+    when(passwordHasher.matches("plainPassword", "hashedPassword")).thenReturn(true);
+    when(traineeRepository.existsByUsername("firstName.lastName")).thenReturn(false);
+    when(trainerRepository.existsByUsername("firstName.lastName")).thenReturn(true);
+    when(jwtService.generateToken(principal)).thenReturn("jwt.token.trainer");
+
+    LoginResponseDto response = authenticationService.login(dto);
+
+    assertNotNull(response);
+    assertEquals("jwt.token.trainer", response.token());
+  }
+
+  @Test
+  void login_ShouldThrowException_WhenUserHasNoAssignedRole() {
     LoginRequestDto dto = new LoginRequestDto("firstName.lastName", "plainPassword");
 
     when(userRepository.findByUsername("firstName.lastName")).thenReturn(Optional.of(testUser));
     when(passwordHasher.matches("plainPassword", "hashedPassword")).thenReturn(true);
+    when(traineeRepository.existsByUsername("firstName.lastName")).thenReturn(false);
+    when(trainerRepository.existsByUsername("firstName.lastName")).thenReturn(false);
 
-    assertDoesNotThrow(() -> authenticationService.login(dto));
+    assertThrows(
+        AuthenticationException.class, () -> authenticationService.login(dto));
   }
 
   @Test

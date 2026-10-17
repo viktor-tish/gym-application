@@ -29,6 +29,9 @@ import org.vttish.gymapplication.dto.training.CreateTrainingRequestDto;
 import org.vttish.gymapplication.dto.training.TrainingTypeResponseDto;
 import org.vttish.gymapplication.exception.ResourceNotFoundException;
 import org.vttish.gymapplication.facade.GymFacade;
+import org.vttish.gymapplication.security.Role;
+import org.vttish.gymapplication.security.UserPrincipal;
+import org.vttish.gymapplication.security.UserPrincipalArgumentResolver;
 
 class TrainingControllerTest {
   private static GymFacade gymFacade;
@@ -42,6 +45,7 @@ class TrainingControllerTest {
 
     mockMvc = MockMvcBuilders
         .standaloneSetup(controller)
+        .setCustomArgumentResolvers(new UserPrincipalArgumentResolver())
         .setControllerAdvice(new GlobalExceptionHandler())
         .build();
 
@@ -56,13 +60,30 @@ class TrainingControllerTest {
   }
 
   @Test
-  void create_ShouldReturnCreated_WhenRequestIsValid() throws Exception {
+  void create_ShouldReturnCreated_WhenCallerIsTrainer() throws Exception {
     CreateTrainingRequestDto request = new CreateTrainingRequestDto(
         "firstName.lastName", "trainee.username", "Morning Workout", LocalDate.of(2025, 5, 1), 60
     );
     doNothing().when(gymFacade).createTraining(request);
 
     mockMvc.perform(post("/api/v1/trainings")
+            .requestAttr("userPrincipal", new UserPrincipal("firstName.lastName", Role.TRAINER))
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isCreated());
+
+    verify(gymFacade).createTraining(request);
+  }
+
+  @Test
+  void create_ShouldReturnCreated_WhenCallerIsTrainee() throws Exception {
+    CreateTrainingRequestDto request = new CreateTrainingRequestDto(
+        "firstName.lastName", "trainee.username", "Morning Workout", LocalDate.of(2025, 5, 1), 60
+    );
+    doNothing().when(gymFacade).createTraining(request);
+
+    mockMvc.perform(post("/api/v1/trainings")
+            .requestAttr("userPrincipal", new UserPrincipal("trainee.username", Role.TRAINEE))
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isCreated());
@@ -77,6 +98,7 @@ class TrainingControllerTest {
     );
 
     mockMvc.perform(post("/api/v1/trainings")
+            .requestAttr("userPrincipal", new UserPrincipal("trainer.username", Role.TRAINER))
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(invalidRequest)))
         .andExpect(status().isBadRequest());
@@ -91,9 +113,48 @@ class TrainingControllerTest {
         .when(gymFacade).createTraining(request);
 
     mockMvc.perform(post("/api/v1/trainings")
+            .requestAttr("userPrincipal", new UserPrincipal("unknown.trainer", Role.TRAINER))
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isNotFound());
+  }
+
+  @Test
+  void create_ShouldReturnForbidden_WhenTrainerDoesNotMatchPrincipal() throws Exception {
+    CreateTrainingRequestDto request = new CreateTrainingRequestDto(
+        "trainer.username", "trainee.username", "Morning Workout", LocalDate.of(2025, 5, 1), 60
+    );
+
+    mockMvc.perform(post("/api/v1/trainings")
+            .requestAttr("userPrincipal", new UserPrincipal("other.trainer", Role.TRAINER))
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void create_ShouldReturnForbidden_WhenTraineeDoesNotMatchPrincipal() throws Exception {
+    CreateTrainingRequestDto request = new CreateTrainingRequestDto(
+        "trainer.username", "trainee.username", "Morning Workout", LocalDate.of(2025, 5, 1), 60
+    );
+
+    mockMvc.perform(post("/api/v1/trainings")
+            .requestAttr("userPrincipal", new UserPrincipal("other.trainee", Role.TRAINEE))
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void create_ShouldReturnForbidden_WhenPrincipalIsNull() throws Exception {
+    CreateTrainingRequestDto request = new CreateTrainingRequestDto(
+        "trainer.username", "trainee.username", "Morning Workout", LocalDate.of(2025, 5, 1), 60
+    );
+
+    mockMvc.perform(post("/api/v1/trainings")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isForbidden());
   }
 
   @Test

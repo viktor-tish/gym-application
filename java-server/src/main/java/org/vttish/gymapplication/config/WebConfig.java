@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
@@ -11,9 +12,13 @@ import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.vttish.gymapplication.security.AuthInterceptor;
+import org.vttish.gymapplication.security.UserPrincipalArgumentResolver;
 
 @Configuration
 @EnableWebMvc
@@ -25,7 +30,19 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
         classes = { Controller.class, ControllerAdvice.class }
     )
 )
+@RequiredArgsConstructor
 public class WebConfig implements WebMvcConfigurer {
+  private final AuthInterceptor authInterceptor;
+
+  @Override
+  public void addInterceptors(InterceptorRegistry registry) {
+    registry.addInterceptor(authInterceptor);
+  }
+
+  @Override
+  public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
+    resolvers.add(new UserPrincipalArgumentResolver());
+  }
 
   @Override
   public void addResourceHandlers(ResourceHandlerRegistry registry) {
