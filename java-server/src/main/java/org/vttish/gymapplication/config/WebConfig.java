@@ -17,6 +17,7 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.vttish.gymapplication.logging.TransactionLoggingInterceptor;
 import org.vttish.gymapplication.security.AuthInterceptor;
 import org.vttish.gymapplication.security.UserPrincipalArgumentResolver;
 
@@ -36,6 +37,7 @@ public class WebConfig implements WebMvcConfigurer {
 
   @Override
   public void addInterceptors(InterceptorRegistry registry) {
+    registry.addInterceptor(new TransactionLoggingInterceptor());
     registry.addInterceptor(authInterceptor);
   }
 
