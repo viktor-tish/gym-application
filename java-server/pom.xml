@@ -33,7 +33,7 @@
 
         <sonar.coverage.exclusions>
             **/dto/**,
-            **/aspect/**,
+            **/logging/**,
             **/facade/**,
             **/entity/**,
             **/config/**,
@@ -268,7 +268,7 @@
                 <configuration>
                     <excludes>
                         <exclude>**/dto/**</exclude>
-                        <exclude>**/aspect/**</exclude>
+                        <exclude>**/logging/**</exclude>
                         <exclude>**/facade/**</exclude>
                         <exclude>**/entity/**</exclude>
                         <exclude>**/config/**</exclude>
