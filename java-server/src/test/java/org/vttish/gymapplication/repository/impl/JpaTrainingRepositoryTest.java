@@ -18,8 +18,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.vttish.gymapplication.dto.TraineeTrainingFilterDto;
-import org.vttish.gymapplication.dto.TrainerTrainingFilterDto;
+import org.vttish.gymapplication.dto.training.TraineeTrainingFilterDto;
+import org.vttish.gymapplication.dto.training.TrainerTrainingFilterDto;
 import org.vttish.gymapplication.entity.Training;
 
 @ExtendWith(MockitoExtension.class)

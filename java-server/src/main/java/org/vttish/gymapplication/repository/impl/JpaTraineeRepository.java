@@ -36,11 +36,11 @@ public class JpaTraineeRepository extends JpaBaseRepository<Trainee>
         "SELECT t FROM %s t JOIN FETCH t.user u WHERE u.username = :username",
         entityClass.getSimpleName()
     );
-                  
+
     List<Trainee> results = entityManager.createQuery(query, entityClass)
         .setParameter("username", username)
         .getResultList();
-        
+
     return results.isEmpty() ? Optional.empty() : Optional.of(results.get(0));
   }
 

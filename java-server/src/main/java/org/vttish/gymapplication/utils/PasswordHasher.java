@@ -13,7 +13,7 @@ public class PasswordHasher {
     if (rawPassword == null) {
       return null;
     }
-    
+
     try {
       MessageDigest digest = MessageDigest.getInstance("SHA-256");
       byte[] hashBytes = digest.digest(rawPassword.getBytes(StandardCharsets.UTF_8));

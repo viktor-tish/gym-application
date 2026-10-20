@@ -1,8 +1,8 @@
-package org.vttish.gymapplication.dto;
+package org.vttish.gymapplication.dto.trainee;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import java.util.UUID;
+import jakarta.validation.constraints.Past;
+import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,7 +14,7 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-public class UpdateTrainerDto {
+public class CreateTraineeDto {
 
   @NotBlank(message = "First name is mandatory")
   private String firstName;
@@ -22,6 +22,8 @@ public class UpdateTrainerDto {
   @NotBlank(message = "Last name is mandatory")
   private String lastName;
 
-  @NotNull(message = "Specialization is mandatory")
-  private UUID specializationId;
+  private String address;
+
+  @Past(message = "Date of birth must be in the past")
+  private LocalDate dateOfBirth;
 }

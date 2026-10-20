@@ -4,10 +4,10 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
 import org.mapstruct.MappingTarget;
-import org.vttish.gymapplication.dto.CreateTrainerDto;
-import org.vttish.gymapplication.dto.TrainerCardDto;
-import org.vttish.gymapplication.dto.TrainerDetailsDto;
-import org.vttish.gymapplication.dto.UpdateTrainerDto;
+import org.vttish.gymapplication.dto.trainer.CreateTrainerDto;
+import org.vttish.gymapplication.dto.trainer.TrainerCardDto;
+import org.vttish.gymapplication.dto.trainer.TrainerDetailsDto;
+import org.vttish.gymapplication.dto.trainer.UpdateTrainerDto;
 import org.vttish.gymapplication.entity.Trainer;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)

@@ -17,10 +17,10 @@ COPY config/ ./config
 RUN --mount=type=cache,target=/root/.m2/repository \
     ./mvnw package -DskipTests
 
-FROM eclipse-temurin:17-jre
+FROM tomcat:10.1-jdk17
 
-WORKDIR /app
+RUN rm -rf /usr/local/tomcat/webapps/ROOT
 
-COPY --from=builder /build/target/app.jar app.jar
+COPY --from=builder /build/target/app.war /usr/local/tomcat/webapps/ROOT.war
 
-ENTRYPOINT ["java", "-jar", "app.jar"]
+CMD ["catalina.sh", "run"]
