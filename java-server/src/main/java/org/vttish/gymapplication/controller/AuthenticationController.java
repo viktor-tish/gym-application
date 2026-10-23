@@ -1,5 +1,6 @@
 package org.vttish.gymapplication.controller;
 
+import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -31,7 +32,7 @@ public class AuthenticationController {
   @RequireRole({ Role.TRAINEE, Role.TRAINER })
   public ResponseEntity<Void> changePassword(
       @Valid @RequestBody ChangePasswordRequestDto request,
-      UserPrincipal userPrincipal
+      @Parameter(hidden = true) UserPrincipal userPrincipal
   ) {
     if (userPrincipal == null || !request.username().equals(userPrincipal.username())) {
       throw new ForbiddenException("Access denied");
