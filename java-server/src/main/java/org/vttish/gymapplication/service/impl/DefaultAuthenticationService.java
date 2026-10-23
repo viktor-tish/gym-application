@@ -18,7 +18,7 @@ import org.vttish.gymapplication.security.JwtService;
 import org.vttish.gymapplication.security.Role;
 import org.vttish.gymapplication.security.UserPrincipal;
 import org.vttish.gymapplication.service.AuthenticationService;
-import org.vttish.gymapplication.utils.PasswordHasher;
+import org.vttish.gymapplication.security.PasswordHasher;
 
 @Service
 @Transactional(readOnly = true)

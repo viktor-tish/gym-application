@@ -21,7 +21,7 @@ import org.vttish.gymapplication.repository.TrainerRepository;
 import org.vttish.gymapplication.repository.TrainingTypeRepository;
 import org.vttish.gymapplication.service.ProfileGenerationService;
 import org.vttish.gymapplication.service.TrainerService;
-import org.vttish.gymapplication.utils.PasswordHasher;
+import org.vttish.gymapplication.security.PasswordHasher;
 
 @Service
 @Transactional(readOnly = true)

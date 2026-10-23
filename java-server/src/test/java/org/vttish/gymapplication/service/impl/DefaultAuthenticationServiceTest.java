@@ -28,7 +28,7 @@ import org.vttish.gymapplication.repository.UserRepository;
 import org.vttish.gymapplication.security.JwtService;
 import org.vttish.gymapplication.security.Role;
 import org.vttish.gymapplication.security.UserPrincipal;
-import org.vttish.gymapplication.utils.PasswordHasher;
+import org.vttish.gymapplication.security.PasswordHasher;
 
 @ExtendWith(MockitoExtension.class)
 class DefaultAuthenticationServiceTest {

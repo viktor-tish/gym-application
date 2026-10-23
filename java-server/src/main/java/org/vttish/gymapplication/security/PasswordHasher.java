@@ -1,4 +1,4 @@
-package org.vttish.gymapplication.utils;
+package org.vttish.gymapplication.security;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
