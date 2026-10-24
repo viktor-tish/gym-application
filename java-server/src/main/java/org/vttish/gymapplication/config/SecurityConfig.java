@@ -18,7 +18,8 @@ public class SecurityConfig {
         PublicEndpoint.of(HttpMethod.GET, "/api/v1/trainings/types"),
         PublicEndpoint.anyMethod("/swagger-ui/**"),
         PublicEndpoint.anyMethod("/swagger-ui.html"),
-        PublicEndpoint.anyMethod("/v3/api-docs/**")
+        PublicEndpoint.anyMethod("/v3/api-docs/**"),
+        PublicEndpoint.anyMethod("/actuator/**")
     );
   }
 }
