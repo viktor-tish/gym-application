@@ -7,8 +7,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.net.URI;
 import java.util.List;
-import org.springframework.http.HttpStatus;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.vttish.gymapplication.dto.auth.CredentialsResponseDto;
 import org.vttish.gymapplication.dto.auth.UpdateUserStatusRequestDto;
 import org.vttish.gymapplication.dto.error.ErrorResponseDto;
@@ -31,6 +33,9 @@ import org.vttish.gymapplication.dto.trainee.UpdateTraineeProfileResponseDto;
 import org.vttish.gymapplication.dto.trainee.UpdateTraineeTrainersRequestDto;
 import org.vttish.gymapplication.dto.trainer.TrainerItemResponseDto;
 import org.vttish.gymapplication.dto.training.TraineeTrainingItemResponseDto;
+import org.vttish.gymapplication.facade.GymFacade;
+import org.vttish.gymapplication.security.RequireRole;
+import org.vttish.gymapplication.security.Role;
 
 @Tag(
     name = "Trainee Management",
@@ -38,7 +43,9 @@ import org.vttish.gymapplication.dto.training.TraineeTrainingItemResponseDto;
 )
 @RestController
 @RequestMapping("/api/v1/trainees")
+@RequiredArgsConstructor
 public class TraineeController {
+  private final GymFacade gymFacade;
 
   @Operation(
       summary = "Register Trainee",
@@ -62,7 +69,14 @@ public class TraineeController {
   public ResponseEntity<CredentialsResponseDto> register(
       @Valid @RequestBody RegisterTraineeRequestDto request
   ) {
-    return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+    CredentialsResponseDto credentials = gymFacade.registerTrainee(request);
+
+    URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+        .path("/{username}")
+        .buildAndExpand(credentials.username())
+        .toUri();
+
+    return ResponseEntity.created(location).body(credentials);
   }
 
   @Operation(
@@ -79,6 +93,11 @@ public class TraineeController {
       content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
   )
   @ApiResponse(
+      responseCode = "403",
+      description = "Forbidden - access denied or insufficient permissions",
+      content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
+  )
+  @ApiResponse(
       responseCode = "404",
       description = "Trainee not found",
       content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
@@ -89,11 +108,12 @@ public class TraineeController {
       content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
   )
   @GetMapping("/{username}")
+  @RequireRole(Role.TRAINEE)
   public ResponseEntity<TraineeProfileResponseDto> getProfile(
       @Parameter(description = "Trainee username", required = true)
-      @PathVariable String username
+      @PathVariable("username") String username
   ) {
-    return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+    return ResponseEntity.ok(gymFacade.getTraineeProfile(username));
   }
 
   @Operation(
@@ -115,6 +135,11 @@ public class TraineeController {
       content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
   )
   @ApiResponse(
+      responseCode = "403",
+      description = "Forbidden - access denied or insufficient permissions",
+      content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
+  )
+  @ApiResponse(
       responseCode = "404",
       description = "Trainee not found",
       content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
@@ -125,12 +150,13 @@ public class TraineeController {
       content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
   )
   @PutMapping("/{username}")
+  @RequireRole(Role.TRAINEE)
   public ResponseEntity<UpdateTraineeProfileResponseDto> updateProfile(
       @Parameter(description = "Trainee username", required = true)
-      @PathVariable String username,
+      @PathVariable("username") String username,
       @Valid @RequestBody UpdateTraineeProfileRequestDto request
   ) {
-    return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+    return ResponseEntity.ok(gymFacade.updateTraineeProfile(username, request));
   }
 
   @Operation(
@@ -147,16 +173,24 @@ public class TraineeController {
       content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
   )
   @ApiResponse(
+      responseCode = "403",
+      description = "Forbidden - access denied or insufficient permissions",
+      content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
+  )
+  @ApiResponse(
       responseCode = "500",
       description = "Internal server error",
       content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
   )
   @DeleteMapping("/{username}")
+  @RequireRole(Role.TRAINEE)
   public ResponseEntity<Void> delete(
       @Parameter(description = "Trainee username", required = true)
-      @PathVariable String username
+      @PathVariable("username") String username
   ) {
-    return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+    gymFacade.deleteTrainee(username);
+
+    return ResponseEntity.noContent().build();
   }
 
   @Operation(
@@ -173,6 +207,11 @@ public class TraineeController {
       content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
   )
   @ApiResponse(
+      responseCode = "403",
+      description = "Forbidden - access denied or insufficient permissions",
+      content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
+  )
+  @ApiResponse(
       responseCode = "404",
       description = "Trainee not found",
       content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
@@ -183,11 +222,12 @@ public class TraineeController {
       content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
   )
   @GetMapping("/{username}/trainers/not-assigned")
+  @RequireRole(Role.TRAINEE)
   public ResponseEntity<List<TrainerItemResponseDto>> getUnassignedActiveTrainers(
       @Parameter(description = "Trainee username", required = true)
-      @PathVariable String username
+      @PathVariable("username") String username
   ) {
-    return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+    return ResponseEntity.ok(gymFacade.getUnassignedActiveTrainers(username));
   }
 
   @Operation(
@@ -209,6 +249,11 @@ public class TraineeController {
       content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
   )
   @ApiResponse(
+      responseCode = "403",
+      description = "Forbidden - access denied or insufficient permissions",
+      content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
+  )
+  @ApiResponse(
       responseCode = "404",
       description = "Trainee not found",
       content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
@@ -219,12 +264,13 @@ public class TraineeController {
       content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
   )
   @PutMapping("/{username}/trainers")
+  @RequireRole(Role.TRAINEE)
   public ResponseEntity<List<TrainerItemResponseDto>> updateTrainers(
       @Parameter(description = "Trainee username", required = true)
-      @PathVariable String username,
+      @PathVariable("username") String username,
       @Valid @RequestBody UpdateTraineeTrainersRequestDto request
   ) {
-    return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+    return ResponseEntity.ok(gymFacade.updateTraineeTrainers(username, request));
   }
 
   @Operation(
@@ -246,6 +292,11 @@ public class TraineeController {
       content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
   )
   @ApiResponse(
+      responseCode = "403",
+      description = "Forbidden - access denied or insufficient permissions",
+      content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
+  )
+  @ApiResponse(
       responseCode = "404",
       description = "Trainee not found",
       content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
@@ -256,12 +307,13 @@ public class TraineeController {
       content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
   )
   @GetMapping("/{username}/trainings")
+  @RequireRole(Role.TRAINEE)
   public ResponseEntity<List<TraineeTrainingItemResponseDto>> getTrainings(
       @Parameter(description = "Trainee username", required = true)
-      @PathVariable String username,
+      @PathVariable("username") String username,
       @Valid @ModelAttribute GetTraineeTrainingsRequestDto request
   ) {
-    return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+    return ResponseEntity.ok(gymFacade.getTraineeTrainings(username, request));
   }
 
   @Operation(
@@ -283,6 +335,11 @@ public class TraineeController {
       content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
   )
   @ApiResponse(
+      responseCode = "403",
+      description = "Forbidden - access denied or insufficient permissions",
+      content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
+  )
+  @ApiResponse(
       responseCode = "404",
       description = "Trainee not found",
       content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
@@ -293,11 +350,14 @@ public class TraineeController {
       content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
   )
   @PatchMapping("/{username}/status")
+  @RequireRole(Role.TRAINEE)
   public ResponseEntity<Void> updateStatus(
       @Parameter(description = "Trainee username", required = true)
-      @PathVariable String username,
+      @PathVariable("username") String username,
       @Valid @RequestBody UpdateUserStatusRequestDto request
   ) {
-    return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+    gymFacade.updateStatus(username, request);
+
+    return ResponseEntity.ok().build();
   }
 }

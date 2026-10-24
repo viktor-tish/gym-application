@@ -6,7 +6,11 @@ import java.util.UUID;
 import org.vttish.gymapplication.entity.Trainer;
 
 public interface TrainerRepository extends BaseRepository<Trainer, UUID> {
+  boolean existsByUsername(String username);
+
   Optional<Trainer> findByUsername(String username);
+
+  List<Trainer> findAllByUsernameIn(List<String> usernames);
 
   List<Trainer> findTrainersNotAssignedToTrainee(String traineeUsername);
 }

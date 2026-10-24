@@ -2,164 +2,194 @@ package org.vttish.gymapplication.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
-import org.junit.jupiter.api.BeforeAll;
+import jakarta.servlet.http.HttpServletRequest;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BeanPropertyBindingResult;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
+import org.springframework.validation.ObjectError;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 import org.vttish.gymapplication.dto.error.ErrorResponseDto;
+import org.vttish.gymapplication.exception.AuthenticationException;
+import org.vttish.gymapplication.exception.BadRequestException;
+import org.vttish.gymapplication.exception.ForbiddenException;
+import org.vttish.gymapplication.exception.ResourceNotFoundException;
 
+@ExtendWith(MockitoExtension.class)
 class GlobalExceptionHandlerTest {
-  private static MockMvc mockMvc;
-  private static ObjectMapper objectMapper;
+  private GlobalExceptionHandler handler;
 
-  @RestController
-  @RequestMapping("/test")
-  static class TestController {
+  @Mock
+  private HttpServletRequest request;
 
-    record TestRequestDto(
-        @NotBlank(message = "Name is mandatory")
-        String name
-    ) {}
-
-    @PostMapping("/validation")
-    public void testValidation(@Valid @RequestBody TestRequestDto request) {
-      // Intentionally empty: endpoint is used only to trigger @Valid argument validation
-    }
-
-    @GetMapping("/not-found")
-    public void testNotFound() throws NoResourceFoundException {
-      throw new NoResourceFoundException(HttpMethod.GET, "/test/not-found");
-    }
-
-    @GetMapping("/server-error")
-    public void testServerError() {
-      throw new RuntimeException("Unexpected exception");
-    }
-  }
-
-  @BeforeAll
-  static void setUp() {
-    mockMvc = MockMvcBuilders
-        .standaloneSetup(new TestController())
-        .setControllerAdvice(new GlobalExceptionHandler())
-        .build();
-
-    objectMapper = new ObjectMapper();
-    objectMapper.registerModule(new JavaTimeModule());
+  @BeforeEach
+  void setUp() {
+    handler = new GlobalExceptionHandler();
+    when(request.getRequestURI()).thenReturn("/test/path");
   }
 
   @Test
-  void shouldReturnBadRequestWhenValidationFails() throws Exception {
-    String invalidJson = "{\"name\": \"\"}";
+  void handleValidationException_ShouldReturnBadRequest_WithFieldAndGlobalErrors() {
+    MethodArgumentNotValidException ex = mock(MethodArgumentNotValidException.class);
+    BindingResult bindingResult = new BeanPropertyBindingResult(new Object(), "target");
+    bindingResult.addError(new FieldError("target", "name", "Name is mandatory"));
+    bindingResult.addError(new ObjectError("target", "Date range is invalid"));
 
-    MvcResult result = mockMvc.perform(post("/test/validation")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(invalidJson))
-        .andExpect(status().isBadRequest())
-        .andReturn();
+    when(ex.getBindingResult()).thenReturn(bindingResult);
 
-    ErrorResponseDto response = objectMapper.readValue(
-        result.getResponse().getContentAsString(),
-        ErrorResponseDto.class
+    ResponseEntity<ErrorResponseDto> response =
+        handler.handleValidationException(ex, request);
+
+    assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    assertNotNull(response.getBody());
+    assertEquals(400, response.getBody().status());
+    assertEquals("Bad Request", response.getBody().error());
+    assertEquals("Validation failed", response.getBody().message());
+    assertEquals("/test/path", response.getBody().path());
+    assertNotNull(response.getBody().timestamp());
+
+    assertEquals(2, response.getBody().validationErrors().size());
+    assertEquals("name", response.getBody().validationErrors().get(0).field());
+    assertEquals(
+        "Name is mandatory",
+        response.getBody().validationErrors().get(0).message()
     );
-
-    assertEquals(400, response.status());
-    assertEquals("Bad Request", response.error());
-    assertEquals("Validation failed", response.message());
-    assertEquals("/test/validation", response.path());
-    assertNotNull(response.timestamp());
-    assertEquals("name", response.validationErrors().get(0).field());
-    assertEquals("Name is mandatory", response.validationErrors().get(0).message());
+    assertEquals("target", response.getBody().validationErrors().get(1).field());
+    assertEquals(
+        "Date range is invalid",
+        response.getBody().validationErrors().get(1).message()
+    );
   }
 
   @Test
-  void shouldReturnBadRequestWhenJsonIsMalformed() throws Exception {
-    String malformedJson = "{malformed-json";
+  void handleHttpMessageNotReadableException_ShouldReturnBadRequest() {
+    ResponseEntity<ErrorResponseDto> response =
+        handler.handleHttpMessageNotReadableException(request);
 
-    MvcResult result = mockMvc.perform(post("/test/validation")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(malformedJson))
-        .andExpect(status().isBadRequest())
-        .andReturn();
-
-    ErrorResponseDto response = objectMapper.readValue(
-        result.getResponse().getContentAsString(),
-        ErrorResponseDto.class
-    );
-
-    assertEquals(400, response.status());
-    assertEquals("Bad Request", response.error());
-    assertEquals("Malformed JSON request body", response.message());
-    assertEquals("/test/validation", response.path());
-    assertNotNull(response.timestamp());
+    assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    assertNotNull(response.getBody());
+    assertEquals(400, response.getBody().status());
+    assertEquals("Bad Request", response.getBody().error());
+    assertEquals("Malformed JSON request body", response.getBody().message());
+    assertEquals("/test/path", response.getBody().path());
+    assertNotNull(response.getBody().timestamp());
   }
 
   @Test
-  void shouldReturnNotFoundWhenResourceDoesNotExist() throws Exception {
-    MvcResult result = mockMvc.perform(get("/test/not-found"))
-        .andExpect(status().isNotFound())
-        .andReturn();
+  void handleHttpMethodNotSupportedException_ShouldReturnMethodNotAllowed() {
+    HttpRequestMethodNotSupportedException ex =
+        new HttpRequestMethodNotSupportedException("POST");
 
-    ErrorResponseDto response = objectMapper.readValue(
-        result.getResponse().getContentAsString(),
-        ErrorResponseDto.class
-    );
+    ResponseEntity<ErrorResponseDto> response =
+        handler.handleHttpMethodNotSupportedException(ex, request);
 
-    assertEquals(404, response.status());
-    assertEquals("Not Found", response.error());
-    assertEquals("/test/not-found", response.path());
-    assertNotNull(response.timestamp());
+    assertEquals(HttpStatus.METHOD_NOT_ALLOWED, response.getStatusCode());
+    assertNotNull(response.getBody());
+    assertEquals(405, response.getBody().status());
+    assertEquals("Method Not Allowed", response.getBody().error());
+    assertEquals(ex.getMessage(), response.getBody().message());
+    assertEquals("/test/path", response.getBody().path());
+    assertNotNull(response.getBody().timestamp());
   }
 
   @Test
-  void shouldReturnMethodNotAllowedWhenHttpMethodIsNotSupported() throws Exception {
-    MvcResult result = mockMvc.perform(get("/test/validation"))
-        .andExpect(status().isMethodNotAllowed())
-        .andReturn();
+  void handleNotFoundException_ShouldReturnNotFound_WhenResourceNotFoundExceptionThrown() {
+    ResourceNotFoundException ex = new ResourceNotFoundException("Resource not found");
 
-    ErrorResponseDto response = objectMapper.readValue(
-        result.getResponse().getContentAsString(),
-        ErrorResponseDto.class
-    );
+    ResponseEntity<ErrorResponseDto> response = handler.handleNotFoundException(ex, request);
 
-    assertEquals(405, response.status());
-    assertEquals("Method Not Allowed", response.error());
-    assertEquals("/test/validation", response.path());
-    assertNotNull(response.timestamp());
+    assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+    assertNotNull(response.getBody());
+    assertEquals(404, response.getBody().status());
+    assertEquals("Not Found", response.getBody().error());
+    assertEquals("Resource not found", response.getBody().message());
+    assertEquals("/test/path", response.getBody().path());
+    assertNotNull(response.getBody().timestamp());
   }
 
   @Test
-  void shouldReturnInternalServerErrorOnUnhandledException() throws Exception {
-    MvcResult result = mockMvc.perform(get("/test/server-error"))
-        .andExpect(status().isInternalServerError())
-        .andReturn();
+  void handleNotFoundException_ShouldReturnNotFound_WhenNoResourceFoundExceptionThrown() {
+    NoResourceFoundException ex = new NoResourceFoundException(HttpMethod.GET, "/test/path");
 
-    ErrorResponseDto response = objectMapper.readValue(
-        result.getResponse().getContentAsString(),
-        ErrorResponseDto.class
-    );
+    ResponseEntity<ErrorResponseDto> response = handler.handleNotFoundException(ex, request);
 
-    assertEquals(500, response.status());
-    assertEquals("Internal Server Error", response.error());
-    assertEquals("An unexpected error occurred", response.message());
-    assertEquals("/test/server-error", response.path());
-    assertNotNull(response.timestamp());
+    assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+    assertNotNull(response.getBody());
+    assertEquals(404, response.getBody().status());
+    assertEquals("Not Found", response.getBody().error());
+    assertEquals(ex.getMessage(), response.getBody().message());
+    assertEquals("/test/path", response.getBody().path());
+    assertNotNull(response.getBody().timestamp());
+  }
+
+  @Test
+  void handleBadRequestException_ShouldReturnBadRequest() {
+    BadRequestException ex = new BadRequestException("Custom bad request");
+
+    ResponseEntity<ErrorResponseDto> response = handler.handleBadRequestException(ex, request);
+
+    assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    assertNotNull(response.getBody());
+    assertEquals(400, response.getBody().status());
+    assertEquals("Bad Request", response.getBody().error());
+    assertEquals("Custom bad request", response.getBody().message());
+    assertEquals("/test/path", response.getBody().path());
+    assertNotNull(response.getBody().timestamp());
+  }
+
+  @Test
+  void handleAuthenticationException_ShouldReturnUnauthorized() {
+    AuthenticationException ex = new AuthenticationException("Unauthorized access");
+
+    ResponseEntity<ErrorResponseDto> response =
+        handler.handleAuthenticationException(ex, request);
+
+    assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+    assertNotNull(response.getBody());
+    assertEquals(401, response.getBody().status());
+    assertEquals("Unauthorized", response.getBody().error());
+    assertEquals("Unauthorized access", response.getBody().message());
+    assertEquals("/test/path", response.getBody().path());
+    assertNotNull(response.getBody().timestamp());
+  }
+
+  @Test
+  void handleForbiddenException_ShouldReturnForbidden() {
+    ForbiddenException ex = new ForbiddenException("Access denied");
+
+    ResponseEntity<ErrorResponseDto> response = handler.handleForbiddenException(ex, request);
+
+    assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+    assertNotNull(response.getBody());
+    assertEquals(403, response.getBody().status());
+    assertEquals("Forbidden", response.getBody().error());
+    assertEquals("Access denied", response.getBody().message());
+    assertEquals("/test/path", response.getBody().path());
+    assertNotNull(response.getBody().timestamp());
+  }
+
+  @Test
+  void handleUnexpectedException_ShouldReturnInternalServerError() {
+    ResponseEntity<ErrorResponseDto> response = handler.handleUnexpectedException(request);
+
+    assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+    assertNotNull(response.getBody());
+    assertEquals(500, response.getBody().status());
+    assertEquals("Internal Server Error", response.getBody().error());
+    assertEquals("An unexpected error occurred", response.getBody().message());
+    assertEquals("/test/path", response.getBody().path());
+    assertNotNull(response.getBody().timestamp());
   }
 }

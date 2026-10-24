@@ -1,56 +1,73 @@
 package org.vttish.gymapplication.facade;
 
 import java.util.List;
-import org.vttish.gymapplication.dto.auth.ChangePasswordDto;
-import org.vttish.gymapplication.dto.auth.CredentialsDto;
-import org.vttish.gymapplication.dto.trainee.CreateTraineeDto;
-import org.vttish.gymapplication.dto.trainee.TraineeDetailsDto;
-import org.vttish.gymapplication.dto.trainee.UpdateTraineeDto;
-import org.vttish.gymapplication.dto.trainer.CreateTrainerDto;
-import org.vttish.gymapplication.dto.trainer.TrainerCardDto;
-import org.vttish.gymapplication.dto.trainer.TrainerDetailsDto;
-import org.vttish.gymapplication.dto.trainer.UpdateTrainerDto;
-import org.vttish.gymapplication.dto.training.CreateTrainingDto;
-import org.vttish.gymapplication.dto.training.TraineeTrainingFilterDto;
-import org.vttish.gymapplication.dto.training.TrainerTrainingFilterDto;
-import org.vttish.gymapplication.dto.training.TrainingDetailsDto;
+import org.vttish.gymapplication.dto.auth.ChangePasswordRequestDto;
+import org.vttish.gymapplication.dto.auth.CredentialsResponseDto;
+import org.vttish.gymapplication.dto.auth.LoginRequestDto;
+import org.vttish.gymapplication.dto.auth.LoginResponseDto;
+import org.vttish.gymapplication.dto.auth.UpdateUserStatusRequestDto;
+import org.vttish.gymapplication.dto.trainee.GetTraineeTrainingsRequestDto;
+import org.vttish.gymapplication.dto.trainee.RegisterTraineeRequestDto;
+import org.vttish.gymapplication.dto.trainee.TraineeProfileResponseDto;
+import org.vttish.gymapplication.dto.trainee.UpdateTraineeProfileRequestDto;
+import org.vttish.gymapplication.dto.trainee.UpdateTraineeProfileResponseDto;
+import org.vttish.gymapplication.dto.trainee.UpdateTraineeTrainersRequestDto;
+import org.vttish.gymapplication.dto.trainer.GetTrainerTrainingsRequestDto;
+import org.vttish.gymapplication.dto.trainer.RegisterTrainerRequestDto;
+import org.vttish.gymapplication.dto.trainer.TrainerItemResponseDto;
+import org.vttish.gymapplication.dto.trainer.TrainerProfileResponseDto;
+import org.vttish.gymapplication.dto.trainer.UpdateTrainerProfileRequestDto;
+import org.vttish.gymapplication.dto.trainer.UpdateTrainerProfileResponseDto;
+import org.vttish.gymapplication.dto.training.CreateTrainingRequestDto;
+import org.vttish.gymapplication.dto.training.TraineeTrainingItemResponseDto;
+import org.vttish.gymapplication.dto.training.TrainerTrainingItemResponseDto;
+import org.vttish.gymapplication.dto.training.TrainingTypeResponseDto;
 
 public interface GymFacade {
+  LoginResponseDto login(LoginRequestDto request);
 
-  boolean authenticate(CredentialsDto credentialsDto);
+  void changePassword(ChangePasswordRequestDto request);
 
-  void changePassword(ChangePasswordDto changePasswordDto);
+  void updateStatus(String username, UpdateUserStatusRequestDto request);
 
-  void toggleActivation(String username);
+  CredentialsResponseDto registerTrainee(RegisterTraineeRequestDto request);
 
+  TraineeProfileResponseDto getTraineeProfile(String username);
 
-  CredentialsDto createTrainee(CreateTraineeDto createTraineeDto);
+  UpdateTraineeProfileResponseDto updateTraineeProfile(
+      String username,
+      UpdateTraineeProfileRequestDto request
+  );
 
-  TraineeDetailsDto getTraineeByUsername(String username);
+  void deleteTrainee(String username);
 
-  TraineeDetailsDto updateTrainee(String username, UpdateTraineeDto updateTraineeDto);
+  List<TrainerItemResponseDto> updateTraineeTrainers(
+      String username,
+      UpdateTraineeTrainersRequestDto request
+  );
 
-  void deleteTraineeByUsername(String username);
+  CredentialsResponseDto registerTrainer(RegisterTrainerRequestDto request);
 
-  List<TrainerCardDto> addTrainerToTrainee(String traineeUsername, String trainerUsername);
+  TrainerProfileResponseDto getTrainerProfile(String username);
 
-  List<TrainerCardDto> removeTrainerFromTrainee(String traineeUsername, String trainerUsername);
+  UpdateTrainerProfileResponseDto updateTrainerProfile(
+      String username,
+      UpdateTrainerProfileRequestDto request
+  );
 
+  List<TrainerItemResponseDto> getUnassignedActiveTrainers(String traineeUsername);
 
-  CredentialsDto createTrainer(CreateTrainerDto createTrainerDto);
+  void createTraining(CreateTrainingRequestDto request);
 
-  TrainerDetailsDto getTrainerByUsername(String username);
+  List<TraineeTrainingItemResponseDto> getTraineeTrainings(
+      String traineeUsername,
+      GetTraineeTrainingsRequestDto request
+  );
 
-  TrainerDetailsDto updateTrainer(String username, UpdateTrainerDto updateTrainerDto);
+  List<TrainerTrainingItemResponseDto> getTrainerTrainings(
+      String trainerUsername,
+      GetTrainerTrainingsRequestDto request
+  );
 
-  List<TrainerCardDto> getUnassignedTrainers(String traineeUsername);
-
-
-  void createTraining(CreateTrainingDto createTrainingDto);
-
-  List<TrainingDetailsDto> getTraineeTrainings(
-      String traineeUsername, TraineeTrainingFilterDto filter);
-
-  List<TrainingDetailsDto> getTrainerTrainings(
-      String trainerUsername, TrainerTrainingFilterDto filter);
+  List<TrainingTypeResponseDto> getTrainingTypes();
 }

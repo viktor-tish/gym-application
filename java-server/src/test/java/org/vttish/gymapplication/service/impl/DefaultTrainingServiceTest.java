@@ -8,23 +8,31 @@ import static org.mockito.Mockito.when;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.vttish.gymapplication.dto.training.CreateTrainingDto;
-import org.vttish.gymapplication.dto.training.TraineeTrainingFilterDto;
-import org.vttish.gymapplication.dto.training.TrainerTrainingFilterDto;
-import org.vttish.gymapplication.dto.training.TrainingDetailsDto;
+import org.vttish.gymapplication.dto.trainee.GetTraineeTrainingsRequestDto;
+import org.vttish.gymapplication.dto.trainer.GetTrainerTrainingsRequestDto;
+import org.vttish.gymapplication.dto.training.CreateTrainingRequestDto;
+import org.vttish.gymapplication.dto.training.TraineeTrainingItemResponseDto;
+import org.vttish.gymapplication.dto.training.TrainerTrainingItemResponseDto;
+import org.vttish.gymapplication.dto.training.TrainingTypeResponseDto;
 import org.vttish.gymapplication.entity.Trainee;
 import org.vttish.gymapplication.entity.Trainer;
 import org.vttish.gymapplication.entity.Training;
 import org.vttish.gymapplication.entity.TrainingType;
+import org.vttish.gymapplication.exception.ResourceNotFoundException;
 import org.vttish.gymapplication.mapper.TrainingMapper;
+import org.vttish.gymapplication.mapper.TrainingTypeMapper;
 import org.vttish.gymapplication.repository.TraineeRepository;
 import org.vttish.gymapplication.repository.TrainerRepository;
 import org.vttish.gymapplication.repository.TrainingRepository;
+import org.vttish.gymapplication.repository.TrainingTypeRepository;
+import org.vttish.gymapplication.repository.filter.TraineeTrainingsFilter;
+import org.vttish.gymapplication.repository.filter.TrainerTrainingsFilter;
 
 @ExtendWith(MockitoExtension.class)
 class DefaultTrainingServiceTest {
@@ -39,95 +47,171 @@ class DefaultTrainingServiceTest {
   private TrainerRepository trainerRepository;
 
   @Mock
+  private TrainingTypeRepository trainingTypeRepository;
+
+  @Mock
+  private TrainingTypeMapper trainingTypeMapper;
+
+  @Mock
   private TrainingMapper trainingMapper;
 
   @InjectMocks
   private DefaultTrainingService trainingService;
 
   @Test
-  void create_ShouldSaveTraining_WhenValidDto() {
-    CreateTrainingDto dto = new CreateTrainingDto();
-
-    dto.setTraineeUsername("firstName.lastName");
-    dto.setTrainerUsername("firstName.lastName1");
-    dto.setName("Cardio");
-    dto.setDate(LocalDate.of(2000, 1, 1));
-    dto.setDuration(60);
-
-    Trainee trainee = new Trainee();
+  void create_ShouldSaveTraining_WhenValidRequest() {
     Trainer trainer = new Trainer();
-    trainer.setSpecialization(new TrainingType());
-
+    TrainingType specialization = new TrainingType();
+    trainer.setSpecialization(specialization);
+    Trainee trainee = new Trainee();
     Training training = new Training();
+    CreateTrainingRequestDto request = new CreateTrainingRequestDto(
+        "trainer.username", "trainee.username", "Cardio", LocalDate.of(2025, 1, 1), 60
+    );
 
-    when(traineeRepository.findByUsername("firstName.lastName")).thenReturn(Optional.of(trainee));
-    when(trainerRepository.findByUsername("firstName.lastName1")).thenReturn(Optional.of(trainer));
-    when(trainingMapper.create(dto)).thenReturn(training);
+    when(trainerRepository.findByUsername("trainer.username"))
+        .thenReturn(Optional.of(trainer));
+    when(traineeRepository.findByUsername("trainee.username"))
+        .thenReturn(Optional.of(trainee));
+    when(trainingMapper.create(request)).thenReturn(training);
 
-    trainingService.create(dto);
+    trainingService.create(request);
 
     verify(trainingRepository).save(training);
-    assertEquals(trainee, training.getTrainee());
     assertEquals(trainer, training.getTrainer());
-    assertEquals(trainer.getSpecialization(), training.getType());
-  }
-
-  @Test
-  void create_ShouldThrowException_WhenTraineeNotFound() {
-    CreateTrainingDto dto = new CreateTrainingDto();
-
-    dto.setTraineeUsername("nonexistent.username");
-
-    when(traineeRepository.findByUsername("nonexistent.username")).thenReturn(Optional.empty());
-
-    assertThrows(IllegalArgumentException.class, () -> trainingService.create(dto));
+    assertEquals(trainee, training.getTrainee());
+    assertEquals(specialization, training.getType());
   }
 
   @Test
   void create_ShouldThrowException_WhenTrainerNotFound() {
-    CreateTrainingDto dto = new CreateTrainingDto();
+    CreateTrainingRequestDto request = new CreateTrainingRequestDto(
+        "nonexistent.trainer", "trainee.username", "Cardio", LocalDate.of(2025, 1, 1), 60
+    );
 
-    dto.setTraineeUsername("firstName.lastName");
-    dto.setTrainerUsername("nonexistent.username");
+    when(trainerRepository.findByUsername("nonexistent.trainer"))
+        .thenReturn(Optional.empty());
 
-    Trainee trainee = new Trainee();
-    when(traineeRepository.findByUsername("firstName.lastName")).thenReturn(Optional.of(trainee));
-    when(trainerRepository.findByUsername("nonexistent.username")).thenReturn(Optional.empty());
-
-    assertThrows(IllegalArgumentException.class, () -> trainingService.create(dto));
+    assertThrows(
+        ResourceNotFoundException.class, () -> trainingService.create(request)
+    );
   }
 
   @Test
-  void getTraineeTrainings_ShouldReturnMappedDtos() {
-    TraineeTrainingFilterDto filter = new TraineeTrainingFilterDto();
-    Training training = new Training();
-    TrainingDetailsDto dto = new TrainingDetailsDto();
+  void create_ShouldThrowException_WhenTraineeNotFound() {
+    CreateTrainingRequestDto request = new CreateTrainingRequestDto(
+        "trainer.username", "nonexistent.trainee", "Cardio", LocalDate.of(2025, 1, 1), 60
+    );
 
-    when(trainingRepository.findTraineeTrainingsByFilter("firstName.lastName", filter))
-        .thenReturn(List.of(training));
-    when(trainingMapper.toTrainingDetailsDto(training)).thenReturn(dto);
+    Trainer trainer = new Trainer();
+    when(trainerRepository.findByUsername("trainer.username"))
+        .thenReturn(Optional.of(trainer));
+    when(traineeRepository.findByUsername("nonexistent.trainee"))
+        .thenReturn(Optional.empty());
 
-    List<TrainingDetailsDto> result = trainingService.getTraineeTrainings(
-        "firstName.lastName", filter);
-
-    assertEquals(1, result.size());
-    assertEquals(dto, result.get(0));
+    assertThrows(
+        ResourceNotFoundException.class, () -> trainingService.create(request)
+    );
   }
 
   @Test
-  void getTrainerTrainings_ShouldReturnMappedDtos() {
-    TrainerTrainingFilterDto filter = new TrainerTrainingFilterDto();
+  void getTraineeTrainings_ShouldReturnMappedDtos_WhenTraineeExists() {
+    String traineeUsername = "trainee.username";
+    GetTraineeTrainingsRequestDto request = new GetTraineeTrainingsRequestDto(
+        LocalDate.of(2025, 1, 1), LocalDate.of(2025, 12, 31), "trainer.name", null
+    );
+    TraineeTrainingsFilter filter = new TraineeTrainingsFilter(
+        LocalDate.of(2025, 1, 1), LocalDate.of(2025, 12, 31), "trainer.name", null
+    );
+
     Training training = new Training();
-    TrainingDetailsDto dto = new TrainingDetailsDto();
+    TraineeTrainingItemResponseDto itemResponseDto = new TraineeTrainingItemResponseDto(
+        "Cardio", LocalDate.of(2025, 1, 1), null, 60, "trainer.username"
+    );
 
-    when(trainingRepository.findTrainerTrainingsByFilter("firstName.lastName1", filter))
+    when(traineeRepository.existsByUsername(traineeUsername)).thenReturn(true);
+    when(trainingMapper.toTraineeTrainingsFilter(request)).thenReturn(filter);
+    when(trainingRepository.findTraineeTrainingsByFilter(traineeUsername, filter))
         .thenReturn(List.of(training));
-    when(trainingMapper.toTrainingDetailsDto(training)).thenReturn(dto);
+    when(trainingMapper.toTraineeTrainingItemResponseDto(training)).thenReturn(itemResponseDto);
 
-    List<TrainingDetailsDto> result = trainingService.getTrainerTrainings(
-        "firstName.lastName1", filter);
+    List<TraineeTrainingItemResponseDto> result =
+        trainingService.getTraineeTrainings(traineeUsername, request);
 
     assertEquals(1, result.size());
-    assertEquals(dto, result.get(0));
+    assertEquals(itemResponseDto, result.get(0));
+  }
+
+  @Test
+  void getTraineeTrainings_ShouldThrowException_WhenTraineeNotFound() {
+    String traineeUsername = "nonexistent.trainee";
+    GetTraineeTrainingsRequestDto request = new GetTraineeTrainingsRequestDto(
+        null, null, null, null
+    );
+
+    when(traineeRepository.existsByUsername(traineeUsername)).thenReturn(false);
+
+    assertThrows(
+        ResourceNotFoundException.class,
+        () -> trainingService.getTraineeTrainings(traineeUsername, request)
+    );
+  }
+
+  @Test
+  void getTrainerTrainings_ShouldReturnMappedDtos_WhenTrainerExists() {
+    String trainerUsername = "trainer.username";
+    GetTrainerTrainingsRequestDto request = new GetTrainerTrainingsRequestDto(
+        LocalDate.of(2025, 1, 1), LocalDate.of(2025, 12, 31), "trainee.name"
+    );
+    TrainerTrainingsFilter filter = new TrainerTrainingsFilter(
+        LocalDate.of(2025, 1, 1), LocalDate.of(2025, 12, 31), "trainee.name"
+    );
+
+    Training training = new Training();
+    TrainerTrainingItemResponseDto itemResponseDto = new TrainerTrainingItemResponseDto(
+        "Cardio", LocalDate.of(2025, 1, 1), null, 60, "trainee.username"
+    );
+
+    when(trainerRepository.existsByUsername(trainerUsername)).thenReturn(true);
+    when(trainingMapper.toTrainerTrainingsFilter(request)).thenReturn(filter);
+    when(trainingRepository.findTrainerTrainingsByFilter(trainerUsername, filter))
+        .thenReturn(List.of(training));
+    when(trainingMapper.toTrainerTrainingItemResponseDto(training)).thenReturn(itemResponseDto);
+
+    List<TrainerTrainingItemResponseDto> result =
+        trainingService.getTrainerTrainings(trainerUsername, request);
+
+    assertEquals(1, result.size());
+    assertEquals(itemResponseDto, result.get(0));
+  }
+
+  @Test
+  void getTrainerTrainings_ShouldThrowException_WhenTrainerNotFound() {
+    String trainerUsername = "nonexistent.trainer";
+    GetTrainerTrainingsRequestDto request = new GetTrainerTrainingsRequestDto(
+        null, null, null
+    );
+
+    when(trainerRepository.existsByUsername(trainerUsername)).thenReturn(false);
+
+    assertThrows(
+        ResourceNotFoundException.class,
+        () -> trainingService.getTrainerTrainings(trainerUsername, request)
+    );
+  }
+
+  @Test
+  void getTypes_ShouldReturnMappedDtos() {
+    TrainingType trainingType = new TrainingType();
+    UUID typeId = UUID.randomUUID();
+    TrainingTypeResponseDto responseDto = new TrainingTypeResponseDto(typeId, "Fitness");
+
+    when(trainingTypeRepository.findAll()).thenReturn(List.of(trainingType));
+    when(trainingTypeMapper.toTrainingTypeResponseDto(trainingType)).thenReturn(responseDto);
+
+    List<TrainingTypeResponseDto> result = trainingService.getTypes();
+
+    assertEquals(1, result.size());
+    assertEquals(responseDto, result.get(0));
   }
 }

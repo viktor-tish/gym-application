@@ -1,24 +1,25 @@
 package org.vttish.gymapplication.service;
 
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
 import java.util.List;
-import org.vttish.gymapplication.dto.training.CreateTrainingDto;
-import org.vttish.gymapplication.dto.training.TraineeTrainingFilterDto;
-import org.vttish.gymapplication.dto.training.TrainerTrainingFilterDto;
-import org.vttish.gymapplication.dto.training.TrainingDetailsDto;
+import org.vttish.gymapplication.dto.trainee.GetTraineeTrainingsRequestDto;
+import org.vttish.gymapplication.dto.trainer.GetTrainerTrainingsRequestDto;
+import org.vttish.gymapplication.dto.training.CreateTrainingRequestDto;
+import org.vttish.gymapplication.dto.training.TraineeTrainingItemResponseDto;
+import org.vttish.gymapplication.dto.training.TrainerTrainingItemResponseDto;
+import org.vttish.gymapplication.dto.training.TrainingTypeResponseDto;
 
 public interface TrainingService {
+  void create(CreateTrainingRequestDto request);
 
-  void create(@Valid CreateTrainingDto createTrainingDto);
-
-  List<TrainingDetailsDto> getTraineeTrainings(
-      @NotBlank(message = "Trainee username is mandatory") String traineeUsername,
-      @Valid TraineeTrainingFilterDto filter
+  List<TraineeTrainingItemResponseDto> getTraineeTrainings(
+      String traineeUsername,
+      GetTraineeTrainingsRequestDto request
   );
 
-  List<TrainingDetailsDto> getTrainerTrainings(
-      @NotBlank(message = "Trainer username is mandatory") String trainerUsername,
-      @Valid TrainerTrainingFilterDto filter
+  List<TrainerTrainingItemResponseDto> getTrainerTrainings(
+      String trainerUsername,
+      GetTrainerTrainingsRequestDto request
   );
+
+  List<TrainingTypeResponseDto> getTypes();
 }

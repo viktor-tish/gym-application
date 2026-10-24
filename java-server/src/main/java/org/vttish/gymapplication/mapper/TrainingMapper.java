@@ -3,21 +3,33 @@ package org.vttish.gymapplication.mapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
-import org.vttish.gymapplication.dto.training.CreateTrainingDto;
-import org.vttish.gymapplication.dto.training.TrainingDetailsDto;
+import org.vttish.gymapplication.dto.trainee.GetTraineeTrainingsRequestDto;
+import org.vttish.gymapplication.dto.trainer.GetTrainerTrainingsRequestDto;
+import org.vttish.gymapplication.dto.training.CreateTrainingRequestDto;
+import org.vttish.gymapplication.dto.training.TraineeTrainingItemResponseDto;
+import org.vttish.gymapplication.dto.training.TrainerTrainingItemResponseDto;
 import org.vttish.gymapplication.entity.Training;
+import org.vttish.gymapplication.repository.filter.TraineeTrainingsFilter;
+import org.vttish.gymapplication.repository.filter.TrainerTrainingsFilter;
 
-@Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
+@Mapper(
+    componentModel = MappingConstants.ComponentModel.SPRING,
+    uses = { TrainingTypeMapper.class }
+)
 public interface TrainingMapper {
-
-  @Mapping(source = "type.name", target = "type")
-  @Mapping(source = "type.id", target = "typeId")
-  @Mapping(source = "trainer.user.username", target = "trainerUsername")
-  @Mapping(source = "trainee.user.username", target = "traineeUsername")
-  TrainingDetailsDto toTrainingDetailsDto(Training training);
 
   @Mapping(target = "trainee", ignore = true)
   @Mapping(target = "trainer", ignore = true)
   @Mapping(target = "type", ignore = true)
-  Training create(CreateTrainingDto dto);
+  Training create(CreateTrainingRequestDto dto);
+
+  TrainerTrainingsFilter toTrainerTrainingsFilter(GetTrainerTrainingsRequestDto request);
+
+  TraineeTrainingsFilter toTraineeTrainingsFilter(GetTraineeTrainingsRequestDto request);
+
+  @Mapping(source = "trainee.user.username", target = "traineeUsername")
+  TrainerTrainingItemResponseDto toTrainerTrainingItemResponseDto(Training training);
+
+  @Mapping(source = "trainer.user.username", target = "trainerUsername")
+  TraineeTrainingItemResponseDto toTraineeTrainingItemResponseDto(Training training);
 }

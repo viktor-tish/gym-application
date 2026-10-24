@@ -1,35 +1,28 @@
 package org.vttish.gymapplication.service;
 
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
 import java.util.List;
-import org.vttish.gymapplication.dto.auth.CredentialsDto;
-import org.vttish.gymapplication.dto.trainee.CreateTraineeDto;
-import org.vttish.gymapplication.dto.trainee.TraineeDetailsDto;
-import org.vttish.gymapplication.dto.trainee.UpdateTraineeDto;
-import org.vttish.gymapplication.dto.trainer.TrainerCardDto;
+import org.vttish.gymapplication.dto.auth.CredentialsResponseDto;
+import org.vttish.gymapplication.dto.trainee.RegisterTraineeRequestDto;
+import org.vttish.gymapplication.dto.trainee.TraineeProfileResponseDto;
+import org.vttish.gymapplication.dto.trainee.UpdateTraineeProfileRequestDto;
+import org.vttish.gymapplication.dto.trainee.UpdateTraineeProfileResponseDto;
+import org.vttish.gymapplication.dto.trainee.UpdateTraineeTrainersRequestDto;
+import org.vttish.gymapplication.dto.trainer.TrainerItemResponseDto;
 
 public interface TraineeService {
+  CredentialsResponseDto register(RegisterTraineeRequestDto request);
 
-  CredentialsDto create(@Valid CreateTraineeDto createTraineeDto);
+  TraineeProfileResponseDto getProfile(String username);
 
-  TraineeDetailsDto getByUsername(@NotBlank(message = "Username is mandatory") String username);
-
-  TraineeDetailsDto update(
-      @NotBlank(message = "Username is mandatory") String username,
-      @Valid UpdateTraineeDto updateTraineeDto
+  UpdateTraineeProfileResponseDto updateProfile(
+      String username,
+      UpdateTraineeProfileRequestDto request
   );
 
-  void deleteByUsername(@NotBlank(message = "Username is mandatory") String username);
+  void delete(String username);
 
-  List<TrainerCardDto> addTrainer(
-      @NotBlank(message = "Trainee username is mandatory") String traineeUsername,
-      @NotBlank(message = "Trainer username is mandatory") String trainerUsername
-  );
-
-  List<TrainerCardDto> removeTrainer(
-      @NotBlank(message = "Trainee username is mandatory") String traineeUsername,
-      @NotBlank(message = "Trainer username is mandatory") String trainerUsername
+  List<TrainerItemResponseDto> updateTrainers(
+      String username,
+      UpdateTraineeTrainersRequestDto request
   );
 }
-

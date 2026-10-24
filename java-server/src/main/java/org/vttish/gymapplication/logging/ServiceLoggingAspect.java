@@ -1,4 +1,4 @@
-package org.vttish.gymapplication.aspect;
+package org.vttish.gymapplication.logging;
 
 import java.util.Arrays;
 import org.aspectj.lang.ProceedingJoinPoint;

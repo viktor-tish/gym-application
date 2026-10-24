@@ -1,8 +1,9 @@
 package org.vttish.gymapplication.controller;
 
 import jakarta.validation.Valid;
+import java.net.URI;
 import java.util.List;
-import org.springframework.http.HttpStatus;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.vttish.gymapplication.dto.auth.CredentialsResponseDto;
 import org.vttish.gymapplication.dto.auth.UpdateUserStatusRequestDto;
 import org.vttish.gymapplication.dto.trainer.GetTrainerTrainingsRequestDto;
@@ -21,46 +23,64 @@ import org.vttish.gymapplication.dto.trainer.TrainerProfileResponseDto;
 import org.vttish.gymapplication.dto.trainer.UpdateTrainerProfileRequestDto;
 import org.vttish.gymapplication.dto.trainer.UpdateTrainerProfileResponseDto;
 import org.vttish.gymapplication.dto.training.TrainerTrainingItemResponseDto;
+import org.vttish.gymapplication.facade.GymFacade;
+import org.vttish.gymapplication.security.RequireRole;
+import org.vttish.gymapplication.security.Role;
 
 @RestController
 @RequestMapping("/api/v1/trainers")
+@RequiredArgsConstructor
 public class TrainerController {
+  private final GymFacade gymFacade;
 
   @PostMapping
   public ResponseEntity<CredentialsResponseDto> register(
       @Valid @RequestBody RegisterTrainerRequestDto request
   ) {
-    return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+    CredentialsResponseDto credentials = gymFacade.registerTrainer(request);
+
+    URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+        .path("/{username}")
+        .buildAndExpand(credentials.username())
+        .toUri();
+
+    return ResponseEntity.created(location).body(credentials);
   }
 
   @GetMapping("/{username}")
+  @RequireRole(Role.TRAINER)
   public ResponseEntity<TrainerProfileResponseDto> getProfile(
-      @PathVariable String username
+      @PathVariable("username") String username
   ) {
-    return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+    return ResponseEntity.ok(gymFacade.getTrainerProfile(username));
   }
 
   @PutMapping("/{username}")
+  @RequireRole(Role.TRAINER)
   public ResponseEntity<UpdateTrainerProfileResponseDto> updateProfile(
-      @PathVariable String username,
+      @PathVariable("username") String username,
       @Valid @RequestBody UpdateTrainerProfileRequestDto request
   ) {
-    return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+    return ResponseEntity.ok(gymFacade.updateTrainerProfile(username, request));
   }
 
   @GetMapping("/{username}/trainings")
+  @RequireRole(Role.TRAINER)
   public ResponseEntity<List<TrainerTrainingItemResponseDto>> getTrainings(
-      @PathVariable String username,
+      @PathVariable("username") String username,
       @Valid @ModelAttribute GetTrainerTrainingsRequestDto request
   ) {
-    return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+    return ResponseEntity.ok(gymFacade.getTrainerTrainings(username, request));
   }
 
   @PatchMapping("/{username}/status")
+  @RequireRole(Role.TRAINER)
   public ResponseEntity<Void> updateStatus(
-      @PathVariable String username,
+      @PathVariable("username") String username,
       @Valid @RequestBody UpdateUserStatusRequestDto request
   ) {
-    return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+    gymFacade.updateStatus(username, request);
+
+    return ResponseEntity.ok().build();
   }
 }

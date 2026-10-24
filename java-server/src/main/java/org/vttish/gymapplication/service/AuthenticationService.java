@@ -1,14 +1,14 @@
 package org.vttish.gymapplication.service;
 
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
-import org.vttish.gymapplication.dto.auth.ChangePasswordDto;
-import org.vttish.gymapplication.dto.auth.CredentialsDto;
+import org.vttish.gymapplication.dto.auth.ChangePasswordRequestDto;
+import org.vttish.gymapplication.dto.auth.LoginRequestDto;
+import org.vttish.gymapplication.dto.auth.LoginResponseDto;
+import org.vttish.gymapplication.dto.auth.UpdateUserStatusRequestDto;
 
 public interface AuthenticationService {
-  boolean authenticate(@Valid CredentialsDto credentialsDto);
+  LoginResponseDto login(LoginRequestDto request);
 
-  void changePassword(@Valid ChangePasswordDto changePasswordDto);
+  void changePassword(ChangePasswordRequestDto request);
 
-  void toggleActivation(@NotBlank(message = "Username is mandatory") String username);
+  void updateStatus(String username, UpdateUserStatusRequestDto request);
 }

@@ -1,12 +1,12 @@
 package org.vttish.gymapplication.service.impl;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import jakarta.persistence.EntityNotFoundException;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,10 +14,20 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.vttish.gymapplication.dto.auth.ChangePasswordDto;
-import org.vttish.gymapplication.dto.auth.CredentialsDto;
+import org.vttish.gymapplication.dto.auth.ChangePasswordRequestDto;
+import org.vttish.gymapplication.dto.auth.LoginRequestDto;
+import org.vttish.gymapplication.dto.auth.LoginResponseDto;
+import org.vttish.gymapplication.dto.auth.UpdateUserStatusRequestDto;
 import org.vttish.gymapplication.entity.User;
+import org.vttish.gymapplication.exception.AuthenticationException;
+import org.vttish.gymapplication.exception.BadRequestException;
+import org.vttish.gymapplication.exception.ResourceNotFoundException;
+import org.vttish.gymapplication.repository.TraineeRepository;
+import org.vttish.gymapplication.repository.TrainerRepository;
 import org.vttish.gymapplication.repository.UserRepository;
+import org.vttish.gymapplication.security.JwtService;
+import org.vttish.gymapplication.security.Role;
+import org.vttish.gymapplication.security.UserPrincipal;
 import org.vttish.gymapplication.utils.PasswordHasher;
 
 @ExtendWith(MockitoExtension.class)
@@ -27,7 +37,16 @@ class DefaultAuthenticationServiceTest {
   private UserRepository userRepository;
 
   @Mock
+  private TraineeRepository traineeRepository;
+
+  @Mock
+  private TrainerRepository trainerRepository;
+
+  @Mock
   private PasswordHasher passwordHasher;
+
+  @Mock
+  private JwtService jwtService;
 
   @InjectMocks
   private DefaultAuthenticationService authenticationService;
@@ -43,47 +62,81 @@ class DefaultAuthenticationServiceTest {
   }
 
   @Test
-  void authenticate_ShouldReturnTrue_WhenCredentialsMatch() {
-    CredentialsDto dto = new CredentialsDto("firstName.lastName", "plainPassword");
+  void login_ShouldReturnToken_WhenCredentialsMatchAndUserIsTrainee() {
+    LoginRequestDto dto = new LoginRequestDto("firstName.lastName", "plainPassword");
+    UserPrincipal principal = new UserPrincipal("firstName.lastName", Role.TRAINEE);
 
     when(userRepository.findByUsername("firstName.lastName")).thenReturn(Optional.of(testUser));
-    when(passwordHasher.matches("plainPassword", "hashedPassword"))
-        .thenReturn(true);
+    when(passwordHasher.matches("plainPassword", "hashedPassword")).thenReturn(true);
+    when(traineeRepository.existsByUsername("firstName.lastName")).thenReturn(true);
+    when(jwtService.generateToken(principal)).thenReturn("jwt.token.trainee");
 
-    assertTrue(authenticationService.authenticate(dto));
+    LoginResponseDto response = authenticationService.login(dto);
+
+    assertNotNull(response);
+    assertEquals("jwt.token.trainee", response.token());
   }
 
   @Test
-  void authenticate_ShouldReturnFalse_WhenPasswordDoesNotMatch() {
-    CredentialsDto dto = new CredentialsDto("firstName.lastName", "wrongPassword");
+  void login_ShouldReturnToken_WhenCredentialsMatchAndUserIsTrainer() {
+    LoginRequestDto dto = new LoginRequestDto("firstName.lastName", "plainPassword");
+    UserPrincipal principal = new UserPrincipal("firstName.lastName", Role.TRAINER);
 
     when(userRepository.findByUsername("firstName.lastName")).thenReturn(Optional.of(testUser));
-    when(passwordHasher.matches("wrongPassword", "hashedPassword"))
-        .thenReturn(false);
+    when(passwordHasher.matches("plainPassword", "hashedPassword")).thenReturn(true);
+    when(traineeRepository.existsByUsername("firstName.lastName")).thenReturn(false);
+    when(trainerRepository.existsByUsername("firstName.lastName")).thenReturn(true);
+    when(jwtService.generateToken(principal)).thenReturn("jwt.token.trainer");
 
-    assertFalse(authenticationService.authenticate(dto));
+    LoginResponseDto response = authenticationService.login(dto);
+
+    assertNotNull(response);
+    assertEquals("jwt.token.trainer", response.token());
   }
 
   @Test
-  void authenticate_ShouldReturnFalse_WhenUserNotFound() {
-    CredentialsDto dto = new CredentialsDto("firstName.lastName", "plainPassword");
+  void login_ShouldThrowException_WhenUserHasNoAssignedRole() {
+    LoginRequestDto dto = new LoginRequestDto("firstName.lastName", "plainPassword");
+
+    when(userRepository.findByUsername("firstName.lastName")).thenReturn(Optional.of(testUser));
+    when(passwordHasher.matches("plainPassword", "hashedPassword")).thenReturn(true);
+    when(traineeRepository.existsByUsername("firstName.lastName")).thenReturn(false);
+    when(trainerRepository.existsByUsername("firstName.lastName")).thenReturn(false);
+
+    assertThrows(
+        AuthenticationException.class, () -> authenticationService.login(dto));
+  }
+
+  @Test
+  void login_ShouldThrowException_WhenPasswordDoesNotMatch() {
+    LoginRequestDto dto = new LoginRequestDto("firstName.lastName", "wrongPassword");
+
+    when(userRepository.findByUsername("firstName.lastName")).thenReturn(Optional.of(testUser));
+    when(passwordHasher.matches("wrongPassword", "hashedPassword")).thenReturn(false);
+
+    assertThrows(
+        AuthenticationException.class, () -> authenticationService.login(dto));
+  }
+
+  @Test
+  void login_ShouldThrowException_WhenUserNotFound() {
+    LoginRequestDto dto = new LoginRequestDto("firstName.lastName", "plainPassword");
 
     when(userRepository.findByUsername("firstName.lastName")).thenReturn(Optional.empty());
 
-    assertFalse(authenticationService.authenticate(dto));
+    assertThrows(
+        AuthenticationException.class, () -> authenticationService.login(dto));
   }
 
   @Test
   void changePassword_ShouldUpdatePassword_WhenOldPasswordIsCorrect() {
-    ChangePasswordDto dto = new ChangePasswordDto();
-    dto.setUsername("firstName.lastName");
-    dto.setOldPassword("plainPassword");
-    dto.setNewPassword("newPlainPassword");
-
     when(userRepository.findByUsername("firstName.lastName")).thenReturn(Optional.of(testUser));
-    when(passwordHasher.matches("plainPassword", "hashedPassword"))
-        .thenReturn(true);
+    when(passwordHasher.matches("plainPassword", "hashedPassword")).thenReturn(true);
     when(passwordHasher.hash("newPlainPassword")).thenReturn("newHashedPassword");
+
+    ChangePasswordRequestDto dto = new ChangePasswordRequestDto(
+        "firstName.lastName", "plainPassword", "newPlainPassword"
+    );
 
     authenticationService.changePassword(dto);
 
@@ -92,45 +145,61 @@ class DefaultAuthenticationServiceTest {
 
   @Test
   void changePassword_ShouldThrowException_WhenOldPasswordIsWrong() {
-    ChangePasswordDto dto = new ChangePasswordDto();
-    dto.setUsername("firstName.lastName");
-    dto.setOldPassword("wrongPassword");
-    dto.setNewPassword("newPlainPassword");
+    ChangePasswordRequestDto dto = new ChangePasswordRequestDto(
+        "firstName.lastName", "wrongPassword", "newPlainPassword"
+    );
 
     when(userRepository.findByUsername("firstName.lastName")).thenReturn(Optional.of(testUser));
-    when(passwordHasher.matches("wrongPassword", "hashedPassword"))
-        .thenReturn(false);
+    when(passwordHasher.matches("wrongPassword", "hashedPassword")).thenReturn(false);
 
     assertThrows(
-        IllegalArgumentException.class, () -> authenticationService.changePassword(dto));
+        AuthenticationException.class, () -> authenticationService.changePassword(dto));
   }
 
   @Test
   void changePassword_ShouldThrowException_WhenUserNotFound() {
-    ChangePasswordDto dto = new ChangePasswordDto();
-    dto.setUsername("nonexistent.username");
+    ChangePasswordRequestDto dto = new ChangePasswordRequestDto(
+        "nonexistent.username", "plainPassword", "newPlainPassword"
+    );
 
     when(userRepository.findByUsername("nonexistent.username")).thenReturn(Optional.empty());
 
     assertThrows(
-        EntityNotFoundException.class, () -> authenticationService.changePassword(dto));
+        ResourceNotFoundException.class, () -> authenticationService.changePassword(dto));
   }
 
   @Test
-  void toggleActivation_ShouldToggleIsActive_WhenUserExists() {
+  void updateStatus_ShouldUpdateIsActive_WhenTargetStatusDiffers() {
+    UpdateUserStatusRequestDto dto = new UpdateUserStatusRequestDto(false);
+
     when(userRepository.findByUsername("firstName.lastName")).thenReturn(Optional.of(testUser));
 
-    authenticationService.toggleActivation("firstName.lastName");
+    authenticationService.updateStatus("firstName.lastName", dto);
 
     assertFalse(testUser.getIsActive());
   }
 
   @Test
-  void toggleActivation_ShouldThrowException_WhenUserNotFound() {
+  void updateStatus_ShouldThrowException_WhenStatusAlreadyMatches() {
+    UpdateUserStatusRequestDto dto = new UpdateUserStatusRequestDto(true);
+
+    when(userRepository.findByUsername("firstName.lastName")).thenReturn(Optional.of(testUser));
+
+    assertThrows(
+        BadRequestException.class,
+        () -> authenticationService.updateStatus("firstName.lastName", dto)
+    );
+  }
+
+  @Test
+  void updateStatus_ShouldThrowException_WhenUserNotFound() {
+    UpdateUserStatusRequestDto dto = new UpdateUserStatusRequestDto(false);
+
     when(userRepository.findByUsername("nonexistent.username")).thenReturn(Optional.empty());
 
     assertThrows(
-        EntityNotFoundException.class,
-        () -> authenticationService.toggleActivation("nonexistent.username"));
+        ResourceNotFoundException.class,
+        () -> authenticationService.updateStatus("nonexistent.username", dto)
+    );
   }
 }

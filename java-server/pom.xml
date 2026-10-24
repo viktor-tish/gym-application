@@ -29,10 +29,11 @@
         <expressly.version>5.0.0</expressly.version>
         <springdoc.version>2.8.5</springdoc.version>
         <spring-boot-autoconfigure.version>3.4.2</spring-boot-autoconfigure.version>
+        <jjwt.version>0.12.6</jjwt.version>
 
         <sonar.coverage.exclusions>
             **/dto/**,
-            **/aspect/**,
+            **/logging/**,
             **/facade/**,
             **/entity/**,
             **/config/**,
@@ -177,6 +178,26 @@
             <artifactId>spring-boot-autoconfigure</artifactId>
             <version>${spring-boot-autoconfigure.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+            <version>${jjwt.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+            <version>${jjwt.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId>
+            <version>${jjwt.version}</version>
+            <scope>runtime</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -247,7 +268,7 @@
                 <configuration>
                     <excludes>
                         <exclude>**/dto/**</exclude>
-                        <exclude>**/aspect/**</exclude>
+                        <exclude>**/logging/**</exclude>
                         <exclude>**/facade/**</exclude>
                         <exclude>**/entity/**</exclude>
                         <exclude>**/config/**</exclude>

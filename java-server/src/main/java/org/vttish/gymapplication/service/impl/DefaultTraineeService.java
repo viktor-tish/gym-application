@@ -1,20 +1,24 @@
 package org.vttish.gymapplication.service.impl;
 
-import jakarta.persistence.EntityNotFoundException;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.validation.annotation.Validated;
-import org.vttish.gymapplication.dto.auth.CredentialsDto;
-import org.vttish.gymapplication.dto.trainee.CreateTraineeDto;
-import org.vttish.gymapplication.dto.trainee.TraineeDetailsDto;
-import org.vttish.gymapplication.dto.trainee.UpdateTraineeDto;
-import org.vttish.gymapplication.dto.trainer.TrainerCardDto;
+import org.vttish.gymapplication.dto.auth.CredentialsResponseDto;
+import org.vttish.gymapplication.dto.trainee.RegisterTraineeRequestDto;
+import org.vttish.gymapplication.dto.trainee.TraineeProfileResponseDto;
+import org.vttish.gymapplication.dto.trainee.UpdateTraineeProfileRequestDto;
+import org.vttish.gymapplication.dto.trainee.UpdateTraineeProfileResponseDto;
+import org.vttish.gymapplication.dto.trainee.UpdateTraineeTrainersRequestDto;
+import org.vttish.gymapplication.dto.trainer.TrainerItemResponseDto;
 import org.vttish.gymapplication.entity.Trainee;
 import org.vttish.gymapplication.entity.Trainer;
+import org.vttish.gymapplication.exception.ResourceNotFoundException;
 import org.vttish.gymapplication.mapper.TraineeMapper;
-import org.vttish.gymapplication.mapper.TrainerMapper;
+import org.vttish.gymapplication.mapper.TrainerItemMapper;
 import org.vttish.gymapplication.repository.TraineeRepository;
 import org.vttish.gymapplication.repository.TrainerRepository;
 import org.vttish.gymapplication.service.ProfileGenerationService;
@@ -22,7 +26,6 @@ import org.vttish.gymapplication.service.TraineeService;
 import org.vttish.gymapplication.utils.PasswordHasher;
 
 @Service
-@Validated
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class DefaultTraineeService implements TraineeService {
@@ -30,16 +33,17 @@ public class DefaultTraineeService implements TraineeService {
   private final TrainerRepository trainerRepository;
   private final ProfileGenerationService profileGenerationService;
   private final TraineeMapper traineeMapper;
-  private final TrainerMapper trainerMapper;
+  private final TrainerItemMapper trainerItemMapper;
   private final PasswordHasher passwordHasher;
 
   @Override
   @Transactional
-  public CredentialsDto create(CreateTraineeDto createTraineeDto) {
-    Trainee trainee = traineeMapper.create(createTraineeDto);
+  public CredentialsResponseDto register(RegisterTraineeRequestDto request) {
+    Trainee trainee = traineeMapper.create(request);
 
     String username = profileGenerationService.generateUniqueUsername(
-        createTraineeDto.getFirstName(), createTraineeDto.getLastName());
+        request.firstName(), request.lastName()
+    );
     String password = profileGenerationService.generateRandomPassword();
 
     trainee.getUser().setUsername(username);
@@ -48,61 +52,72 @@ public class DefaultTraineeService implements TraineeService {
 
     traineeRepository.save(trainee);
 
-    return new CredentialsDto(username, password);
+    return new CredentialsResponseDto(username, password);
   }
 
   @Override
-  public TraineeDetailsDto getByUsername(String username) {
+  public TraineeProfileResponseDto getProfile(String username) {
     Trainee trainee = findTraineeByUsername(username);
 
-    return traineeMapper.toTraineeDetailsDto(trainee);
+    return traineeMapper.toTraineeProfileResponseDto(trainee);
   }
 
   @Override
   @Transactional
-  public TraineeDetailsDto update(String username, UpdateTraineeDto updateTraineeDto) {
+  public UpdateTraineeProfileResponseDto updateProfile(
+      String username,
+      UpdateTraineeProfileRequestDto request
+  ) {
     Trainee trainee = findTraineeByUsername(username);
-    traineeMapper.update(trainee, updateTraineeDto);
+    traineeMapper.update(trainee, request);
 
-    return traineeMapper.toTraineeDetailsDto(trainee);
+    return traineeMapper.toUpdateTraineeProfileResponseDto(trainee);
   }
 
   @Override
   @Transactional
-  public void deleteByUsername(String username) {
+  public void delete(String username) {
     traineeRepository.deleteByUsername(username);
   }
 
   @Override
   @Transactional
-  public List<TrainerCardDto> addTrainer(String traineeUsername, String trainerUsername) {
-    Trainee trainee = findTraineeByUsername(traineeUsername);
-    Trainer trainer = trainerRepository.findByUsername(trainerUsername)
-        .orElseThrow(() -> new EntityNotFoundException("Trainer not found: " + trainerUsername));
+  public List<TrainerItemResponseDto> updateTrainers(
+      String username,
+      UpdateTraineeTrainersRequestDto request
+  ) {
+    Trainee trainee = findTraineeByUsername(username);
 
-    trainee.addTrainer(trainer);
+    List<String> requestedUsernames = request.trainers();
+    List<Trainer> foundTrainers = trainerRepository.findAllByUsernameIn(requestedUsernames);
+    Set<String> requestedUsernamesSet = new HashSet<>(request.trainers());
+
+    if (foundTrainers.size() != requestedUsernamesSet.size()) {
+      Set<String> foundUsernames = foundTrainers.stream()
+          .map(trainer -> trainer.getUser().getUsername())
+          .collect(Collectors.toSet());
+
+      String missingUsername = requestedUsernamesSet.stream()
+          .filter(trainerUsername -> !foundUsernames.contains(trainerUsername))
+          .findFirst()
+          .orElse("unknown");
+
+      throw new ResourceNotFoundException(
+          "Trainer not found with username: " + missingUsername
+      );
+    }
+
+    Set<Trainer> newTrainers = new HashSet<>(foundTrainers);
+    trainee.setTrainers(newTrainers);
 
     return trainee.getTrainers().stream()
-        .map(trainerMapper::toTrainerCardDto)
-        .toList();
-  }
-
-  @Override
-  @Transactional
-  public List<TrainerCardDto> removeTrainer(String traineeUsername, String trainerUsername) {
-    Trainee trainee = findTraineeByUsername(traineeUsername);
-    Trainer trainer = trainerRepository.findByUsername(trainerUsername)
-        .orElseThrow(() -> new EntityNotFoundException("Trainer not found: " + trainerUsername));
-
-    trainee.removeTrainer(trainer);
-
-    return trainee.getTrainers().stream()
-        .map(trainerMapper::toTrainerCardDto)
+        .map(trainerItemMapper::toTrainerItemResponseDto)
         .toList();
   }
 
   private Trainee findTraineeByUsername(String username) {
-    return traineeRepository.findByUsername(username)
-        .orElseThrow(() -> new EntityNotFoundException("Trainee not found"));
+    return traineeRepository.findByUsername(username).orElseThrow(
+        () -> new ResourceNotFoundException("Trainee not found with username: " + username)
+    );
   }
 }
