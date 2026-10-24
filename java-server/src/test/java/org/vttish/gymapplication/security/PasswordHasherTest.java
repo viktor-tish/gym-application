@@ -1,4 +1,4 @@
-package org.vttish.gymapplication.utils;
+package org.vttish.gymapplication.security;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
