@@ -42,7 +42,22 @@ To compile and start the Java application in detached mode, run:
 ```bash
 ./run start
 ```
-To view the live logs of a specific service, use: `docker logs -f <container_name>`
+
+You can optionally specify a Spring profile (`local`, `dev`, `stg`, `prod`) to run the application with environment-specific configurations:
+
+```bash
+./run start [profile]
+```
+
+Examples:
+- `./run start` or `./run start local`: Starts with the `local` profile (SQL query logging enabled, development settings).
+- `./run start dev`: Starts with the `dev` profile (SQL logging enabled, test data seeded).
+- `./run start stg`: Starts with the `stg` profile (SQL logging disabled, pre-production connection pool, test data seeded).
+- `./run start prod`: Starts with the `prod` profile (production connection pool tuning, Flyway migrations only, restricted Actuator).
+
+> **Note:** In `dev` and `stg` environments, test accounts are automatically seeded with password `password123` (e.g., trainees: `john.doe`, `alice.wonderland`, `bob.marley`; trainers: `jane.smith`, `michael.scott`, `serena.williams`).
+
+To view the live logs of the service, use: `docker logs -f gym-java-server`
 
 ### Run the Tests
 

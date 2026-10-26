@@ -1,0 +1,29 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST}:5432/${POSTGRES_DB:gym_application_prod}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+    hikari:
+      maximum-pool-size: 30
+      minimum-idle: 10
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      leak-detection-threshold: 20000
+
+  flyway:
+    locations:
+      - classpath:db/migration
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      show-details: always
+
+jwt:
+  secret: ${JWT_SECRET}
+  expiration-ms: ${JWT_EXPIRATION_MS}
