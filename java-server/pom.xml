@@ -24,6 +24,7 @@
         <commons-lang3.version>3.18.0</commons-lang3.version>
 
         <sonar.coverage.exclusions>
+            **/actuator/**
             **/dto/**,
             **/logging/**,
             **/facade/**,
@@ -203,6 +204,7 @@
                 <version>0.8.12</version>
                 <configuration>
                     <excludes>
+                        <exclude>**/actuator/**</exclude>
                         <exclude>**/dto/**</exclude>
                         <exclude>**/logging/**</exclude>
                         <exclude>**/facade/**</exclude>

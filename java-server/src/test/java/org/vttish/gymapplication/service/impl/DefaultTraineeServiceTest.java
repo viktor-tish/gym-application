@@ -31,8 +31,8 @@ import org.vttish.gymapplication.mapper.TraineeMapper;
 import org.vttish.gymapplication.mapper.TrainerItemMapper;
 import org.vttish.gymapplication.repository.TraineeRepository;
 import org.vttish.gymapplication.repository.TrainerRepository;
-import org.vttish.gymapplication.service.ProfileGenerationService;
 import org.vttish.gymapplication.security.PasswordHasher;
+import org.vttish.gymapplication.service.ProfileGenerationService;
 
 @ExtendWith(MockitoExtension.class)
 class DefaultTraineeServiceTest {

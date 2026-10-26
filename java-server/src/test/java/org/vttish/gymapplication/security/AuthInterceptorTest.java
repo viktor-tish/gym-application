@@ -43,18 +43,18 @@ class AuthInterceptorTest {
 
   static class TestRoleController {
 
-    @RequireRole({ Role.TRAINEE })
+    @RequireRole({Role.TRAINEE})
     public void traineeMethod() {
       // Intentionally empty for test purposes
     }
 
-    @RequireRole({ Role.TRAINER })
+    @RequireRole({Role.TRAINER})
     public void trainerMethod() {
       // Intentionally empty for test purposes
     }
   }
 
-  @RequireRole({ Role.TRAINER })
+  @RequireRole({Role.TRAINER})
   static class TestClassLevelTrainerController {
     public void defaultMethod() {
       // Intentionally empty for test purposes
