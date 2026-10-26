@@ -216,7 +216,8 @@ class TrainerControllerTest {
 
     List<TrainerTrainingItemResponseDto> actual = objectMapper.readValue(
         result.getResponse().getContentAsString(),
-        new TypeReference<>() {}
+        new TypeReference<>() {
+        }
     );
 
     assertEquals(List.of(trainingItem), actual);

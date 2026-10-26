@@ -14,6 +14,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.vttish.gymapplication.actuator.metrics.GymMetrics;
 import org.vttish.gymapplication.dto.trainee.GetTraineeTrainingsRequestDto;
 import org.vttish.gymapplication.dto.trainer.GetTrainerTrainingsRequestDto;
 import org.vttish.gymapplication.dto.training.CreateTrainingRequestDto;
@@ -55,6 +56,9 @@ class DefaultTrainingServiceTest {
   @Mock
   private TrainingMapper trainingMapper;
 
+  @Mock
+  private GymMetrics gymMetrics;
+
   @InjectMocks
   private DefaultTrainingService trainingService;
 
@@ -78,6 +82,7 @@ class DefaultTrainingServiceTest {
     trainingService.create(request);
 
     verify(trainingRepository).save(training);
+    verify(gymMetrics).incrementTrainingCreated();
     assertEquals(trainer, training.getTrainer());
     assertEquals(trainee, training.getTrainee());
     assertEquals(specialization, training.getType());

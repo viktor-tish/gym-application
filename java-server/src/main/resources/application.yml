@@ -18,6 +18,18 @@ spring:
     enabled: true
     baseline-on-migrate: true
 
+management:
+  health:
+    memory:
+      free-threshold-mb: 10
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+
 jwt:
   secret: ${JWT_SECRET}
   expiration-ms: ${JWT_EXPIRATION_MS}
