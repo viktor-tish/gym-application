@@ -42,7 +42,12 @@ case "$1" in
     ;;
 
   start)
-    echo "Building and running the application in the background..."
+    if [ -n "$2" ]; then
+      export SPRING_PROFILES_ACTIVE="$2"
+      echo "Building and running the application in the background (Profile: $2)..."
+    else
+      echo "Building and running the application in the background..."
+    fi
 
     docker compose -f docker/docker-compose.yml --env-file "$ENV_PATH" up --build -d
 
