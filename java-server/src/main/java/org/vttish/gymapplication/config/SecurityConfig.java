@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -17,11 +18,12 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.vttish.gymapplication.security.DelegatingAuthenticationEntryPoint;
 import org.vttish.gymapplication.security.JwtAuthenticationFilter;
-import org.vttish.gymapplication.security.PublicEndpoint;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfig {
 
   private final List<String> allowedOrigins;
@@ -31,28 +33,16 @@ public class SecurityConfig {
   }
 
   @Bean
-  public List<PublicEndpoint> whiteList() {
-    return List.of(
-        PublicEndpoint.of(HttpMethod.POST, "/api/v1/auth/login"),
-        PublicEndpoint.of(HttpMethod.POST, "/api/v1/trainees"),
-        PublicEndpoint.of(HttpMethod.POST, "/api/v1/trainers"),
-        PublicEndpoint.of(HttpMethod.GET, "/api/v1/trainings/types"),
-        PublicEndpoint.anyMethod("/swagger-ui/**"),
-        PublicEndpoint.anyMethod("/swagger-ui.html"),
-        PublicEndpoint.anyMethod("/v3/api-docs/**"),
-        PublicEndpoint.anyMethod("/actuator/**")
-    );
-  }
-
-  @Bean
   @SuppressWarnings("java:S4502")
   public SecurityFilterChain securityFilterChain(
       HttpSecurity http,
-      JwtAuthenticationFilter jwtAuthenticationFilter
+      JwtAuthenticationFilter jwtAuthenticationFilter,
+      DelegatingAuthenticationEntryPoint authenticationEntryPoint
   ) throws Exception {
     http
         .csrf(AbstractHttpConfigurer::disable)
         .cors(Customizer.withDefaults())
+        .exceptionHandling(ex -> ex.authenticationEntryPoint(authenticationEntryPoint))
         .sessionManagement(session ->
             session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(auth -> auth

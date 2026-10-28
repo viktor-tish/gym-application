@@ -9,7 +9,7 @@ import java.time.Instant;
 import javax.crypto.SecretKey;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.vttish.gymapplication.exception.AuthenticationException;
+import org.vttish.gymapplication.exception.UnauthenticatedException;
 import org.vttish.gymapplication.security.JwtService;
 import org.vttish.gymapplication.security.Role;
 import org.vttish.gymapplication.security.UserPrincipal;
@@ -44,7 +44,7 @@ public class DefaultJwtService implements JwtService {
   @Override
   public UserPrincipal parseToken(String token) {
     if (token == null || token.isBlank()) {
-      throw new AuthenticationException("JWT token is missing");
+      throw new UnauthenticatedException("JWT token is missing");
     }
 
     try {
@@ -58,14 +58,14 @@ public class DefaultJwtService implements JwtService {
       String roleName = claims.get("role", String.class);
 
       if (username == null || roleName == null) {
-        throw new AuthenticationException("Invalid or expired JWT token");
+        throw new UnauthenticatedException("Invalid or expired JWT token");
       }
 
       Role role = Role.valueOf(roleName);
 
       return new UserPrincipal(username, role);
     } catch (JwtException | IllegalArgumentException ex) {
-      throw new AuthenticationException("Invalid or expired JWT token");
+      throw new UnauthenticatedException("Invalid or expired JWT token");
     }
   }
 }

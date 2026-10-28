@@ -22,10 +22,10 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 import org.vttish.gymapplication.dto.error.ErrorResponseDto;
-import org.vttish.gymapplication.exception.AuthenticationException;
 import org.vttish.gymapplication.exception.BadRequestException;
 import org.vttish.gymapplication.exception.ForbiddenException;
 import org.vttish.gymapplication.exception.ResourceNotFoundException;
+import org.vttish.gymapplication.exception.UnauthenticatedException;
 
 @ExtendWith(MockitoExtension.class)
 class GlobalExceptionHandlerTest {
@@ -151,7 +151,7 @@ class GlobalExceptionHandlerTest {
 
   @Test
   void handleAuthenticationException_ShouldReturnUnauthorized() {
-    AuthenticationException ex = new AuthenticationException("Unauthorized access");
+    UnauthenticatedException ex = new UnauthenticatedException("Unauthorized access");
 
     ResponseEntity<ErrorResponseDto> response =
         handler.handleAuthenticationException(ex, request);

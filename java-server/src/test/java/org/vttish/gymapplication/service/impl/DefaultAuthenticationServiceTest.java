@@ -21,9 +21,9 @@ import org.vttish.gymapplication.dto.auth.LoginRequestDto;
 import org.vttish.gymapplication.dto.auth.LoginResponseDto;
 import org.vttish.gymapplication.dto.auth.UpdateUserStatusRequestDto;
 import org.vttish.gymapplication.entity.User;
-import org.vttish.gymapplication.exception.AuthenticationException;
 import org.vttish.gymapplication.exception.BadRequestException;
 import org.vttish.gymapplication.exception.ResourceNotFoundException;
+import org.vttish.gymapplication.exception.UnauthenticatedException;
 import org.vttish.gymapplication.repository.TraineeRepository;
 import org.vttish.gymapplication.repository.TrainerRepository;
 import org.vttish.gymapplication.repository.UserRepository;
@@ -110,7 +110,7 @@ class DefaultAuthenticationServiceTest {
     LoginRequestDto dto = new LoginRequestDto("firstName.lastName", "plainPassword");
 
     assertThrows(
-        AuthenticationException.class, () -> authenticationService.login(dto));
+        UnauthenticatedException.class, () -> authenticationService.login(dto));
     verify(gymMetrics).incrementLoginFailure();
   }
 
@@ -122,7 +122,7 @@ class DefaultAuthenticationServiceTest {
     when(passwordEncoder.matches("wrongPassword", "hashedPassword")).thenReturn(false);
 
     assertThrows(
-        AuthenticationException.class, () -> authenticationService.login(dto));
+        UnauthenticatedException.class, () -> authenticationService.login(dto));
     verify(gymMetrics).incrementLoginFailure();
   }
 
@@ -133,7 +133,7 @@ class DefaultAuthenticationServiceTest {
     when(userRepository.findByUsername("firstName.lastName")).thenReturn(Optional.empty());
 
     assertThrows(
-        AuthenticationException.class, () -> authenticationService.login(dto));
+        UnauthenticatedException.class, () -> authenticationService.login(dto));
     verify(gymMetrics).incrementLoginFailure();
   }
 
@@ -162,7 +162,7 @@ class DefaultAuthenticationServiceTest {
     when(passwordEncoder.matches("wrongPassword", "hashedPassword")).thenReturn(false);
 
     assertThrows(
-        AuthenticationException.class, () -> authenticationService.changePassword(dto));
+        UnauthenticatedException.class, () -> authenticationService.changePassword(dto));
   }
 
   @Test

@@ -11,7 +11,7 @@ import io.jsonwebtoken.security.Keys;
 import java.time.Instant;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.vttish.gymapplication.exception.AuthenticationException;
+import org.vttish.gymapplication.exception.UnauthenticatedException;
 import org.vttish.gymapplication.security.Role;
 import org.vttish.gymapplication.security.UserPrincipal;
 
@@ -55,7 +55,7 @@ class DefaultJwtServiceTest {
     DefaultJwtService expiredJwtService = new DefaultJwtService(SECRET, -1000L);
     String expiredToken = expiredJwtService.generateToken(TRAINER_PRINCIPAL);
 
-    assertThrows(AuthenticationException.class, () -> jwtService.parseToken(expiredToken));
+    assertThrows(UnauthenticatedException.class, () -> jwtService.parseToken(expiredToken));
   }
 
   @Test
@@ -64,20 +64,20 @@ class DefaultJwtServiceTest {
     DefaultJwtService otherJwtService = new DefaultJwtService(otherSecret, EXPIRATION_MS);
     String foreignToken = otherJwtService.generateToken(TRAINER_PRINCIPAL);
 
-    assertThrows(AuthenticationException.class, () -> jwtService.parseToken(foreignToken));
+    assertThrows(UnauthenticatedException.class, () -> jwtService.parseToken(foreignToken));
   }
 
   @Test
   void parseToken_ShouldThrowAuthenticationException_WhenTokenIsMalformed() {
     assertThrows(
-        AuthenticationException.class,
+        UnauthenticatedException.class,
         () -> jwtService.parseToken("malformed.jwt.token")
     );
   }
 
   @Test
   void parseToken_ShouldThrowAuthenticationException_WhenTokenIsNull() {
-    assertThrows(AuthenticationException.class, () -> jwtService.parseToken(null));
+    assertThrows(UnauthenticatedException.class, () -> jwtService.parseToken(null));
   }
 
   @Test
@@ -93,7 +93,7 @@ class DefaultJwtServiceTest {
         .compact();
 
     assertThrows(
-        AuthenticationException.class,
+        UnauthenticatedException.class,
         () -> jwtService.parseToken(tokenWithoutRole)
     );
   }

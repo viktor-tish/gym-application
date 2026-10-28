@@ -11,18 +11,23 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.List;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.vttish.gymapplication.dto.auth.ChangePasswordRequestDto;
 import org.vttish.gymapplication.dto.auth.LoginRequestDto;
 import org.vttish.gymapplication.dto.auth.LoginResponseDto;
-import org.vttish.gymapplication.exception.AuthenticationException;
 import org.vttish.gymapplication.exception.ResourceNotFoundException;
+import org.vttish.gymapplication.exception.UnauthenticatedException;
 import org.vttish.gymapplication.facade.GymFacade;
 import org.vttish.gymapplication.security.Role;
 import org.vttish.gymapplication.security.UserPrincipal;
@@ -50,6 +55,25 @@ class AuthenticationControllerTest {
   @BeforeEach
   void resetMocks() {
     reset(gymFacade);
+    SecurityContextHolder.clearContext();
+  }
+
+  @AfterEach
+  void tearDown() {
+    SecurityContextHolder.clearContext();
+  }
+
+  private void setAuthentication(UserPrincipal principal) {
+    if (principal == null) {
+      SecurityContextHolder.clearContext();
+      return;
+    }
+    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+        principal,
+        null,
+        List.of(new SimpleGrantedAuthority("ROLE_" + principal.role().name()))
+    );
+    SecurityContextHolder.getContext().setAuthentication(authentication);
   }
 
   @Test
@@ -86,7 +110,7 @@ class AuthenticationControllerTest {
   @Test
   void login_ShouldReturnUnauthorized_WhenCredentialsAreIncorrect() throws Exception {
     LoginRequestDto request = new LoginRequestDto("firstName.lastName", "wrongPassword");
-    doThrow(new AuthenticationException("Invalid username or password"))
+    doThrow(new UnauthenticatedException("Invalid username or password"))
         .when(gymFacade).login(request);
 
     mockMvc.perform(post("/api/v1/auth/login")
@@ -101,9 +125,9 @@ class AuthenticationControllerTest {
         "firstName.lastName", "oldPassword", "newPassword"
     );
     doNothing().when(gymFacade).changePassword(request);
+    setAuthentication(new UserPrincipal("firstName.lastName", Role.TRAINEE));
 
     mockMvc.perform(post("/api/v1/auth/change-password")
-            .requestAttr("userPrincipal", new UserPrincipal("firstName.lastName", Role.TRAINEE))
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isOk());
@@ -116,9 +140,9 @@ class AuthenticationControllerTest {
     ChangePasswordRequestDto invalidRequest = new ChangePasswordRequestDto(
         "", "", ""
     );
+    setAuthentication(new UserPrincipal("firstName.lastName", Role.TRAINEE));
 
     mockMvc.perform(post("/api/v1/auth/change-password")
-            .requestAttr("userPrincipal", new UserPrincipal("firstName.lastName", Role.TRAINEE))
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(invalidRequest)))
         .andExpect(status().isBadRequest());
@@ -129,11 +153,11 @@ class AuthenticationControllerTest {
     ChangePasswordRequestDto request = new ChangePasswordRequestDto(
         "firstName.lastName", "wrongOldPassword", "newPassword"
     );
-    doThrow(new AuthenticationException("Invalid old password"))
+    doThrow(new UnauthenticatedException("Invalid old password"))
         .when(gymFacade).changePassword(request);
+    setAuthentication(new UserPrincipal("firstName.lastName", Role.TRAINEE));
 
     mockMvc.perform(post("/api/v1/auth/change-password")
-            .requestAttr("userPrincipal", new UserPrincipal("firstName.lastName", Role.TRAINEE))
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isUnauthorized());
@@ -146,9 +170,9 @@ class AuthenticationControllerTest {
     );
     doThrow(new ResourceNotFoundException("User not found with username: nonexistent.user"))
         .when(gymFacade).changePassword(request);
+    setAuthentication(new UserPrincipal("nonexistent.user", Role.TRAINEE));
 
     mockMvc.perform(post("/api/v1/auth/change-password")
-            .requestAttr("userPrincipal", new UserPrincipal("nonexistent.user", Role.TRAINEE))
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isNotFound());
@@ -159,9 +183,9 @@ class AuthenticationControllerTest {
     ChangePasswordRequestDto request = new ChangePasswordRequestDto(
         "firstName.lastName", "oldPassword", "newPassword"
     );
+    setAuthentication(new UserPrincipal("other.user", Role.TRAINEE));
 
     mockMvc.perform(post("/api/v1/auth/change-password")
-            .requestAttr("userPrincipal", new UserPrincipal("other.user", Role.TRAINEE))
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isForbidden());

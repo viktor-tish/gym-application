@@ -18,7 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.vttish.gymapplication.exception.AuthenticationException;
+import org.vttish.gymapplication.exception.UnauthenticatedException;
 
 @ExtendWith(MockitoExtension.class)
 class JwtAuthenticationFilterTest {
@@ -62,7 +62,6 @@ class JwtAuthenticationFilterTest {
     assertNotNull(auth);
     assertEquals(principal, auth.getPrincipal());
     assertEquals(1, auth.getAuthorities().size());
-    verify(request).setAttribute("userPrincipal", principal);
     verify(filterChain).doFilter(request, response);
   }
 
@@ -81,7 +80,7 @@ class JwtAuthenticationFilterTest {
     String token = "invalid.token";
 
     when(request.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn("Bearer " + token);
-    when(jwtService.parseToken(token)).thenThrow(new AuthenticationException("Invalid JWT token"));
+    when(jwtService.parseToken(token)).thenThrow(new UnauthenticatedException("Invalid JWT token"));
 
     filter.doFilterInternal(request, response, filterChain);
 

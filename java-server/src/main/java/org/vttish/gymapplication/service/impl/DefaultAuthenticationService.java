@@ -10,9 +10,9 @@ import org.vttish.gymapplication.dto.auth.LoginRequestDto;
 import org.vttish.gymapplication.dto.auth.LoginResponseDto;
 import org.vttish.gymapplication.dto.auth.UpdateUserStatusRequestDto;
 import org.vttish.gymapplication.entity.User;
-import org.vttish.gymapplication.exception.AuthenticationException;
 import org.vttish.gymapplication.exception.BadRequestException;
 import org.vttish.gymapplication.exception.ResourceNotFoundException;
+import org.vttish.gymapplication.exception.UnauthenticatedException;
 import org.vttish.gymapplication.repository.TraineeRepository;
 import org.vttish.gymapplication.repository.TrainerRepository;
 import org.vttish.gymapplication.repository.UserRepository;
@@ -37,14 +37,14 @@ public class DefaultAuthenticationService implements AuthenticationService {
     try {
       User user = userRepository.findByUsername(request.username())
           .filter(foundUser -> passwordEncoder.matches(request.password(), foundUser.getPassword()))
-          .orElseThrow(() -> new AuthenticationException("Invalid username or password"));
+          .orElseThrow(() -> new UnauthenticatedException("Invalid username or password"));
 
       Role role = resolveRole(user.getUsername());
       UserPrincipal userPrincipal = new UserPrincipal(user.getUsername(), role);
 
       gymMetrics.incrementLoginSuccess();
       return new LoginResponseDto(jwtService.generateToken(userPrincipal));
-    } catch (AuthenticationException ex) {
+    } catch (UnauthenticatedException ex) {
       gymMetrics.incrementLoginFailure();
       throw ex;
     }
@@ -58,7 +58,7 @@ public class DefaultAuthenticationService implements AuthenticationService {
     );
 
     if (!passwordEncoder.matches(request.oldPassword(), user.getPassword())) {
-      throw new AuthenticationException("Invalid old password");
+      throw new UnauthenticatedException("Invalid old password");
     }
 
     user.setPassword(passwordEncoder.encode(request.newPassword()));
@@ -89,6 +89,6 @@ public class DefaultAuthenticationService implements AuthenticationService {
       return Role.TRAINER;
     }
 
-    throw new AuthenticationException("User has no assigned role");
+    throw new UnauthenticatedException("User has no assigned role");
   }
 }

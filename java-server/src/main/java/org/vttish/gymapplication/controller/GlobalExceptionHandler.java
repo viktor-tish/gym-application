@@ -6,16 +6,18 @@ import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 import org.vttish.gymapplication.dto.error.ErrorResponseDto;
-import org.vttish.gymapplication.exception.AuthenticationException;
 import org.vttish.gymapplication.exception.BadRequestException;
 import org.vttish.gymapplication.exception.ForbiddenException;
 import org.vttish.gymapplication.exception.ResourceNotFoundException;
+import org.vttish.gymapplication.exception.UnauthenticatedException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -111,9 +113,9 @@ public class GlobalExceptionHandler {
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
   }
 
-  @ExceptionHandler(AuthenticationException.class)
+  @ExceptionHandler({ UnauthenticatedException.class, AuthenticationException.class })
   public ResponseEntity<ErrorResponseDto> handleAuthenticationException(
-      AuthenticationException ex,
+      Exception ex,
       HttpServletRequest request
   ) {
     ErrorResponseDto errorResponse = ErrorResponseDto.of(
@@ -126,9 +128,9 @@ public class GlobalExceptionHandler {
     return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
   }
 
-  @ExceptionHandler(ForbiddenException.class)
+  @ExceptionHandler({ ForbiddenException.class, AccessDeniedException.class })
   public ResponseEntity<ErrorResponseDto> handleForbiddenException(
-      ForbiddenException ex,
+      Exception ex,
       HttpServletRequest request
   ) {
     ErrorResponseDto errorResponse = ErrorResponseDto.of(

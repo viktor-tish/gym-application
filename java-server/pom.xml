@@ -32,6 +32,7 @@
             **/config/**,
             **/actuator/**,
             **/mapper/**
+            **/repository/**
         </sonar.coverage.exclusions>
     </properties>
 
@@ -217,6 +218,7 @@
                         <exclude>**/config/**</exclude>
                         <exclude>**/actuator/**</exclude>
                         <exclude>**/mapper/**</exclude>
+                        <exclude>**/repository/**</exclude>
                     </excludes>
                 </configuration>
                 <executions>

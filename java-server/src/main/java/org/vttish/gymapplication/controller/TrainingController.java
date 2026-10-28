@@ -6,6 +6,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -15,7 +16,6 @@ import org.vttish.gymapplication.dto.training.CreateTrainingRequestDto;
 import org.vttish.gymapplication.dto.training.TrainingTypeResponseDto;
 import org.vttish.gymapplication.exception.ForbiddenException;
 import org.vttish.gymapplication.facade.GymFacade;
-import org.vttish.gymapplication.security.RequireRole;
 import org.vttish.gymapplication.security.Role;
 import org.vttish.gymapplication.security.UserPrincipal;
 
@@ -26,7 +26,7 @@ public class TrainingController {
   private final GymFacade gymFacade;
 
   @PostMapping
-  @RequireRole({ Role.TRAINEE, Role.TRAINER })
+  @PreAuthorize("hasAnyRole('TRAINEE', 'TRAINER')")
   public ResponseEntity<Void> create(
       @Valid @RequestBody CreateTrainingRequestDto request,
       @Parameter(hidden = true) UserPrincipal userPrincipal
