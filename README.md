@@ -53,7 +53,7 @@ Examples:
 - `./run start` or `./run start local`: Starts with the `local` profile (SQL query logging enabled, development settings).
 - `./run start dev`: Starts with the `dev` profile (SQL logging enabled, test data seeded).
 - `./run start stg`: Starts with the `stg` profile (SQL logging disabled, pre-production connection pool, test data seeded).
-- `./run start prod`: Starts with the `prod` profile (production connection pool tuning, Flyway migrations only, restricted Actuator).
+- `./run start prod`: Starts with the `prod` profile (production connection pool tuning, Flyway migrations only, restricted Actuator, swagger and openAPI disabled).
 
 > **Note:** In `dev` and `stg` environments, test accounts are automatically seeded with password `password123` (e.g., trainees: `john.doe`, `alice.wonderland`, `bob.marley`; trainers: `jane.smith`, `michael.scott`, `serena.williams`).
 

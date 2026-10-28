@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.vttish.gymapplication.dto.auth.CredentialsResponseDto;
@@ -21,7 +22,6 @@ import org.vttish.gymapplication.mapper.TraineeMapper;
 import org.vttish.gymapplication.mapper.TrainerItemMapper;
 import org.vttish.gymapplication.repository.TraineeRepository;
 import org.vttish.gymapplication.repository.TrainerRepository;
-import org.vttish.gymapplication.security.PasswordHasher;
 import org.vttish.gymapplication.service.ProfileGenerationService;
 import org.vttish.gymapplication.service.TraineeService;
 
@@ -34,7 +34,7 @@ public class DefaultTraineeService implements TraineeService {
   private final ProfileGenerationService profileGenerationService;
   private final TraineeMapper traineeMapper;
   private final TrainerItemMapper trainerItemMapper;
-  private final PasswordHasher passwordHasher;
+  private final PasswordEncoder passwordEncoder;
 
   @Override
   @Transactional
@@ -47,7 +47,7 @@ public class DefaultTraineeService implements TraineeService {
     String password = profileGenerationService.generateRandomPassword();
 
     trainee.getUser().setUsername(username);
-    trainee.getUser().setPassword(passwordHasher.hash(password));
+    trainee.getUser().setPassword(passwordEncoder.encode(password));
     trainee.getUser().setIsActive(true);
 
     traineeRepository.save(trainee);

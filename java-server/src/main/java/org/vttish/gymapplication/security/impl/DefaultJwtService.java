@@ -58,7 +58,7 @@ public class DefaultJwtService implements JwtService {
       String roleName = claims.get("role", String.class);
 
       if (username == null || roleName == null) {
-        throw new AuthenticationException("Invalid JWT claims");
+        throw new AuthenticationException("Invalid or expired JWT token");
       }
 
       Role role = Role.valueOf(roleName);

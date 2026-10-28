@@ -4,6 +4,8 @@ import java.util.List;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.vttish.gymapplication.security.PublicEndpoint;
 
 @Configuration
@@ -21,5 +23,10 @@ public class SecurityConfig {
         PublicEndpoint.anyMethod("/v3/api-docs/**"),
         PublicEndpoint.anyMethod("/actuator/**")
     );
+  }
+
+  @Bean
+  public PasswordEncoder passwordEncoder() {
+    return new BCryptPasswordEncoder(12);
   }
 }

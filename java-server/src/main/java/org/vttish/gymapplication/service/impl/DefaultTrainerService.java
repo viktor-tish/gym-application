@@ -3,6 +3,7 @@ package org.vttish.gymapplication.service.impl;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.vttish.gymapplication.dto.auth.CredentialsResponseDto;
@@ -19,7 +20,6 @@ import org.vttish.gymapplication.mapper.TrainerMapper;
 import org.vttish.gymapplication.repository.TraineeRepository;
 import org.vttish.gymapplication.repository.TrainerRepository;
 import org.vttish.gymapplication.repository.TrainingTypeRepository;
-import org.vttish.gymapplication.security.PasswordHasher;
 import org.vttish.gymapplication.service.ProfileGenerationService;
 import org.vttish.gymapplication.service.TrainerService;
 
@@ -33,7 +33,7 @@ public class DefaultTrainerService implements TrainerService {
   private final ProfileGenerationService profileGenerationService;
   private final TrainerMapper trainerMapper;
   private final TrainerItemMapper trainerItemMapper;
-  private final PasswordHasher passwordHasher;
+  private final PasswordEncoder passwordEncoder;
 
   @Override
   @Transactional
@@ -46,7 +46,7 @@ public class DefaultTrainerService implements TrainerService {
     String password = profileGenerationService.generateRandomPassword();
 
     trainer.getUser().setUsername(username);
-    trainer.getUser().setPassword(passwordHasher.hash(password));
+    trainer.getUser().setPassword(passwordEncoder.encode(password));
     trainer.getUser().setIsActive(true);
 
     TrainingType specialization = findTrainingTypeById(request.specializationId());
