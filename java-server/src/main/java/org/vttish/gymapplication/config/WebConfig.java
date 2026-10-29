@@ -5,23 +5,31 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
-import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import org.vttish.gymapplication.logging.TransactionLoggingInterceptor;
+import org.vttish.gymapplication.logging.TransactionLoggingFilter;
 import org.vttish.gymapplication.security.UserPrincipalArgumentResolver;
 
 @Configuration
 @RequiredArgsConstructor
 public class WebConfig implements WebMvcConfigurer {
 
-  @Override
-  public void addInterceptors(InterceptorRegistry registry) {
-    registry.addInterceptor(new TransactionLoggingInterceptor());
+  @Bean
+  public FilterRegistrationBean<TransactionLoggingFilter> transactionIdFilterRegistration(
+      TransactionLoggingFilter filter
+  ) {
+    FilterRegistrationBean<TransactionLoggingFilter> registration =
+        new FilterRegistrationBean<>(filter);
+    registration.setOrder(Ordered.HIGHEST_PRECEDENCE);
+
+    return registration;
   }
 
   @Override
