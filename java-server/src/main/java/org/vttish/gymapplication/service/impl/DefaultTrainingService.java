@@ -4,6 +4,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.vttish.gymapplication.actuator.metrics.GymMetrics;
 import org.vttish.gymapplication.dto.trainee.GetTraineeTrainingsRequestDto;
 import org.vttish.gymapplication.dto.trainer.GetTrainerTrainingsRequestDto;
 import org.vttish.gymapplication.dto.training.CreateTrainingRequestDto;
@@ -34,6 +35,7 @@ public class DefaultTrainingService implements TrainingService {
   private final TrainingTypeRepository trainingTypeRepository;
   private final TrainingTypeMapper trainingTypeMapper;
   private final TrainingMapper trainingMapper;
+  private final GymMetrics gymMetrics;
 
   @Override
   @Transactional
@@ -56,6 +58,8 @@ public class DefaultTrainingService implements TrainingService {
     training.setType(trainer.getSpecialization());
 
     trainingRepository.save(training);
+
+    gymMetrics.incrementTrainingCreated();
   }
 
   @Override

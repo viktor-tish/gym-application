@@ -206,7 +206,8 @@ class TraineeControllerTest {
 
     List<TrainerItemResponseDto> actual = objectMapper.readValue(
         result.getResponse().getContentAsString(),
-        new TypeReference<>() {}
+        new TypeReference<>() {
+        }
     );
 
     assertEquals(List.of(trainerItem), actual);
@@ -241,7 +242,8 @@ class TraineeControllerTest {
 
     List<TrainerItemResponseDto> actual = objectMapper.readValue(
         result.getResponse().getContentAsString(),
-        new TypeReference<>() {}
+        new TypeReference<>() {
+        }
     );
 
     assertEquals(List.of(trainerItem), actual);
@@ -275,7 +277,8 @@ class TraineeControllerTest {
 
     List<TraineeTrainingItemResponseDto> actual = objectMapper.readValue(
         result.getResponse().getContentAsString(),
-        new TypeReference<>() {}
+        new TypeReference<>() {
+        }
     );
 
     assertEquals(List.of(trainingItem), actual);

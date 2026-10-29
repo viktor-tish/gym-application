@@ -14,6 +14,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.vttish.gymapplication.actuator.metrics.GymMetrics;
 import org.vttish.gymapplication.dto.auth.ChangePasswordRequestDto;
 import org.vttish.gymapplication.dto.auth.LoginRequestDto;
 import org.vttish.gymapplication.dto.auth.LoginResponseDto;
@@ -26,9 +27,9 @@ import org.vttish.gymapplication.repository.TraineeRepository;
 import org.vttish.gymapplication.repository.TrainerRepository;
 import org.vttish.gymapplication.repository.UserRepository;
 import org.vttish.gymapplication.security.JwtService;
+import org.vttish.gymapplication.security.PasswordHasher;
 import org.vttish.gymapplication.security.Role;
 import org.vttish.gymapplication.security.UserPrincipal;
-import org.vttish.gymapplication.utils.PasswordHasher;
 
 @ExtendWith(MockitoExtension.class)
 class DefaultAuthenticationServiceTest {
@@ -47,6 +48,9 @@ class DefaultAuthenticationServiceTest {
 
   @Mock
   private JwtService jwtService;
+
+  @Mock
+  private GymMetrics gymMetrics;
 
   @InjectMocks
   private DefaultAuthenticationService authenticationService;
@@ -75,6 +79,7 @@ class DefaultAuthenticationServiceTest {
 
     assertNotNull(response);
     assertEquals("jwt.token.trainee", response.token());
+    verify(gymMetrics).incrementLoginSuccess();
   }
 
   @Test
@@ -92,19 +97,21 @@ class DefaultAuthenticationServiceTest {
 
     assertNotNull(response);
     assertEquals("jwt.token.trainer", response.token());
+    verify(gymMetrics).incrementLoginSuccess();
   }
 
   @Test
   void login_ShouldThrowException_WhenUserHasNoAssignedRole() {
-    LoginRequestDto dto = new LoginRequestDto("firstName.lastName", "plainPassword");
-
     when(userRepository.findByUsername("firstName.lastName")).thenReturn(Optional.of(testUser));
     when(passwordHasher.matches("plainPassword", "hashedPassword")).thenReturn(true);
     when(traineeRepository.existsByUsername("firstName.lastName")).thenReturn(false);
     when(trainerRepository.existsByUsername("firstName.lastName")).thenReturn(false);
 
+    LoginRequestDto dto = new LoginRequestDto("firstName.lastName", "plainPassword");
+
     assertThrows(
         AuthenticationException.class, () -> authenticationService.login(dto));
+    verify(gymMetrics).incrementLoginFailure();
   }
 
   @Test
@@ -116,6 +123,7 @@ class DefaultAuthenticationServiceTest {
 
     assertThrows(
         AuthenticationException.class, () -> authenticationService.login(dto));
+    verify(gymMetrics).incrementLoginFailure();
   }
 
   @Test
@@ -126,6 +134,7 @@ class DefaultAuthenticationServiceTest {
 
     assertThrows(
         AuthenticationException.class, () -> authenticationService.login(dto));
+    verify(gymMetrics).incrementLoginFailure();
   }
 
   @Test

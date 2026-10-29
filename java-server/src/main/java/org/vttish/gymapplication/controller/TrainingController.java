@@ -1,5 +1,6 @@
 package org.vttish.gymapplication.controller;
 
+import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +29,7 @@ public class TrainingController {
   @RequireRole({ Role.TRAINEE, Role.TRAINER })
   public ResponseEntity<Void> create(
       @Valid @RequestBody CreateTrainingRequestDto request,
-      UserPrincipal userPrincipal
+      @Parameter(hidden = true) UserPrincipal userPrincipal
   ) {
     if (userPrincipal == null) {
       throw new ForbiddenException("Access denied");

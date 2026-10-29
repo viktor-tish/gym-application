@@ -3,6 +3,7 @@ package org.vttish.gymapplication.service.impl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.vttish.gymapplication.actuator.metrics.GymMetrics;
 import org.vttish.gymapplication.dto.auth.ChangePasswordRequestDto;
 import org.vttish.gymapplication.dto.auth.LoginRequestDto;
 import org.vttish.gymapplication.dto.auth.LoginResponseDto;
@@ -15,10 +16,10 @@ import org.vttish.gymapplication.repository.TraineeRepository;
 import org.vttish.gymapplication.repository.TrainerRepository;
 import org.vttish.gymapplication.repository.UserRepository;
 import org.vttish.gymapplication.security.JwtService;
+import org.vttish.gymapplication.security.PasswordHasher;
 import org.vttish.gymapplication.security.Role;
 import org.vttish.gymapplication.security.UserPrincipal;
 import org.vttish.gymapplication.service.AuthenticationService;
-import org.vttish.gymapplication.utils.PasswordHasher;
 
 @Service
 @Transactional(readOnly = true)
@@ -29,17 +30,24 @@ public class DefaultAuthenticationService implements AuthenticationService {
   private final TrainerRepository trainerRepository;
   private final PasswordHasher passwordHasher;
   private final JwtService jwtService;
+  private final GymMetrics gymMetrics;
 
   @Override
   public LoginResponseDto login(LoginRequestDto request) {
-    User user = userRepository.findByUsername(request.username())
-        .filter(foundUser -> passwordHasher.matches(request.password(), foundUser.getPassword()))
-        .orElseThrow(() -> new AuthenticationException("Invalid username or password"));
+    try {
+      User user = userRepository.findByUsername(request.username())
+          .filter(foundUser -> passwordHasher.matches(request.password(), foundUser.getPassword()))
+          .orElseThrow(() -> new AuthenticationException("Invalid username or password"));
 
-    Role role = resolveRole(user.getUsername());
-    UserPrincipal userPrincipal = new UserPrincipal(user.getUsername(), role);
+      Role role = resolveRole(user.getUsername());
+      UserPrincipal userPrincipal = new UserPrincipal(user.getUsername(), role);
 
-    return new LoginResponseDto(jwtService.generateToken(userPrincipal));
+      gymMetrics.incrementLoginSuccess();
+      return new LoginResponseDto(jwtService.generateToken(userPrincipal));
+    } catch (AuthenticationException ex) {
+      gymMetrics.incrementLoginFailure();
+      throw ex;
+    }
   }
 
   @Override
