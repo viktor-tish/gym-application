@@ -16,8 +16,8 @@ import org.vttish.gymapplication.dto.training.CreateTrainingRequestDto;
 import org.vttish.gymapplication.dto.training.TrainingTypeResponseDto;
 import org.vttish.gymapplication.exception.ForbiddenException;
 import org.vttish.gymapplication.facade.GymFacade;
-import org.vttish.gymapplication.security.Role;
-import org.vttish.gymapplication.security.UserPrincipal;
+import org.vttish.gymapplication.security.model.Role;
+import org.vttish.gymapplication.security.model.UserPrincipal;
 
 @RestController
 @RequestMapping("/api/v1/trainings")

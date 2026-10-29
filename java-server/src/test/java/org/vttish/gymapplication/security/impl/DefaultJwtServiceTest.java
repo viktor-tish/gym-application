@@ -6,16 +6,20 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.util.Date;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.vttish.gymapplication.exception.UnauthenticatedException;
-import org.vttish.gymapplication.security.Role;
-import org.vttish.gymapplication.security.UserPrincipal;
+import org.vttish.gymapplication.security.model.AuthenticatedToken;
+import org.vttish.gymapplication.security.model.Role;
+import org.vttish.gymapplication.security.model.UserPrincipal;
 
 class DefaultJwtServiceTest {
+
   private static final String SECRET =
       "YmVsaWV2ZWR0ZW50Y292ZXJvbGRlc3RvY2N1cm5vZGRlZGNpdGl6ZW50b29rc29sYXI=";
   private static final long EXPIRATION_MS = 3600000L;
@@ -40,35 +44,42 @@ class DefaultJwtServiceTest {
   }
 
   @Test
-  void parseToken_ShouldReturnUserPrincipal_WhenTokenIsValid() {
+  void parseToken_ShouldReturnAuthenticatedToken_WhenTokenIsValid() {
     String token = jwtService.generateToken(TRAINEE_PRINCIPAL);
 
-    UserPrincipal principal = jwtService.parseToken(token);
+    AuthenticatedToken authJwt = jwtService.parseToken(token);
 
-    assertNotNull(principal);
-    assertEquals("firstName.lastName", principal.username());
-    assertEquals(Role.TRAINEE, principal.role());
+    assertNotNull(authJwt);
+    assertNotNull(authJwt.userPrincipal());
+    assertEquals("firstName.lastName", authJwt.userPrincipal().username());
+    assertEquals(Role.TRAINEE, authJwt.userPrincipal().role());
+
+    assertNotNull(authJwt.jwtMetadata());
+    assertNotNull(authJwt.jwtMetadata().jwtId());
+    assertNotNull(authJwt.jwtMetadata().expiration());
   }
 
   @Test
-  void parseToken_ShouldThrowAuthenticationException_WhenTokenIsExpired() {
+  void parseToken_ShouldThrowUnauthenticatedException_WhenTokenIsExpired() {
     DefaultJwtService expiredJwtService = new DefaultJwtService(SECRET, -1000L);
     String expiredToken = expiredJwtService.generateToken(TRAINER_PRINCIPAL);
 
-    assertThrows(UnauthenticatedException.class, () -> jwtService.parseToken(expiredToken));
+    assertThrows(UnauthenticatedException.class,
+        () -> jwtService.parseToken(expiredToken));
   }
 
   @Test
-  void parseToken_ShouldThrowAuthenticationException_WhenSignatureIsInvalid() {
+  void parseToken_ShouldThrowUnauthenticatedException_WhenSignatureIsInvalid() {
     String otherSecret = "YW5vdGhlclNlY3JldEtleUZvclRlc3RpbmdJbnZhbGlkU2lnbmF0dXJlMTIzNDU=";
     DefaultJwtService otherJwtService = new DefaultJwtService(otherSecret, EXPIRATION_MS);
     String foreignToken = otherJwtService.generateToken(TRAINER_PRINCIPAL);
 
-    assertThrows(UnauthenticatedException.class, () -> jwtService.parseToken(foreignToken));
+    assertThrows(UnauthenticatedException.class,
+        () -> jwtService.parseToken(foreignToken));
   }
 
   @Test
-  void parseToken_ShouldThrowAuthenticationException_WhenTokenIsMalformed() {
+  void parseToken_ShouldThrowUnauthenticatedException_WhenTokenIsMalformed() {
     assertThrows(
         UnauthenticatedException.class,
         () -> jwtService.parseToken("malformed.jwt.token")
@@ -76,25 +87,69 @@ class DefaultJwtServiceTest {
   }
 
   @Test
-  void parseToken_ShouldThrowAuthenticationException_WhenTokenIsNull() {
+  void parseToken_ShouldThrowUnauthenticatedException_WhenTokenIsNull() {
     assertThrows(UnauthenticatedException.class, () -> jwtService.parseToken(null));
   }
 
   @Test
-  void parseToken_ShouldThrowAuthenticationException_WhenRoleClaimIsMissing() {
+  void parseToken_ShouldThrowUnauthenticatedException_WhenTokenIsBlank() {
+    assertThrows(UnauthenticatedException.class, () -> jwtService.parseToken("   "));
+  }
+
+  @Test
+  void parseToken_ShouldThrowUnauthenticatedException_WhenRoleClaimIsMissing() {
     Instant now = Instant.now();
     Instant validity = now.plusMillis(EXPIRATION_MS);
 
     String tokenWithoutRole = Jwts.builder()
         .subject("firstName.lastName")
-        .issuedAt(java.util.Date.from(now))
-        .expiration(java.util.Date.from(validity))
-        .signWith(Keys.hmacShaKeyFor(Decoders.BASE64.decode(SECRET)))
+        .id(UUID.randomUUID().toString())
+        .issuedAt(Date.from(now))
+        .expiration(Date.from(validity))
+        .signWith(Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8)))
         .compact();
 
     assertThrows(
         UnauthenticatedException.class,
         () -> jwtService.parseToken(tokenWithoutRole)
+    );
+  }
+
+  @Test
+  void parseToken_ShouldThrowUnauthenticatedException_WhenSubjectIsMissing() {
+    Instant now = Instant.now();
+    Instant validity = now.plusMillis(EXPIRATION_MS);
+
+    String tokenWithoutSubject = Jwts.builder()
+        .claim("role", Role.TRAINEE.name())
+        .id(UUID.randomUUID().toString())
+        .issuedAt(Date.from(now))
+        .expiration(Date.from(validity))
+        .signWith(Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8)))
+        .compact();
+
+    assertThrows(
+        UnauthenticatedException.class,
+        () -> jwtService.parseToken(tokenWithoutSubject)
+    );
+  }
+
+  @Test
+  void parseToken_ShouldThrowUnauthenticatedException_WhenJwtIdIsMissing() {
+    Instant now = Instant.now();
+    Instant validity = now.plusMillis(EXPIRATION_MS);
+
+    String tokenWithoutId = Jwts.builder()
+        .subject("firstName.lastName")
+        .claim("role", Role.TRAINEE.name())
+        .issuedAt(Date.from(now))
+        .expiration(Date.from(validity))
+        .signWith(Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8)))
+        .compact();
+
+    assertThrows(
+        UnauthenticatedException.class,
+        () -> jwtService.parseToken(tokenWithoutId)
     );
   }
 }

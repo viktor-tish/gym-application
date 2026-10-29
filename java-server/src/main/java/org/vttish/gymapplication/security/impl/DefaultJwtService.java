@@ -2,29 +2,35 @@ package org.vttish.gymapplication.security.impl;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.util.UUID;
 import javax.crypto.SecretKey;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.vttish.gymapplication.exception.UnauthenticatedException;
 import org.vttish.gymapplication.security.JwtService;
-import org.vttish.gymapplication.security.Role;
-import org.vttish.gymapplication.security.UserPrincipal;
+import org.vttish.gymapplication.security.model.AuthenticatedToken;
+import org.vttish.gymapplication.security.model.JwtMetadata;
+import org.vttish.gymapplication.security.model.Role;
+import org.vttish.gymapplication.security.model.UserPrincipal;
 
 @Service
 public class DefaultJwtService implements JwtService {
-  private final SecretKey signingKey;
   private final long expirationMs;
+  private final SecretKey signingKey;
+  private final JwtParser parser;
 
   public DefaultJwtService(
       @Value("${jwt.secret}") String secret,
       @Value("${jwt.expiration-ms}") long expirationMs
   ) {
-    this.signingKey = Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret));
     this.expirationMs = expirationMs;
+    this.signingKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+    this.parser = Jwts.parser().verifyWith(signingKey).build();
   }
 
   @Override
@@ -37,35 +43,42 @@ public class DefaultJwtService implements JwtService {
         .claim("role", principal.role().name())
         .issuedAt(java.util.Date.from(now))
         .expiration(java.util.Date.from(validity))
+        .id(UUID.randomUUID().toString())
         .signWith(signingKey)
         .compact();
   }
 
   @Override
-  public UserPrincipal parseToken(String token) {
+  public AuthenticatedToken parseToken(String token) {
     if (token == null || token.isBlank()) {
       throw new UnauthenticatedException("JWT token is missing");
     }
 
     try {
-      Claims claims = Jwts.parser()
-          .verifyWith(signingKey)
-          .build()
-          .parseSignedClaims(token)
-          .getPayload();
+      Claims claims = parser.parseSignedClaims(token).getPayload();
 
       String username = claims.getSubject();
       String roleName = claims.get("role", String.class);
+      String jwtId = claims.getId();
 
-      if (username == null || roleName == null) {
+      if (username == null
+          || roleName == null
+          || jwtId == null
+          || claims.getExpiration() == null
+      ) {
         throw new UnauthenticatedException("Invalid or expired JWT token");
       }
 
-      Role role = Role.valueOf(roleName);
+      UserPrincipal principal = new UserPrincipal(username, Role.valueOf(roleName));
+      JwtMetadata metadata = new JwtMetadata(
+          UUID.fromString(jwtId),
+          claims.getExpiration().toInstant()
+      );
 
-      return new UserPrincipal(username, role);
+      return new AuthenticatedToken(principal, metadata);
     } catch (JwtException | IllegalArgumentException ex) {
       throw new UnauthenticatedException("Invalid or expired JWT token");
     }
   }
 }
+

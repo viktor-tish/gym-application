@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -14,13 +15,20 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.vttish.gymapplication.exception.UnauthenticatedException;
+import org.vttish.gymapplication.security.model.AuthenticatedToken;
+import org.vttish.gymapplication.security.model.JwtMetadata;
+import org.vttish.gymapplication.security.model.UserPrincipal;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
   private static final String BEARER_PREFIX = "Bearer ";
+
   private final JwtService jwtService;
+  private final JwtBlacklistService jwtBlacklistService;
 
   @Override
   protected void doFilterInternal(
@@ -32,10 +40,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     if (authHeader != null && authHeader.startsWith(BEARER_PREFIX)) {
       String token = authHeader.substring(BEARER_PREFIX.length()).trim();
+
       if (!token.isBlank()) {
         try {
           authenticate(request, token);
+        } catch (UnauthenticatedException ex) {
+          log.debug("JWT authentication rejected: {}", ex.getMessage());
+          SecurityContextHolder.clearContext();
         } catch (Exception ex) {
+          log.error("Unexpected error during JWT authentication", ex);
           SecurityContextHolder.clearContext();
         }
       }
@@ -45,14 +58,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
   }
 
   private void authenticate(HttpServletRequest request, String token) {
-    UserPrincipal userPrincipal = jwtService.parseToken(token);
+    AuthenticatedToken authenticatedToken = jwtService.parseToken(token);
+    UserPrincipal principal = authenticatedToken.userPrincipal();
+    JwtMetadata metadata = authenticatedToken.jwtMetadata();
+
+    if (jwtBlacklistService.isBlacklisted(metadata.jwtId())) {
+      log.debug("Rejected blacklisted JWT with JTI: {}", metadata.jwtId());
+      return;
+    }
 
     List<SimpleGrantedAuthority> authorities = List.of(
-        new SimpleGrantedAuthority("ROLE_" + userPrincipal.role().name())
+        new SimpleGrantedAuthority("ROLE_" + principal.role().name())
     );
 
     UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-        userPrincipal, null, authorities
+        principal, metadata, authorities
     );
     authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 

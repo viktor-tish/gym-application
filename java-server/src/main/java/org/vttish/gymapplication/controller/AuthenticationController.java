@@ -14,7 +14,7 @@ import org.vttish.gymapplication.dto.auth.LoginRequestDto;
 import org.vttish.gymapplication.dto.auth.LoginResponseDto;
 import org.vttish.gymapplication.exception.ForbiddenException;
 import org.vttish.gymapplication.facade.GymFacade;
-import org.vttish.gymapplication.security.UserPrincipal;
+import org.vttish.gymapplication.security.model.UserPrincipal;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -25,6 +25,12 @@ public class AuthenticationController {
   @PostMapping("/login")
   public ResponseEntity<LoginResponseDto> login(@Valid @RequestBody LoginRequestDto request) {
     return ResponseEntity.ok(gymFacade.login(request));
+  }
+
+  @PostMapping("/logout")
+  public ResponseEntity<Void> logout() {
+    // Intercepted by Spring Security's LogoutFilter before reaching here
+    return ResponseEntity.ok().build();
   }
 
   @PostMapping("/change-password")

@@ -28,8 +28,8 @@ import org.vttish.gymapplication.repository.TraineeRepository;
 import org.vttish.gymapplication.repository.TrainerRepository;
 import org.vttish.gymapplication.repository.UserRepository;
 import org.vttish.gymapplication.security.JwtService;
-import org.vttish.gymapplication.security.Role;
-import org.vttish.gymapplication.security.UserPrincipal;
+import org.vttish.gymapplication.security.model.Role;
+import org.vttish.gymapplication.security.model.UserPrincipal;
 
 @ExtendWith(MockitoExtension.class)
 class DefaultAuthenticationServiceTest {

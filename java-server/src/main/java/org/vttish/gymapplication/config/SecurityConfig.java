@@ -20,6 +20,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.vttish.gymapplication.security.DelegatingAuthenticationEntryPoint;
 import org.vttish.gymapplication.security.JwtAuthenticationFilter;
+import org.vttish.gymapplication.security.JwtLogoutHandler;
 
 @Configuration
 @EnableWebSecurity
@@ -37,7 +38,8 @@ public class SecurityConfig {
   public SecurityFilterChain securityFilterChain(
       HttpSecurity http,
       JwtAuthenticationFilter jwtAuthenticationFilter,
-      DelegatingAuthenticationEntryPoint authenticationEntryPoint
+      DelegatingAuthenticationEntryPoint authenticationEntryPoint,
+      JwtLogoutHandler jwtLogoutHandler
   ) throws Exception {
     http
         .csrf(AbstractHttpConfigurer::disable)
@@ -45,6 +47,9 @@ public class SecurityConfig {
         .exceptionHandling(ex -> ex.authenticationEntryPoint(authenticationEntryPoint))
         .sessionManagement(session ->
             session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .logout(logout -> logout
+            .addLogoutHandler(jwtLogoutHandler)
+            .logoutUrl("/api/v1/auth/logout"))
         .authorizeHttpRequests(auth -> auth
             .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
             .requestMatchers(HttpMethod.POST, "/api/v1/trainees").permitAll()
