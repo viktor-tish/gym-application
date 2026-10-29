@@ -25,8 +25,8 @@ public class DefaultJwtService implements JwtService {
   private final JwtParser parser;
 
   public DefaultJwtService(
-      @Value("${jwt.secret}") String secret,
-      @Value("${jwt.expiration-ms}") long expirationMs
+      @Value("${app.security.jwt.secret}") String secret,
+      @Value("${app.security.jwt.expiration-ms}") long expirationMs
   ) {
     this.expirationMs = expirationMs;
     this.signingKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));

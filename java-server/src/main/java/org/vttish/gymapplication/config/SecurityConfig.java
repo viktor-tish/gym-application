@@ -27,12 +27,6 @@ import org.vttish.gymapplication.security.JwtLogoutHandler;
 @EnableMethodSecurity
 public class SecurityConfig {
 
-  private final List<String> allowedOrigins;
-
-  public SecurityConfig(@Value("${cors.allowed-origins}") List<String> allowedOrigins) {
-    this.allowedOrigins = allowedOrigins;
-  }
-
   @Bean
   @SuppressWarnings("java:S4502")
   public SecurityFilterChain securityFilterChain(
@@ -73,7 +67,9 @@ public class SecurityConfig {
   }
 
   @Bean
-  public CorsConfigurationSource corsConfigurationSource() {
+  public CorsConfigurationSource corsConfigurationSource(
+      @Value("${app.security.cors.allowed-origins}") List<String> allowedOrigins
+  ) {
     CorsConfiguration configuration = new CorsConfiguration();
 
     configuration.setAllowedOriginPatterns(allowedOrigins);
