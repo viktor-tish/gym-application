@@ -24,7 +24,7 @@ import org.vttish.gymapplication.dto.training.TrainerTrainingItemResponseDto;
 import org.vttish.gymapplication.dto.training.TrainingTypeResponseDto;
 
 public interface GymFacade {
-  LoginResponseDto login(LoginRequestDto request);
+  LoginResponseDto login(LoginRequestDto request, String ip);
 
   void changePassword(ChangePasswordRequestDto request);
 

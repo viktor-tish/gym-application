@@ -23,44 +23,33 @@ public class TransactionLoggingFilter extends OncePerRequestFilter {
       HttpServletResponse response,
       FilterChain filterChain
   ) throws ServletException, IOException {
-
     String transactionId = resolveTransactionId(request);
     long startTime = System.currentTimeMillis();
 
-    MDC.put("transactionId", transactionId);
     response.setHeader(TRANSACTION_ID_HEADER, transactionId);
 
-    String requestQuery = request.getQueryString() != null
-        ? "?" + request.getQueryString()
-        : "";
+    try (MDC.MDCCloseable ignored = MDC.putCloseable("transactionId", transactionId)) {
+      log.info("Incoming request: {} {}{}",
+          request.getMethod(), request.getRequestURI(), resolveQuery(request));
 
-    log.info("Incoming request: {} {}{}",
-        request.getMethod(), request.getRequestURI(), requestQuery);
-
-    Exception caughtException = null;
-    try {
-      filterChain.doFilter(request, response);
-    } catch (Exception ex) {
-      caughtException = ex;
-      throw ex;
-    } finally {
       try {
-        long duration = System.currentTimeMillis() - startTime;
-        int status = response.getStatus();
+        filterChain.doFilter(request, response);
+      } catch (Exception ex) {
+        log.error("Completed request: {} {} failed in {} ms",
+            request.getMethod(), request.getRequestURI(),
+            System.currentTimeMillis() - startTime, ex);
+        throw ex;
+      }
 
-        if (status >= 400 || caughtException != null) {
-          log.error("Completed request: {} {} with status {} in {} ms (error: {})",
-              request.getMethod(), request.getRequestURI(), status, duration,
-              caughtException != null ? caughtException.getMessage() : "HTTP error");
-        } else {
-          log.info("Completed request: {} {} with status {} in {} ms",
-              request.getMethod(), request.getRequestURI(), status, duration);
-        }
-      } catch (Exception e) {
-        log.error("Failed to log request completion for request: {} {}",
-            request.getMethod(), request.getRequestURI(), e);
-      } finally {
-        MDC.clear();
+      long duration = System.currentTimeMillis() - startTime;
+      int status = response.getStatus();
+
+      if (status >= 400) {
+        log.error("Completed request: {} {} with status {} in {} ms",
+            request.getMethod(), request.getRequestURI(), status, duration);
+      } else {
+        log.info("Completed request: {} {} with status {} in {} ms",
+            request.getMethod(), request.getRequestURI(), status, duration);
       }
     }
   }
@@ -71,5 +60,11 @@ public class TransactionLoggingFilter extends OncePerRequestFilter {
     return header == null || header.isBlank()
         ? UUID.randomUUID().toString()
         : header;
+  }
+
+  private String resolveQuery(HttpServletRequest request) {
+    String query = request.getQueryString();
+
+    return query != null ? "?" + query : "";
   }
 }
