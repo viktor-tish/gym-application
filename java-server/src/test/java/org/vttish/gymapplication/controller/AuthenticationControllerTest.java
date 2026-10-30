@@ -1,6 +1,7 @@
 package org.vttish.gymapplication.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -29,19 +30,24 @@ import org.vttish.gymapplication.dto.auth.LoginResponseDto;
 import org.vttish.gymapplication.exception.ResourceNotFoundException;
 import org.vttish.gymapplication.exception.UnauthenticatedException;
 import org.vttish.gymapplication.facade.GymFacade;
+import org.vttish.gymapplication.security.ClientIpResolver;
 import org.vttish.gymapplication.security.UserPrincipalArgumentResolver;
 import org.vttish.gymapplication.security.model.Role;
 import org.vttish.gymapplication.security.model.UserPrincipal;
 
 class AuthenticationControllerTest {
   private static GymFacade gymFacade;
+  private static ClientIpResolver clientIpResolver;
   private static MockMvc mockMvc;
   private static ObjectMapper objectMapper;
+
+  private static final String CLIENT_IP = "127.0.0.1";
 
   @BeforeAll
   static void setUp() {
     gymFacade = mock(GymFacade.class);
-    AuthenticationController controller = new AuthenticationController(gymFacade);
+    clientIpResolver = mock(ClientIpResolver.class);
+    AuthenticationController controller = new AuthenticationController(gymFacade, clientIpResolver);
 
     mockMvc = MockMvcBuilders
         .standaloneSetup(controller)
@@ -54,7 +60,7 @@ class AuthenticationControllerTest {
 
   @BeforeEach
   void resetMocks() {
-    reset(gymFacade);
+    reset(gymFacade, clientIpResolver);
     SecurityContextHolder.clearContext();
   }
 
@@ -80,7 +86,9 @@ class AuthenticationControllerTest {
   void login_ShouldReturnOk_WhenCredentialsAreValid() throws Exception {
     LoginRequestDto request = new LoginRequestDto("firstName.lastName", "password123");
     LoginResponseDto response = new LoginResponseDto("mocked.jwt.token");
-    when(gymFacade.login(request)).thenReturn(response);
+
+    when(clientIpResolver.resolve(any())).thenReturn(CLIENT_IP);
+    when(gymFacade.login(request, CLIENT_IP)).thenReturn(response);
 
     MvcResult result = mockMvc.perform(post("/api/v1/auth/login")
             .contentType(MediaType.APPLICATION_JSON)
@@ -94,7 +102,8 @@ class AuthenticationControllerTest {
     );
 
     assertEquals(response, actual);
-    verify(gymFacade).login(request);
+    verify(clientIpResolver).resolve(any());
+    verify(gymFacade).login(request, CLIENT_IP);
   }
 
   @Test
@@ -110,13 +119,18 @@ class AuthenticationControllerTest {
   @Test
   void login_ShouldReturnUnauthorized_WhenCredentialsAreIncorrect() throws Exception {
     LoginRequestDto request = new LoginRequestDto("firstName.lastName", "wrongPassword");
+
+    when(clientIpResolver.resolve(any())).thenReturn(CLIENT_IP);
     doThrow(new UnauthenticatedException("Invalid username or password"))
-        .when(gymFacade).login(request);
+        .when(gymFacade).login(request, CLIENT_IP);
 
     mockMvc.perform(post("/api/v1/auth/login")
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isUnauthorized());
+
+    verify(clientIpResolver).resolve(any());
+    verify(gymFacade).login(request, CLIENT_IP);
   }
 
   @Test

@@ -38,3 +38,7 @@ app:
     jwt:
       secret: ${JWT_SECRET}
       expiration-ms: ${JWT_EXPIRATION_MS}
+
+    login-attempt:
+      max-attempts: 3
+      ban-duration: 20s

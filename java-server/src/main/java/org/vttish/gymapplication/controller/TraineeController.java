@@ -107,7 +107,7 @@ public class TraineeController {
       content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
   )
   @GetMapping("/{username}")
-  @PreAuthorize("hasRole('TRAINEE') and #username == authentication.userPrincipal.username")
+  @PreAuthorize("hasRole('TRAINEE') and #username == authentication.principal.username")
   public ResponseEntity<TraineeProfileResponseDto> getProfile(
       @Parameter(description = "Trainee username", required = true)
       @PathVariable("username") String username
@@ -149,7 +149,7 @@ public class TraineeController {
       content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
   )
   @PutMapping("/{username}")
-  @PreAuthorize("hasRole('TRAINEE') and #username == authentication.userPrincipal.username")
+  @PreAuthorize("hasRole('TRAINEE') and #username == authentication.principal.username")
   public ResponseEntity<UpdateTraineeProfileResponseDto> updateProfile(
       @Parameter(description = "Trainee username", required = true)
       @PathVariable("username") String username,
@@ -182,7 +182,7 @@ public class TraineeController {
       content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
   )
   @DeleteMapping("/{username}")
-  @PreAuthorize("hasRole('TRAINEE') and #username == authentication.userPrincipal.username")
+  @PreAuthorize("hasRole('TRAINEE') and #username == authentication.principal.username")
   public ResponseEntity<Void> delete(
       @Parameter(description = "Trainee username", required = true)
       @PathVariable("username") String username
@@ -221,7 +221,7 @@ public class TraineeController {
       content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
   )
   @GetMapping("/{username}/trainers/not-assigned")
-  @PreAuthorize("hasRole('TRAINEE') and #username == authentication.userPrincipal.username")
+  @PreAuthorize("hasRole('TRAINEE') and #username == authentication.principal.username")
   public ResponseEntity<List<TrainerItemResponseDto>> getUnassignedActiveTrainers(
       @Parameter(description = "Trainee username", required = true)
       @PathVariable("username") String username
@@ -263,7 +263,7 @@ public class TraineeController {
       content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
   )
   @PutMapping("/{username}/trainers")
-  @PreAuthorize("hasRole('TRAINEE') and #username == authentication.userPrincipal.username")
+  @PreAuthorize("hasRole('TRAINEE') and #username == authentication.principal.username")
   public ResponseEntity<List<TrainerItemResponseDto>> updateTrainers(
       @Parameter(description = "Trainee username", required = true)
       @PathVariable("username") String username,
@@ -306,7 +306,7 @@ public class TraineeController {
       content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
   )
   @GetMapping("/{username}/trainings")
-  @PreAuthorize("hasRole('TRAINEE') and #username == authentication.userPrincipal.username")
+  @PreAuthorize("hasRole('TRAINEE') and #username == authentication.principal.username")
   public ResponseEntity<List<TraineeTrainingItemResponseDto>> getTrainings(
       @Parameter(description = "Trainee username", required = true)
       @PathVariable("username") String username,
@@ -349,7 +349,7 @@ public class TraineeController {
       content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
   )
   @PatchMapping("/{username}/status")
-  @PreAuthorize("hasRole('TRAINEE') and #username == authentication.userPrincipal.username")
+  @PreAuthorize("hasRole('TRAINEE') and #username == authentication.principal.username")
   public ResponseEntity<Void> updateStatus(
       @Parameter(description = "Trainee username", required = true)
       @PathVariable("username") String username,

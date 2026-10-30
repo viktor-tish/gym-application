@@ -1,6 +1,7 @@
 package org.vttish.gymapplication.controller;
 
 import io.swagger.v3.oas.annotations.Parameter;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +15,7 @@ import org.vttish.gymapplication.dto.auth.LoginRequestDto;
 import org.vttish.gymapplication.dto.auth.LoginResponseDto;
 import org.vttish.gymapplication.exception.ForbiddenException;
 import org.vttish.gymapplication.facade.GymFacade;
+import org.vttish.gymapplication.security.ClientIpResolver;
 import org.vttish.gymapplication.security.model.UserPrincipal;
 
 @RestController
@@ -21,16 +23,22 @@ import org.vttish.gymapplication.security.model.UserPrincipal;
 @RequiredArgsConstructor
 public class AuthenticationController {
   private final GymFacade gymFacade;
+  private final ClientIpResolver clientIpResolver;
 
   @PostMapping("/login")
-  public ResponseEntity<LoginResponseDto> login(@Valid @RequestBody LoginRequestDto request) {
-    return ResponseEntity.ok(gymFacade.login(request));
+  public ResponseEntity<LoginResponseDto> login(
+      @Valid @RequestBody LoginRequestDto request,
+      @Parameter(hidden = true) HttpServletRequest httpRequest
+  ) {
+    String ip = clientIpResolver.resolve(httpRequest);
+
+    return ResponseEntity.ok(gymFacade.login(request, ip));
   }
 
   @PostMapping("/logout")
   public ResponseEntity<Void> logout() {
     // Intercepted by Spring Security's LogoutFilter before reaching here
-    return ResponseEntity.ok().build();
+    return ResponseEntity.noContent().build();
   }
 
   @PostMapping("/change-password")

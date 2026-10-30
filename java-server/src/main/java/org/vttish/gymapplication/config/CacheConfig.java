@@ -8,6 +8,7 @@ import java.time.Instant;
 import java.util.UUID;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.vttish.gymapplication.security.properties.LoginAttemptProperties;
 
 @Configuration
 public class CacheConfig {
@@ -23,6 +24,22 @@ public class CacheConfig {
     return Caffeine.newBuilder()
         .maximumSize(100_000)
         .expireAfter(expiry)
+        .build();
+  }
+
+  @Bean
+  public Cache<String, Integer> attemptsPerIpCache(LoginAttemptProperties loginAttemptProperties) {
+    return Caffeine.newBuilder()
+        .maximumSize(100_000)
+        .expireAfterWrite(loginAttemptProperties.banDuration())
+        .build();
+  }
+
+  @Bean
+  public Cache<String, Instant> bannedIpsCache(LoginAttemptProperties loginAttemptProperties) {
+    return Caffeine.newBuilder()
+        .maximumSize(100_000)
+        .expireAfterWrite(loginAttemptProperties.banDuration())
         .build();
   }
 }

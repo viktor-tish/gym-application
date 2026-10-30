@@ -17,6 +17,7 @@ import org.vttish.gymapplication.repository.TraineeRepository;
 import org.vttish.gymapplication.repository.TrainerRepository;
 import org.vttish.gymapplication.repository.UserRepository;
 import org.vttish.gymapplication.security.JwtService;
+import org.vttish.gymapplication.security.LoginAttemptService;
 import org.vttish.gymapplication.security.model.Role;
 import org.vttish.gymapplication.security.model.UserPrincipal;
 import org.vttish.gymapplication.service.AuthenticationService;
@@ -30,10 +31,11 @@ public class DefaultAuthenticationService implements AuthenticationService {
   private final TrainerRepository trainerRepository;
   private final PasswordEncoder passwordEncoder;
   private final JwtService jwtService;
+  private final LoginAttemptService loginAttemptService;
   private final GymMetrics gymMetrics;
 
   @Override
-  public LoginResponseDto login(LoginRequestDto request) {
+  public LoginResponseDto login(LoginRequestDto request, String ip) {
     try {
       User user = userRepository.findByUsername(request.username())
           .filter(foundUser -> passwordEncoder.matches(request.password(), foundUser.getPassword()))
@@ -43,9 +45,13 @@ public class DefaultAuthenticationService implements AuthenticationService {
       UserPrincipal userPrincipal = new UserPrincipal(user.getUsername(), role);
 
       gymMetrics.incrementLoginSuccess();
+      loginAttemptService.loginSucceeded(ip);
+
       return new LoginResponseDto(jwtService.generateToken(userPrincipal));
     } catch (UnauthenticatedException ex) {
+      loginAttemptService.loginFailed(ip);
       gymMetrics.incrementLoginFailure();
+
       throw ex;
     }
   }

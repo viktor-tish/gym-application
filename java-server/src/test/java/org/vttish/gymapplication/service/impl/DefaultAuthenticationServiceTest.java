@@ -28,6 +28,7 @@ import org.vttish.gymapplication.repository.TraineeRepository;
 import org.vttish.gymapplication.repository.TrainerRepository;
 import org.vttish.gymapplication.repository.UserRepository;
 import org.vttish.gymapplication.security.JwtService;
+import org.vttish.gymapplication.security.LoginAttemptService;
 import org.vttish.gymapplication.security.model.Role;
 import org.vttish.gymapplication.security.model.UserPrincipal;
 
@@ -50,12 +51,16 @@ class DefaultAuthenticationServiceTest {
   private JwtService jwtService;
 
   @Mock
+  private LoginAttemptService loginAttemptService;
+
+  @Mock
   private GymMetrics gymMetrics;
 
   @InjectMocks
   private DefaultAuthenticationService authenticationService;
 
   private User testUser;
+  private static final String CLIENT_IP = "127.0.0.1";
 
   @BeforeEach
   void setUp() {
@@ -75,11 +80,12 @@ class DefaultAuthenticationServiceTest {
     when(traineeRepository.existsByUsername("firstName.lastName")).thenReturn(true);
     when(jwtService.generateToken(principal)).thenReturn("jwt.token.trainee");
 
-    LoginResponseDto response = authenticationService.login(dto);
+    LoginResponseDto response = authenticationService.login(dto, CLIENT_IP);
 
     assertNotNull(response);
     assertEquals("jwt.token.trainee", response.token());
     verify(gymMetrics).incrementLoginSuccess();
+    verify(loginAttemptService).loginSucceeded(CLIENT_IP);
   }
 
   @Test
@@ -93,11 +99,12 @@ class DefaultAuthenticationServiceTest {
     when(trainerRepository.existsByUsername("firstName.lastName")).thenReturn(true);
     when(jwtService.generateToken(principal)).thenReturn("jwt.token.trainer");
 
-    LoginResponseDto response = authenticationService.login(dto);
+    LoginResponseDto response = authenticationService.login(dto, CLIENT_IP);
 
     assertNotNull(response);
     assertEquals("jwt.token.trainer", response.token());
     verify(gymMetrics).incrementLoginSuccess();
+    verify(loginAttemptService).loginSucceeded(CLIENT_IP);
   }
 
   @Test
@@ -110,8 +117,9 @@ class DefaultAuthenticationServiceTest {
     LoginRequestDto dto = new LoginRequestDto("firstName.lastName", "plainPassword");
 
     assertThrows(
-        UnauthenticatedException.class, () -> authenticationService.login(dto));
+        UnauthenticatedException.class, () -> authenticationService.login(dto, CLIENT_IP));
     verify(gymMetrics).incrementLoginFailure();
+    verify(loginAttemptService).loginFailed(CLIENT_IP);
   }
 
   @Test
@@ -122,8 +130,9 @@ class DefaultAuthenticationServiceTest {
     when(passwordEncoder.matches("wrongPassword", "hashedPassword")).thenReturn(false);
 
     assertThrows(
-        UnauthenticatedException.class, () -> authenticationService.login(dto));
+        UnauthenticatedException.class, () -> authenticationService.login(dto, CLIENT_IP));
     verify(gymMetrics).incrementLoginFailure();
+    verify(loginAttemptService).loginFailed(CLIENT_IP);
   }
 
   @Test
@@ -133,8 +142,9 @@ class DefaultAuthenticationServiceTest {
     when(userRepository.findByUsername("firstName.lastName")).thenReturn(Optional.empty());
 
     assertThrows(
-        UnauthenticatedException.class, () -> authenticationService.login(dto));
+        UnauthenticatedException.class, () -> authenticationService.login(dto, CLIENT_IP));
     verify(gymMetrics).incrementLoginFailure();
+    verify(loginAttemptService).loginFailed(CLIENT_IP);
   }
 
   @Test
@@ -159,7 +169,8 @@ class DefaultAuthenticationServiceTest {
     );
 
     when(userRepository.findByUsername("firstName.lastName")).thenReturn(Optional.of(testUser));
-    when(passwordEncoder.matches("wrongPassword", "hashedPassword")).thenReturn(false);
+    when(passwordEncoder.matches("wrongPassword", "hashedPassword"))
+        .thenReturn(false);
 
     assertThrows(
         UnauthenticatedException.class, () -> authenticationService.changePassword(dto));
