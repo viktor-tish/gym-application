@@ -1,14 +1,15 @@
 package org.vttish.gymapplication.security;
 
 import org.springframework.core.MethodParameter;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
-import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
+import org.vttish.gymapplication.security.model.UserPrincipal;
 
 public class UserPrincipalArgumentResolver implements HandlerMethodArgumentResolver {
-  private static final String USER_PRINCIPAL_ATTRIBUTE = "userPrincipal";
 
   @Override
   public boolean supportsParameter(MethodParameter parameter) {
@@ -22,6 +23,13 @@ public class UserPrincipalArgumentResolver implements HandlerMethodArgumentResol
       NativeWebRequest webRequest,
       WebDataBinderFactory binderFactory
   ) {
-    return webRequest.getAttribute(USER_PRINCIPAL_ATTRIBUTE, RequestAttributes.SCOPE_REQUEST);
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+    if (authentication != null
+        && authentication.getPrincipal() instanceof UserPrincipal userPrincipal) {
+      return userPrincipal;
+    }
+
+    return null;
   }
 }

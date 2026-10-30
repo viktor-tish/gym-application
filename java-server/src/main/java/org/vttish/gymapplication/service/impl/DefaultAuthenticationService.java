@@ -1,6 +1,7 @@
 package org.vttish.gymapplication.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.vttish.gymapplication.actuator.metrics.GymMetrics;
@@ -9,16 +10,15 @@ import org.vttish.gymapplication.dto.auth.LoginRequestDto;
 import org.vttish.gymapplication.dto.auth.LoginResponseDto;
 import org.vttish.gymapplication.dto.auth.UpdateUserStatusRequestDto;
 import org.vttish.gymapplication.entity.User;
-import org.vttish.gymapplication.exception.AuthenticationException;
 import org.vttish.gymapplication.exception.BadRequestException;
 import org.vttish.gymapplication.exception.ResourceNotFoundException;
+import org.vttish.gymapplication.exception.UnauthenticatedException;
 import org.vttish.gymapplication.repository.TraineeRepository;
 import org.vttish.gymapplication.repository.TrainerRepository;
 import org.vttish.gymapplication.repository.UserRepository;
 import org.vttish.gymapplication.security.JwtService;
-import org.vttish.gymapplication.security.PasswordHasher;
-import org.vttish.gymapplication.security.Role;
-import org.vttish.gymapplication.security.UserPrincipal;
+import org.vttish.gymapplication.security.model.Role;
+import org.vttish.gymapplication.security.model.UserPrincipal;
 import org.vttish.gymapplication.service.AuthenticationService;
 
 @Service
@@ -28,7 +28,7 @@ public class DefaultAuthenticationService implements AuthenticationService {
   private final UserRepository userRepository;
   private final TraineeRepository traineeRepository;
   private final TrainerRepository trainerRepository;
-  private final PasswordHasher passwordHasher;
+  private final PasswordEncoder passwordEncoder;
   private final JwtService jwtService;
   private final GymMetrics gymMetrics;
 
@@ -36,15 +36,15 @@ public class DefaultAuthenticationService implements AuthenticationService {
   public LoginResponseDto login(LoginRequestDto request) {
     try {
       User user = userRepository.findByUsername(request.username())
-          .filter(foundUser -> passwordHasher.matches(request.password(), foundUser.getPassword()))
-          .orElseThrow(() -> new AuthenticationException("Invalid username or password"));
+          .filter(foundUser -> passwordEncoder.matches(request.password(), foundUser.getPassword()))
+          .orElseThrow(() -> new UnauthenticatedException("Invalid username or password"));
 
       Role role = resolveRole(user.getUsername());
       UserPrincipal userPrincipal = new UserPrincipal(user.getUsername(), role);
 
       gymMetrics.incrementLoginSuccess();
       return new LoginResponseDto(jwtService.generateToken(userPrincipal));
-    } catch (AuthenticationException ex) {
+    } catch (UnauthenticatedException ex) {
       gymMetrics.incrementLoginFailure();
       throw ex;
     }
@@ -57,11 +57,11 @@ public class DefaultAuthenticationService implements AuthenticationService {
         () -> new ResourceNotFoundException("User not found with username: " + request.username())
     );
 
-    if (!passwordHasher.matches(request.oldPassword(), user.getPassword())) {
-      throw new AuthenticationException("Invalid old password");
+    if (!passwordEncoder.matches(request.oldPassword(), user.getPassword())) {
+      throw new UnauthenticatedException("Invalid old password");
     }
 
-    user.setPassword(passwordHasher.hash(request.newPassword()));
+    user.setPassword(passwordEncoder.encode(request.newPassword()));
   }
 
   @Override
@@ -89,6 +89,6 @@ public class DefaultAuthenticationService implements AuthenticationService {
       return Role.TRAINER;
     }
 
-    throw new AuthenticationException("User has no assigned role");
+    throw new UnauthenticatedException("User has no assigned role");
   }
 }

@@ -12,7 +12,3 @@ spring:
     locations:
       - classpath:db/migration
       - classpath:db/testdata
-
-jwt:
-  secret: ${JWT_SECRET}
-  expiration-ms: ${JWT_EXPIRATION_MS}

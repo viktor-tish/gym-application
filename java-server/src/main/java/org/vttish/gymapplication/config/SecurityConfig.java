@@ -1,25 +1,85 @@
 package org.vttish.gymapplication.config;
 
 import java.util.List;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.vttish.gymapplication.security.PublicEndpoint;
+import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.vttish.gymapplication.security.DelegatingAuthenticationEntryPoint;
+import org.vttish.gymapplication.security.JwtAuthenticationFilter;
+import org.vttish.gymapplication.security.JwtLogoutHandler;
 
 @Configuration
+@EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfig {
 
   @Bean
-  public List<PublicEndpoint> whiteList() {
-    return List.of(
-        PublicEndpoint.of(HttpMethod.POST, "/api/v1/auth/login"),
-        PublicEndpoint.of(HttpMethod.POST, "/api/v1/trainees"),
-        PublicEndpoint.of(HttpMethod.POST, "/api/v1/trainers"),
-        PublicEndpoint.of(HttpMethod.GET, "/api/v1/trainings/types"),
-        PublicEndpoint.anyMethod("/swagger-ui/**"),
-        PublicEndpoint.anyMethod("/swagger-ui.html"),
-        PublicEndpoint.anyMethod("/v3/api-docs/**"),
-        PublicEndpoint.anyMethod("/actuator/**")
-    );
+  @SuppressWarnings("java:S4502")
+  public SecurityFilterChain securityFilterChain(
+      HttpSecurity http,
+      JwtAuthenticationFilter jwtAuthenticationFilter,
+      DelegatingAuthenticationEntryPoint authenticationEntryPoint,
+      JwtLogoutHandler jwtLogoutHandler
+  ) throws Exception {
+    http
+        .csrf(AbstractHttpConfigurer::disable)
+        .cors(Customizer.withDefaults())
+        .exceptionHandling(ex -> ex.authenticationEntryPoint(authenticationEntryPoint))
+        .sessionManagement(session ->
+            session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .logout(logout -> logout
+            .addLogoutHandler(jwtLogoutHandler)
+            .logoutUrl("/api/v1/auth/logout"))
+        .authorizeHttpRequests(auth -> auth
+            .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
+            .requestMatchers(HttpMethod.POST, "/api/v1/trainees").permitAll()
+            .requestMatchers(HttpMethod.POST, "/api/v1/trainers").permitAll()
+            .requestMatchers(HttpMethod.GET, "/api/v1/trainings/types").permitAll()
+            .requestMatchers(
+                "/swagger-ui/**",
+                "/swagger-ui.html",
+                "/v3/api-docs/**",
+                "/actuator/**"
+            ).permitAll()
+            .anyRequest().authenticated())
+        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
+    return http.build();
+  }
+
+  @Bean
+  public PasswordEncoder passwordEncoder() {
+    return new BCryptPasswordEncoder(12);
+  }
+
+  @Bean
+  public CorsConfigurationSource corsConfigurationSource(
+      @Value("${app.security.cors.allowed-origins}") List<String> allowedOrigins
+  ) {
+    CorsConfiguration configuration = new CorsConfiguration();
+
+    configuration.setAllowedOriginPatterns(allowedOrigins);
+    configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+    configuration.setAllowedHeaders(List.of("*"));
+    configuration.setExposedHeaders(List.of("Authorization", "X-Transaction-Id"));
+    configuration.setAllowCredentials(true);
+
+    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+    source.registerCorsConfiguration("/**", configuration);
+    return source;
   }
 }

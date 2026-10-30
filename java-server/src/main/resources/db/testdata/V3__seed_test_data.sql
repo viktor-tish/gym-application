@@ -1,14 +1,14 @@
 INSERT INTO users (id, first_name, last_name, username, password, is_active, created_at, updated_at) VALUES
-  ('b1b2c3d4-0002-0000-0000-000000000001', 'John', 'Doe', 'john.doe', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', true, NOW(), NOW()),
-  ('b1b2c3d4-0002-0000-0000-000000000002', 'Alice', 'Wonderland', 'alice.wonderland', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', true, NOW(), NOW()),
-  ('b1b2c3d4-0002-0000-0000-000000000003', 'Bob', 'Marley', 'bob.marley', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', true, NOW(), NOW()),
-  ('b1b2c3d4-0002-0000-0000-000000000004', 'Inactive', 'Trainee', 'inactive.trainee', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', false, NOW(), NOW());
+  ('b1b2c3d4-0002-0000-0000-000000000001', 'John', 'Doe', 'john.doe', '$2a$12$P785liuAwCj4MH4ZWyU4t.WX8a4jOKykymtAoGkOzzqcR675oAXAe', true, NOW(), NOW()),
+  ('b1b2c3d4-0002-0000-0000-000000000002', 'Alice', 'Wonderland', 'alice.wonderland', '$2a$12$P785liuAwCj4MH4ZWyU4t.WX8a4jOKykymtAoGkOzzqcR675oAXAe', true, NOW(), NOW()),
+  ('b1b2c3d4-0002-0000-0000-000000000003', 'Bob', 'Marley', 'bob.marley', '$2a$12$P785liuAwCj4MH4ZWyU4t.WX8a4jOKykymtAoGkOzzqcR675oAXAe', true, NOW(), NOW()),
+  ('b1b2c3d4-0002-0000-0000-000000000004', 'Inactive', 'Trainee', 'inactive.trainee', '$2a$12$P785liuAwCj4MH4ZWyU4t.WX8a4jOKykymtAoGkOzzqcR675oAXAe', false, NOW(), NOW());
 
 INSERT INTO users (id, first_name, last_name, username, password, is_active, created_at, updated_at) VALUES
-  ('b1b2c3d4-0002-0000-0000-000000000005', 'Jane', 'Smith', 'jane.smith', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', true, NOW(), NOW()),
-  ('b1b2c3d4-0002-0000-0000-000000000006', 'Michael', 'Scott', 'michael.scott', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', true, NOW(), NOW()),
-  ('b1b2c3d4-0002-0000-0000-000000000007', 'Serena', 'Williams', 'serena.williams', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', true, NOW(), NOW()),
-  ('b1b2c3d4-0002-0000-0000-000000000008', 'Inactive', 'Trainer', 'inactive.trainer', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', false, NOW(), NOW());
+  ('b1b2c3d4-0002-0000-0000-000000000005', 'Jane', 'Smith', 'jane.smith', '$2a$12$P785liuAwCj4MH4ZWyU4t.WX8a4jOKykymtAoGkOzzqcR675oAXAe', true, NOW(), NOW()),
+  ('b1b2c3d4-0002-0000-0000-000000000006', 'Michael', 'Scott', 'michael.scott', '$2a$12$P785liuAwCj4MH4ZWyU4t.WX8a4jOKykymtAoGkOzzqcR675oAXAe', true, NOW(), NOW()),
+  ('b1b2c3d4-0002-0000-0000-000000000007', 'Serena', 'Williams', 'serena.williams', '$2a$12$P785liuAwCj4MH4ZWyU4t.WX8a4jOKykymtAoGkOzzqcR675oAXAe', true, NOW(), NOW()),
+  ('b1b2c3d4-0002-0000-0000-000000000008', 'Inactive', 'Trainer', 'inactive.trainer', '$2a$12$P785liuAwCj4MH4ZWyU4t.WX8a4jOKykymtAoGkOzzqcR675oAXAe', false, NOW(), NOW());
 
 INSERT INTO trainees (id, user_id, date_of_birth, address, created_at, updated_at) VALUES
   ('c1b2c3d4-0003-0000-0000-000000000001', 'b1b2c3d4-0002-0000-0000-000000000001', '1995-05-15', '123 Main St, New York', NOW(), NOW()),

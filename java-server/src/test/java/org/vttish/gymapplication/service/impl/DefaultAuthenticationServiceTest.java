@@ -14,22 +14,22 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.vttish.gymapplication.actuator.metrics.GymMetrics;
 import org.vttish.gymapplication.dto.auth.ChangePasswordRequestDto;
 import org.vttish.gymapplication.dto.auth.LoginRequestDto;
 import org.vttish.gymapplication.dto.auth.LoginResponseDto;
 import org.vttish.gymapplication.dto.auth.UpdateUserStatusRequestDto;
 import org.vttish.gymapplication.entity.User;
-import org.vttish.gymapplication.exception.AuthenticationException;
 import org.vttish.gymapplication.exception.BadRequestException;
 import org.vttish.gymapplication.exception.ResourceNotFoundException;
+import org.vttish.gymapplication.exception.UnauthenticatedException;
 import org.vttish.gymapplication.repository.TraineeRepository;
 import org.vttish.gymapplication.repository.TrainerRepository;
 import org.vttish.gymapplication.repository.UserRepository;
 import org.vttish.gymapplication.security.JwtService;
-import org.vttish.gymapplication.security.PasswordHasher;
-import org.vttish.gymapplication.security.Role;
-import org.vttish.gymapplication.security.UserPrincipal;
+import org.vttish.gymapplication.security.model.Role;
+import org.vttish.gymapplication.security.model.UserPrincipal;
 
 @ExtendWith(MockitoExtension.class)
 class DefaultAuthenticationServiceTest {
@@ -44,7 +44,7 @@ class DefaultAuthenticationServiceTest {
   private TrainerRepository trainerRepository;
 
   @Mock
-  private PasswordHasher passwordHasher;
+  private PasswordEncoder passwordEncoder;
 
   @Mock
   private JwtService jwtService;
@@ -71,7 +71,7 @@ class DefaultAuthenticationServiceTest {
     UserPrincipal principal = new UserPrincipal("firstName.lastName", Role.TRAINEE);
 
     when(userRepository.findByUsername("firstName.lastName")).thenReturn(Optional.of(testUser));
-    when(passwordHasher.matches("plainPassword", "hashedPassword")).thenReturn(true);
+    when(passwordEncoder.matches("plainPassword", "hashedPassword")).thenReturn(true);
     when(traineeRepository.existsByUsername("firstName.lastName")).thenReturn(true);
     when(jwtService.generateToken(principal)).thenReturn("jwt.token.trainee");
 
@@ -88,7 +88,7 @@ class DefaultAuthenticationServiceTest {
     UserPrincipal principal = new UserPrincipal("firstName.lastName", Role.TRAINER);
 
     when(userRepository.findByUsername("firstName.lastName")).thenReturn(Optional.of(testUser));
-    when(passwordHasher.matches("plainPassword", "hashedPassword")).thenReturn(true);
+    when(passwordEncoder.matches("plainPassword", "hashedPassword")).thenReturn(true);
     when(traineeRepository.existsByUsername("firstName.lastName")).thenReturn(false);
     when(trainerRepository.existsByUsername("firstName.lastName")).thenReturn(true);
     when(jwtService.generateToken(principal)).thenReturn("jwt.token.trainer");
@@ -103,14 +103,14 @@ class DefaultAuthenticationServiceTest {
   @Test
   void login_ShouldThrowException_WhenUserHasNoAssignedRole() {
     when(userRepository.findByUsername("firstName.lastName")).thenReturn(Optional.of(testUser));
-    when(passwordHasher.matches("plainPassword", "hashedPassword")).thenReturn(true);
+    when(passwordEncoder.matches("plainPassword", "hashedPassword")).thenReturn(true);
     when(traineeRepository.existsByUsername("firstName.lastName")).thenReturn(false);
     when(trainerRepository.existsByUsername("firstName.lastName")).thenReturn(false);
 
     LoginRequestDto dto = new LoginRequestDto("firstName.lastName", "plainPassword");
 
     assertThrows(
-        AuthenticationException.class, () -> authenticationService.login(dto));
+        UnauthenticatedException.class, () -> authenticationService.login(dto));
     verify(gymMetrics).incrementLoginFailure();
   }
 
@@ -119,10 +119,10 @@ class DefaultAuthenticationServiceTest {
     LoginRequestDto dto = new LoginRequestDto("firstName.lastName", "wrongPassword");
 
     when(userRepository.findByUsername("firstName.lastName")).thenReturn(Optional.of(testUser));
-    when(passwordHasher.matches("wrongPassword", "hashedPassword")).thenReturn(false);
+    when(passwordEncoder.matches("wrongPassword", "hashedPassword")).thenReturn(false);
 
     assertThrows(
-        AuthenticationException.class, () -> authenticationService.login(dto));
+        UnauthenticatedException.class, () -> authenticationService.login(dto));
     verify(gymMetrics).incrementLoginFailure();
   }
 
@@ -133,15 +133,15 @@ class DefaultAuthenticationServiceTest {
     when(userRepository.findByUsername("firstName.lastName")).thenReturn(Optional.empty());
 
     assertThrows(
-        AuthenticationException.class, () -> authenticationService.login(dto));
+        UnauthenticatedException.class, () -> authenticationService.login(dto));
     verify(gymMetrics).incrementLoginFailure();
   }
 
   @Test
   void changePassword_ShouldUpdatePassword_WhenOldPasswordIsCorrect() {
     when(userRepository.findByUsername("firstName.lastName")).thenReturn(Optional.of(testUser));
-    when(passwordHasher.matches("plainPassword", "hashedPassword")).thenReturn(true);
-    when(passwordHasher.hash("newPlainPassword")).thenReturn("newHashedPassword");
+    when(passwordEncoder.matches("plainPassword", "hashedPassword")).thenReturn(true);
+    when(passwordEncoder.encode("newPlainPassword")).thenReturn("newHashedPassword");
 
     ChangePasswordRequestDto dto = new ChangePasswordRequestDto(
         "firstName.lastName", "plainPassword", "newPlainPassword"
@@ -149,7 +149,7 @@ class DefaultAuthenticationServiceTest {
 
     authenticationService.changePassword(dto);
 
-    verify(passwordHasher).hash("newPlainPassword");
+    verify(passwordEncoder).encode("newPlainPassword");
   }
 
   @Test
@@ -159,10 +159,10 @@ class DefaultAuthenticationServiceTest {
     );
 
     when(userRepository.findByUsername("firstName.lastName")).thenReturn(Optional.of(testUser));
-    when(passwordHasher.matches("wrongPassword", "hashedPassword")).thenReturn(false);
+    when(passwordEncoder.matches("wrongPassword", "hashedPassword")).thenReturn(false);
 
     assertThrows(
-        AuthenticationException.class, () -> authenticationService.changePassword(dto));
+        UnauthenticatedException.class, () -> authenticationService.changePassword(dto));
   }
 
   @Test
