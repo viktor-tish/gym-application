@@ -18,10 +18,14 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -29,9 +33,9 @@ import org.vttish.gymapplication.dto.training.CreateTrainingRequestDto;
 import org.vttish.gymapplication.dto.training.TrainingTypeResponseDto;
 import org.vttish.gymapplication.exception.ResourceNotFoundException;
 import org.vttish.gymapplication.facade.GymFacade;
-import org.vttish.gymapplication.security.Role;
-import org.vttish.gymapplication.security.UserPrincipal;
 import org.vttish.gymapplication.security.UserPrincipalArgumentResolver;
+import org.vttish.gymapplication.security.model.Role;
+import org.vttish.gymapplication.security.model.UserPrincipal;
 
 class TrainingControllerTest {
   private static GymFacade gymFacade;
@@ -57,6 +61,25 @@ class TrainingControllerTest {
   @BeforeEach
   void resetMocks() {
     reset(gymFacade);
+    SecurityContextHolder.clearContext();
+  }
+
+  @AfterEach
+  void tearDown() {
+    SecurityContextHolder.clearContext();
+  }
+
+  private void setAuthentication(UserPrincipal principal) {
+    if (principal == null) {
+      SecurityContextHolder.clearContext();
+      return;
+    }
+    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+        principal,
+        null,
+        List.of(new SimpleGrantedAuthority("ROLE_" + principal.role().name()))
+    );
+    SecurityContextHolder.getContext().setAuthentication(authentication);
   }
 
   @Test
@@ -65,9 +88,9 @@ class TrainingControllerTest {
         "firstName.lastName", "trainee.username", "Morning Workout", LocalDate.of(2025, 5, 1), 60
     );
     doNothing().when(gymFacade).createTraining(request);
+    setAuthentication(new UserPrincipal("firstName.lastName", Role.TRAINER));
 
     mockMvc.perform(post("/api/v1/trainings")
-            .requestAttr("userPrincipal", new UserPrincipal("firstName.lastName", Role.TRAINER))
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isCreated());
@@ -81,9 +104,9 @@ class TrainingControllerTest {
         "firstName.lastName", "trainee.username", "Morning Workout", LocalDate.of(2025, 5, 1), 60
     );
     doNothing().when(gymFacade).createTraining(request);
+    setAuthentication(new UserPrincipal("trainee.username", Role.TRAINEE));
 
     mockMvc.perform(post("/api/v1/trainings")
-            .requestAttr("userPrincipal", new UserPrincipal("trainee.username", Role.TRAINEE))
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isCreated());
@@ -96,9 +119,9 @@ class TrainingControllerTest {
     CreateTrainingRequestDto invalidRequest = new CreateTrainingRequestDto(
         "", "", "", null, -10
     );
+    setAuthentication(new UserPrincipal("trainer.username", Role.TRAINER));
 
     mockMvc.perform(post("/api/v1/trainings")
-            .requestAttr("userPrincipal", new UserPrincipal("trainer.username", Role.TRAINER))
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(invalidRequest)))
         .andExpect(status().isBadRequest());
@@ -111,9 +134,9 @@ class TrainingControllerTest {
     );
     doThrow(new ResourceNotFoundException("Trainer not found with username: unknown.trainer"))
         .when(gymFacade).createTraining(request);
+    setAuthentication(new UserPrincipal("unknown.trainer", Role.TRAINER));
 
     mockMvc.perform(post("/api/v1/trainings")
-            .requestAttr("userPrincipal", new UserPrincipal("unknown.trainer", Role.TRAINER))
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isNotFound());
@@ -124,9 +147,9 @@ class TrainingControllerTest {
     CreateTrainingRequestDto request = new CreateTrainingRequestDto(
         "trainer.username", "trainee.username", "Morning Workout", LocalDate.of(2025, 5, 1), 60
     );
+    setAuthentication(new UserPrincipal("other.trainer", Role.TRAINER));
 
     mockMvc.perform(post("/api/v1/trainings")
-            .requestAttr("userPrincipal", new UserPrincipal("other.trainer", Role.TRAINER))
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isForbidden());
@@ -137,9 +160,9 @@ class TrainingControllerTest {
     CreateTrainingRequestDto request = new CreateTrainingRequestDto(
         "trainer.username", "trainee.username", "Morning Workout", LocalDate.of(2025, 5, 1), 60
     );
+    setAuthentication(new UserPrincipal("other.trainee", Role.TRAINEE));
 
     mockMvc.perform(post("/api/v1/trainings")
-            .requestAttr("userPrincipal", new UserPrincipal("other.trainee", Role.TRAINEE))
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isForbidden());

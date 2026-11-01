@@ -11,6 +11,7 @@ import java.net.URI;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -34,8 +35,6 @@ import org.vttish.gymapplication.dto.trainee.UpdateTraineeTrainersRequestDto;
 import org.vttish.gymapplication.dto.trainer.TrainerItemResponseDto;
 import org.vttish.gymapplication.dto.training.TraineeTrainingItemResponseDto;
 import org.vttish.gymapplication.facade.GymFacade;
-import org.vttish.gymapplication.security.RequireRole;
-import org.vttish.gymapplication.security.Role;
 
 @Tag(
     name = "Trainee Management",
@@ -108,7 +107,7 @@ public class TraineeController {
       content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
   )
   @GetMapping("/{username}")
-  @RequireRole(Role.TRAINEE)
+  @PreAuthorize("hasRole('TRAINEE') and #username == authentication.principal.username")
   public ResponseEntity<TraineeProfileResponseDto> getProfile(
       @Parameter(description = "Trainee username", required = true)
       @PathVariable("username") String username
@@ -150,7 +149,7 @@ public class TraineeController {
       content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
   )
   @PutMapping("/{username}")
-  @RequireRole(Role.TRAINEE)
+  @PreAuthorize("hasRole('TRAINEE') and #username == authentication.principal.username")
   public ResponseEntity<UpdateTraineeProfileResponseDto> updateProfile(
       @Parameter(description = "Trainee username", required = true)
       @PathVariable("username") String username,
@@ -183,7 +182,7 @@ public class TraineeController {
       content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
   )
   @DeleteMapping("/{username}")
-  @RequireRole(Role.TRAINEE)
+  @PreAuthorize("hasRole('TRAINEE') and #username == authentication.principal.username")
   public ResponseEntity<Void> delete(
       @Parameter(description = "Trainee username", required = true)
       @PathVariable("username") String username
@@ -222,7 +221,7 @@ public class TraineeController {
       content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
   )
   @GetMapping("/{username}/trainers/not-assigned")
-  @RequireRole(Role.TRAINEE)
+  @PreAuthorize("hasRole('TRAINEE') and #username == authentication.principal.username")
   public ResponseEntity<List<TrainerItemResponseDto>> getUnassignedActiveTrainers(
       @Parameter(description = "Trainee username", required = true)
       @PathVariable("username") String username
@@ -264,7 +263,7 @@ public class TraineeController {
       content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
   )
   @PutMapping("/{username}/trainers")
-  @RequireRole(Role.TRAINEE)
+  @PreAuthorize("hasRole('TRAINEE') and #username == authentication.principal.username")
   public ResponseEntity<List<TrainerItemResponseDto>> updateTrainers(
       @Parameter(description = "Trainee username", required = true)
       @PathVariable("username") String username,
@@ -307,7 +306,7 @@ public class TraineeController {
       content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
   )
   @GetMapping("/{username}/trainings")
-  @RequireRole(Role.TRAINEE)
+  @PreAuthorize("hasRole('TRAINEE') and #username == authentication.principal.username")
   public ResponseEntity<List<TraineeTrainingItemResponseDto>> getTrainings(
       @Parameter(description = "Trainee username", required = true)
       @PathVariable("username") String username,
@@ -350,7 +349,7 @@ public class TraineeController {
       content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
   )
   @PatchMapping("/{username}/status")
-  @RequireRole(Role.TRAINEE)
+  @PreAuthorize("hasRole('TRAINEE') and #username == authentication.principal.username")
   public ResponseEntity<Void> updateStatus(
       @Parameter(description = "Trainee username", required = true)
       @PathVariable("username") String username,

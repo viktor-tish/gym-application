@@ -1,4 +1,4 @@
-package org.vttish.gymapplication.security;
+package org.vttish.gymapplication.security.model;
 
 public record UserPrincipal(
     String username,

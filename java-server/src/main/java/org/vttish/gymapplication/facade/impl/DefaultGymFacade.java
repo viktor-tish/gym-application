@@ -39,8 +39,8 @@ public class DefaultGymFacade implements GymFacade {
   private final AuthenticationService authenticationService;
 
   @Override
-  public LoginResponseDto login(LoginRequestDto request) {
-    return authenticationService.login(request);
+  public LoginResponseDto login(LoginRequestDto request, String ip) {
+    return authenticationService.login(request, ip);
   }
 
   @Override

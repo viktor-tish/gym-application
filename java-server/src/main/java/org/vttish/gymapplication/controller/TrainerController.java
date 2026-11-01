@@ -5,6 +5,7 @@ import java.net.URI;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -24,8 +25,6 @@ import org.vttish.gymapplication.dto.trainer.UpdateTrainerProfileRequestDto;
 import org.vttish.gymapplication.dto.trainer.UpdateTrainerProfileResponseDto;
 import org.vttish.gymapplication.dto.training.TrainerTrainingItemResponseDto;
 import org.vttish.gymapplication.facade.GymFacade;
-import org.vttish.gymapplication.security.RequireRole;
-import org.vttish.gymapplication.security.Role;
 
 @RestController
 @RequestMapping("/api/v1/trainers")
@@ -48,7 +47,7 @@ public class TrainerController {
   }
 
   @GetMapping("/{username}")
-  @RequireRole(Role.TRAINER)
+  @PreAuthorize("hasRole('TRAINER') and #username == authentication.principal.username")
   public ResponseEntity<TrainerProfileResponseDto> getProfile(
       @PathVariable("username") String username
   ) {
@@ -56,7 +55,7 @@ public class TrainerController {
   }
 
   @PutMapping("/{username}")
-  @RequireRole(Role.TRAINER)
+  @PreAuthorize("hasRole('TRAINER') and #username == authentication.principal.username")
   public ResponseEntity<UpdateTrainerProfileResponseDto> updateProfile(
       @PathVariable("username") String username,
       @Valid @RequestBody UpdateTrainerProfileRequestDto request
@@ -65,7 +64,7 @@ public class TrainerController {
   }
 
   @GetMapping("/{username}/trainings")
-  @RequireRole(Role.TRAINER)
+  @PreAuthorize("hasRole('TRAINER') and #username == authentication.principal.username")
   public ResponseEntity<List<TrainerTrainingItemResponseDto>> getTrainings(
       @PathVariable("username") String username,
       @Valid @ModelAttribute GetTrainerTrainingsRequestDto request
@@ -74,7 +73,7 @@ public class TrainerController {
   }
 
   @PatchMapping("/{username}/status")
-  @RequireRole(Role.TRAINER)
+  @PreAuthorize("hasRole('TRAINER') and #username == authentication.principal.username")
   public ResponseEntity<Void> updateStatus(
       @PathVariable("username") String username,
       @Valid @RequestBody UpdateUserStatusRequestDto request

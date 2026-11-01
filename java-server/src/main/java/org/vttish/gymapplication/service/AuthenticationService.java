@@ -6,7 +6,7 @@ import org.vttish.gymapplication.dto.auth.LoginResponseDto;
 import org.vttish.gymapplication.dto.auth.UpdateUserStatusRequestDto;
 
 public interface AuthenticationService {
-  LoginResponseDto login(LoginRequestDto request);
+  LoginResponseDto login(LoginRequestDto request, String ip);
 
   void changePassword(ChangePasswordRequestDto request);
 

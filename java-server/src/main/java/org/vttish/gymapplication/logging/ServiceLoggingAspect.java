@@ -8,6 +8,9 @@ import org.aspectj.lang.annotation.Pointcut;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import org.vttish.gymapplication.exception.ForbiddenException;
+import org.vttish.gymapplication.exception.ResourceNotFoundException;
+import org.vttish.gymapplication.exception.UnauthenticatedException;
 
 @Aspect
 @Component
@@ -18,6 +21,7 @@ public class ServiceLoggingAspect {
   }
 
   @Around("serviceImplementationMethods()")
+  @SuppressWarnings("java:S2139")
   public Object logServiceAccess(ProceedingJoinPoint joinPoint) throws Throwable {
     Class<?> targetClass = joinPoint.getTarget().getClass();
     Logger logger = LoggerFactory.getLogger(targetClass);
@@ -43,6 +47,9 @@ public class ServiceLoggingAspect {
 
       return result;
 
+    } catch (UnauthenticatedException | ForbiddenException | ResourceNotFoundException ex) {
+      logger.warn("Exception in {}() with cause: {}", methodName, ex.getMessage());
+      throw ex;
     } catch (Throwable ex) {
       logger.error("Exception in {}() with cause: {}", methodName, ex.getMessage(), ex);
       throw ex;

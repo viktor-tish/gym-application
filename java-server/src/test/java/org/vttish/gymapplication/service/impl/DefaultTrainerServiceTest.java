@@ -15,6 +15,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.vttish.gymapplication.dto.auth.CredentialsResponseDto;
 import org.vttish.gymapplication.dto.trainer.RegisterTrainerRequestDto;
@@ -32,7 +33,6 @@ import org.vttish.gymapplication.mapper.TrainerMapper;
 import org.vttish.gymapplication.repository.TraineeRepository;
 import org.vttish.gymapplication.repository.TrainerRepository;
 import org.vttish.gymapplication.repository.TrainingTypeRepository;
-import org.vttish.gymapplication.security.PasswordHasher;
 import org.vttish.gymapplication.service.ProfileGenerationService;
 
 @ExtendWith(MockitoExtension.class)
@@ -57,7 +57,7 @@ class DefaultTrainerServiceTest {
   private TrainerItemMapper trainerItemMapper;
 
   @Mock
-  private PasswordHasher passwordHasher;
+  private PasswordEncoder passwordEncoder;
 
   @InjectMocks
   private DefaultTrainerService trainerService;
@@ -93,7 +93,7 @@ class DefaultTrainerServiceTest {
     when(profileGenerationService.generateUniqueUsername("firstName", "lastName"))
         .thenReturn("firstName.lastName");
     when(profileGenerationService.generateRandomPassword()).thenReturn("plainPassword");
-    when(passwordHasher.hash("plainPassword")).thenReturn("hashedPassword");
+    when(passwordEncoder.encode("plainPassword")).thenReturn("hashedPassword");
     when(trainingTypeRepository.findById(specializationId))
         .thenReturn(Optional.of(testSpecialization));
 
@@ -116,7 +116,7 @@ class DefaultTrainerServiceTest {
     when(profileGenerationService.generateUniqueUsername("firstName", "lastName"))
         .thenReturn("firstName.lastName");
     when(profileGenerationService.generateRandomPassword()).thenReturn("plainPassword");
-    when(passwordHasher.hash("plainPassword")).thenReturn("hashedPassword");
+    when(passwordEncoder.encode("plainPassword")).thenReturn("hashedPassword");
     when(trainingTypeRepository.findById(invalidUuid)).thenReturn(Optional.empty());
 
     assertThrows(
