@@ -48,6 +48,29 @@ services:
     restart: unless-stopped
     networks:
       - gym-network
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -sf http://localhost:9000/api/system/status | grep -q '\"status\":\"UP\"'" ]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 120s
+
+  sonarqube-init:
+    container_name: gym-sonarqube-init
+    image: curlimages/curl:latest
+    user: "0:0"
+    environment:
+      SONAR_LOGIN: ${SONAR_LOGIN}
+      SONAR_PASSWORD: ${SONAR_PASSWORD}
+    volumes:
+      - ./init-sonar.sh:/tmp/init-sonar.sh
+      - sonarqube-context:/tmp/sonarqube-context
+    networks:
+      - gym-network
+    depends_on:
+      sonarqube:
+        condition: service_healthy
+    entrypoint: [ "/bin/sh", "/tmp/init-sonar.sh" ]
 
 networks:
   gym-network:
@@ -59,3 +82,5 @@ volumes:
   sonarqube-data:
   sonarqube-logs:
   sonarqube-extensions:
+  sonarqube-context:
+    name: sonarqube-context
