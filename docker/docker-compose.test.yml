@@ -12,6 +12,19 @@ services:
       - maven-repo:/root/.m2/repository
       - sonarqube-context:/tmp/sonarqube-context:ro
 
+  discovery-server-test:
+    container_name: gym-discovery-server-test
+    build:
+      context: ../discovery-server
+      dockerfile: docker/test.Dockerfile
+    environment:
+      SONAR_PROJECT_KEY: gym-discovery-server
+    networks:
+      - gym-network
+    volumes:
+      - maven-repo:/root/.m2/repository
+      - sonarqube-context:/tmp/sonarqube-context:ro
+
 networks:
   gym-network:
     external: true
