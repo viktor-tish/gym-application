@@ -1,0 +1,13 @@
+package org.vttish.gymapplication.apigateway;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+
+@SpringBootTest
+class GymApiGatewayApplicationTests {
+
+  @Test
+  void contextLoads() {
+  }
+
+}
