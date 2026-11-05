@@ -5,17 +5,25 @@ services:
       context: ../java-server
       dockerfile: docker/test.Dockerfile
     environment:
-      SONAR_LOGIN: ${SONAR_LOGIN}
-      SONAR_PASSWORD: ${SONAR_PASSWORD}
       SONAR_PROJECT_KEY: gym-java-server
-      SONAR_PROJECT_NAME: "Gym Java Server"
-      JWT_SECRET: ${JWT_SECRET}
-      JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS}
-      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
     networks:
       - gym-network
     volumes:
       - maven-repo:/root/.m2/repository
+      - sonarqube-context:/tmp/sonarqube-context:ro
+
+  discovery-server-test:
+    container_name: gym-discovery-server-test
+    build:
+      context: ../discovery-server
+      dockerfile: docker/test.Dockerfile
+    environment:
+      SONAR_PROJECT_KEY: gym-discovery-server
+    networks:
+      - gym-network
+    volumes:
+      - maven-repo:/root/.m2/repository
+      - sonarqube-context:/tmp/sonarqube-context:ro
 
 networks:
   gym-network:
@@ -24,3 +32,6 @@ networks:
 
 volumes:
   maven-repo:
+  sonarqube-context:
+    external: true
+    name: sonarqube-context

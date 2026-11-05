@@ -20,8 +20,8 @@
         <mapstruct.version>1.6.3</mapstruct.version>
         <springdoc.version>2.8.8</springdoc.version>
         <jjwt.version>0.12.6</jjwt.version>
-        <jackson-bom.version>2.22.3</jackson-bom.version>
         <commons-lang3.version>3.18.0</commons-lang3.version>
+        <spring-cloud.version>2025.0.3</spring-cloud.version>
 
         <sonar.coverage.exclusions>
             **/actuator/**
@@ -148,7 +148,24 @@
             <groupId>com.github.ben-manes.caffeine</groupId>
             <artifactId>caffeine</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+        </dependency>
     </dependencies>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${spring-cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <build>
         <finalName>app</finalName>

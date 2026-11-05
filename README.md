@@ -25,7 +25,11 @@ git config core.hooksPath .githooks
 ## Running the Application
 
 This project is fully containerized. A single `./run` script is provided to manage the infrastructure, application, 
-and test lifecycles.
+and test lifecycles. To see the list of available commands run:
+
+```bash
+./run help
+```
 
 ### Infrastructure
 
@@ -61,7 +65,7 @@ To view the live logs of the service, use: `docker logs -f gym-java-server`
 
 ### Run the Tests
 
-To execute the fully isolated test pipeline, run:
+To execute the fully isolated test pipeline for all services, run:
 
 ```bash
 ./run test
@@ -69,6 +73,12 @@ To execute the fully isolated test pipeline, run:
 This command compiles the code, runs all tests, generates JaCoCo test coverage reports, and pushes the analysis to the 
 SonarQube container. If a test fails, the pre-push hook will block your commit, and the script will preserve the failed 
 container so you can inspect its logs.
+
+You can optionally specify a list of services to run tests selectively:
+
+```bash
+./run test [services...]
+```
 
 ### Clean the Database
 
