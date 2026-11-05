@@ -22,6 +22,24 @@ services:
       discovery-server:
         condition: service_healthy
 
+  workload-report-server:
+    container_name: gym-workload-report-server
+    build:
+      context: ../workload-report-server
+      dockerfile: docker/Dockerfile
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_PROFILES_ACTIVE:
+      H2_WORKLOAD_REPORT_DB_USERNAME:
+      H2_WORKLOAD_REPORT_DB_PASSWORD:
+      DISCOVERY_SERVER_URL: ${DISCOVERY_SERVER_URL}
+    networks:
+      - gym-network
+    depends_on:
+      discovery-server:
+        condition: service_healthy
+
   discovery-server:
     container_name: gym-discovery-server
     build:
