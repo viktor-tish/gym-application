@@ -18,6 +18,9 @@ services:
       DISCOVERY_SERVER_URL: ${DISCOVERY_SERVER_URL}
     networks:
       - gym-network
+    depends_on:
+      discovery-server:
+        condition: service_healthy
 
   discovery-server:
     container_name: gym-discovery-server
@@ -28,6 +31,12 @@ services:
       - "8761:8761"
     networks:
       - gym-network
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8761/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
 
 networks:
   gym-network:
