@@ -4,8 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.resilience.annotation.Retryable;
 import org.springframework.stereotype.Component;
+import org.vttish.gymapplication.workloadreport.dto.AddTrainerWorkloadRequestDto;
 import org.vttish.gymapplication.workloadreport.dto.TrainerWorkloadResponseDto;
-import org.vttish.gymapplication.workloadreport.dto.UpdateTrainerWorkloadRequestDto;
 import org.vttish.gymapplication.workloadreport.service.TrainerWorkloadService;
 
 @Component
@@ -18,7 +18,7 @@ public class TrainerWorkloadHandler {
       includes = DataIntegrityViolationException.class,
       maxRetries = 2
   )
-  public void handleAddWorkload(UpdateTrainerWorkloadRequestDto request) {
+  public void handleAddWorkload(AddTrainerWorkloadRequestDto request) {
     trainerWorkloadService.addWorkload(request);
   }
 

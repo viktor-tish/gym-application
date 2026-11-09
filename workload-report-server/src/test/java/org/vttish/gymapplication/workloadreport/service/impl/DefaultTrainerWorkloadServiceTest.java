@@ -22,8 +22,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.vttish.gymapplication.workloadreport.dto.ActionType;
+import org.vttish.gymapplication.workloadreport.dto.AddTrainerWorkloadRequestDto;
 import org.vttish.gymapplication.workloadreport.dto.TrainerWorkloadResponseDto;
-import org.vttish.gymapplication.workloadreport.dto.UpdateTrainerWorkloadRequestDto;
 import org.vttish.gymapplication.workloadreport.entity.TrainerProfile;
 import org.vttish.gymapplication.workloadreport.exception.ResourceNotFoundException;
 import org.vttish.gymapplication.workloadreport.mapper.TrainerWorkloadMapper;
@@ -50,7 +50,7 @@ class DefaultTrainerWorkloadServiceTest {
     LocalDate trainingDate = LocalDate.of(2026, 5, 10);
     int duration = 60;
 
-    UpdateTrainerWorkloadRequestDto request = new UpdateTrainerWorkloadRequestDto(
+    AddTrainerWorkloadRequestDto request = new AddTrainerWorkloadRequestDto(
         username, "firstName", "lastName", true, trainingDate, duration, ActionType.ADD
     );
 
@@ -73,7 +73,7 @@ class DefaultTrainerWorkloadServiceTest {
     LocalDate trainingDate = LocalDate.of(2026, 5, 10);
     int duration = 90;
 
-    UpdateTrainerWorkloadRequestDto request = new UpdateTrainerWorkloadRequestDto(
+    AddTrainerWorkloadRequestDto request = new AddTrainerWorkloadRequestDto(
         username, "firstName", "lastName", false, trainingDate, duration, ActionType.DELETE
     );
 
@@ -96,7 +96,7 @@ class DefaultTrainerWorkloadServiceTest {
     LocalDate trainingDate = LocalDate.of(2026, 6, 15);
     int duration = 120;
 
-    UpdateTrainerWorkloadRequestDto request = new UpdateTrainerWorkloadRequestDto(
+    AddTrainerWorkloadRequestDto request = new AddTrainerWorkloadRequestDto(
         username, "firstName", "lastName", true, trainingDate, duration, ActionType.ADD
     );
 
