@@ -7,6 +7,7 @@ import org.vttish.gymapplication.workloadreport.dto.AddTrainerWorkloadRequestDto
 import org.vttish.gymapplication.workloadreport.dto.TrainerWorkloadResponseDto;
 import org.vttish.gymapplication.workloadreport.entity.TrainerProfile;
 import org.vttish.gymapplication.workloadreport.exception.ResourceNotFoundException;
+import org.vttish.gymapplication.workloadreport.logging.Loggable;
 import org.vttish.gymapplication.workloadreport.mapper.TrainerWorkloadMapper;
 import org.vttish.gymapplication.workloadreport.repository.TrainerProfileRepository;
 import org.vttish.gymapplication.workloadreport.service.TrainerWorkloadService;
@@ -14,6 +15,7 @@ import org.vttish.gymapplication.workloadreport.service.TrainerWorkloadService;
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
+@Loggable
 public class DefaultTrainerWorkloadService implements TrainerWorkloadService {
 
   private final TrainerProfileRepository trainerProfileRepository;
