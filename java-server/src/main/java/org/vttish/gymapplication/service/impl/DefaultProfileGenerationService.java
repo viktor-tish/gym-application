@@ -5,12 +5,14 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.vttish.gymapplication.logging.Loggable;
 import org.vttish.gymapplication.repository.UserRepository;
 import org.vttish.gymapplication.service.ProfileGenerationService;
 
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
+@Loggable
 public class DefaultProfileGenerationService implements ProfileGenerationService {
   private final UserRepository userRepository;
 
