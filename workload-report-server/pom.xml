@@ -24,7 +24,8 @@
 			**/dto/**,
 			**/entity/BaseEntity*,
 			**/repository/**,
-			**/mapper/**
+			**/mapper/**,
+			**/handler/**
 		</sonar.coverage.exclusions>
 	</properties>
 
@@ -191,6 +192,7 @@
 						<exclude>**/entity/BaseEntity.class</exclude>
 						<exclude>**/repository/**</exclude>
 						<exclude>**/mapper/**</exclude>
+                        <exclude>**/handler/**</exclude>
 					</excludes>
 				</configuration>
 				<executions>
