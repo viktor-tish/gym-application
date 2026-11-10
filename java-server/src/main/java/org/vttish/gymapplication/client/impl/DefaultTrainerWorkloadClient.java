@@ -1,5 +1,7 @@
 package org.vttish.gymapplication.client.impl;
 
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
@@ -12,6 +14,7 @@ import org.vttish.gymapplication.event.TrainingDeletedEvent;
 import org.vttish.gymapplication.logging.Loggable;
 
 @Component
+@Slf4j
 @Loggable
 public class DefaultTrainerWorkloadClient implements TrainerWorkloadClient {
 
@@ -27,6 +30,7 @@ public class DefaultTrainerWorkloadClient implements TrainerWorkloadClient {
   }
 
   @Override
+  @CircuitBreaker(name = "trainerWorkloadClient", fallbackMethod = "submitWorkloadFallback")
   public void submitWorkload(TrainingCreatedEvent event) {
     send(
         event.trainerUsername(),
@@ -35,11 +39,22 @@ public class DefaultTrainerWorkloadClient implements TrainerWorkloadClient {
   }
 
   @Override
+  @CircuitBreaker(name = "trainerWorkloadClient", fallbackMethod = "cancelWorkloadFallback")
   public void cancelWorkload(TrainingDeletedEvent event) {
     send(
         event.trainerUsername(),
         trainerWorkloadMapper.toUpdateTrainerWorkloadRequestDto(event, ActionType.DELETE)
     );
+  }
+
+  @SuppressWarnings("java:S1172")
+  private void submitWorkloadFallback(TrainingCreatedEvent event, Exception ex) {
+    log.warn("Falling back for submitWorkload: {}", ex.toString());
+  }
+
+  @SuppressWarnings("java:S1172")
+  private void cancelWorkloadFallback(TrainingDeletedEvent event, Exception ex) {
+    log.warn("Falling back for cancelWorkload: {}", ex.toString());
   }
 
   private void send(String username, UpdateTrainerWorkloadRequestDto payload) {

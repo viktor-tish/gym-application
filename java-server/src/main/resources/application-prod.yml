@@ -29,6 +29,16 @@ management:
     health:
       show-details: always
 
+resilience4j:
+  circuitbreaker:
+    instances:
+      trainerWorkloadClient:
+        sliding-window-type: COUNT_BASED
+        sliding-window-size: 100
+        minimum-number-of-calls: 20
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 40s
+
 app:
   security:
     cors:
