@@ -31,8 +31,9 @@
             **/entity/**,
             **/config/**,
             **/actuator/**,
-            **/mapper/**
-            **/repository/**
+            **/mapper/**,
+            **/repository/**,
+            **/event/**,
         </sonar.coverage.exclusions>
     </properties>
 
@@ -246,6 +247,7 @@
                         <exclude>**/actuator/**</exclude>
                         <exclude>**/mapper/**</exclude>
                         <exclude>**/repository/**</exclude>
+                        <exclude>**/event/**</exclude>
                     </excludes>
                 </configuration>
                 <executions>
