@@ -18,6 +18,7 @@ import org.vttish.gymapplication.dto.trainer.TrainerItemResponseDto;
 import org.vttish.gymapplication.entity.Trainee;
 import org.vttish.gymapplication.entity.Trainer;
 import org.vttish.gymapplication.exception.ResourceNotFoundException;
+import org.vttish.gymapplication.logging.Loggable;
 import org.vttish.gymapplication.mapper.TraineeMapper;
 import org.vttish.gymapplication.mapper.TrainerItemMapper;
 import org.vttish.gymapplication.repository.TraineeRepository;
@@ -28,6 +29,7 @@ import org.vttish.gymapplication.service.TraineeService;
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
+@Loggable
 public class DefaultTraineeService implements TraineeService {
   private final TraineeRepository traineeRepository;
   private final TrainerRepository trainerRepository;

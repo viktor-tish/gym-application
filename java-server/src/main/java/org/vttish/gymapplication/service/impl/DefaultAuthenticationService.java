@@ -13,6 +13,7 @@ import org.vttish.gymapplication.entity.User;
 import org.vttish.gymapplication.exception.BadRequestException;
 import org.vttish.gymapplication.exception.ResourceNotFoundException;
 import org.vttish.gymapplication.exception.UnauthenticatedException;
+import org.vttish.gymapplication.logging.Loggable;
 import org.vttish.gymapplication.repository.TraineeRepository;
 import org.vttish.gymapplication.repository.TrainerRepository;
 import org.vttish.gymapplication.repository.UserRepository;
@@ -25,6 +26,7 @@ import org.vttish.gymapplication.service.AuthenticationService;
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
+@Loggable
 public class DefaultAuthenticationService implements AuthenticationService {
   private final UserRepository userRepository;
   private final TraineeRepository traineeRepository;
