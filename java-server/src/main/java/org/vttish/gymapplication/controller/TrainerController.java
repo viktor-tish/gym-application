@@ -3,9 +3,11 @@ package org.vttish.gymapplication.controller;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -70,6 +72,17 @@ public class TrainerController {
       @Valid @ModelAttribute GetTrainerTrainingsRequestDto request
   ) {
     return ResponseEntity.ok(gymFacade.getTrainerTrainings(username, request));
+  }
+
+  @DeleteMapping("/{username}/trainings/{id}")
+  @PreAuthorize("hasRole('TRAINER') and #username == authentication.principal.username")
+  public ResponseEntity<Void> deleteTraining(
+      @PathVariable("username") String username,
+      @PathVariable("id") UUID id
+  ) {
+    gymFacade.deleteTraining(id, username);
+
+    return ResponseEntity.noContent().build();
   }
 
   @PatchMapping("/{username}/status")

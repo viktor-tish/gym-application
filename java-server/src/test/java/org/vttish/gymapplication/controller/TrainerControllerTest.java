@@ -9,6 +9,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -200,7 +201,7 @@ class TrainerControllerTest {
         UUID.randomUUID(), "Fitness"
     );
     TrainerTrainingItemResponseDto trainingItem = new TrainerTrainingItemResponseDto(
-        "Morning Workout", LocalDate.of(2025, 1, 1), trainingType, 45, "trainee.username"
+        null, "Morning Workout", LocalDate.of(2025, 1, 1), trainingType, 45, "trainee.username"
     );
 
     when(gymFacade.getTrainerTrainings(
@@ -221,6 +222,27 @@ class TrainerControllerTest {
     );
 
     assertEquals(List.of(trainingItem), actual);
+  }
+
+  @Test
+  void deleteTraining_ShouldReturnNoContent_WhenTrainingExists() throws Exception {
+    UUID trainingId = UUID.randomUUID();
+    doNothing().when(gymFacade).deleteTraining(trainingId, "firstName.lastName");
+
+    mockMvc.perform(delete("/api/v1/trainers/firstName.lastName/trainings/{id}", trainingId))
+        .andExpect(status().isNoContent());
+
+    verify(gymFacade).deleteTraining(trainingId, "firstName.lastName");
+  }
+
+  @Test
+  void deleteTraining_ShouldReturnNotFound_WhenTrainingDoesNotExist() throws Exception {
+    UUID trainingId = UUID.randomUUID();
+    doThrow(new ResourceNotFoundException("Training not found"))
+        .when(gymFacade).deleteTraining(trainingId, "firstName.lastName");
+
+    mockMvc.perform(delete("/api/v1/trainers/firstName.lastName/trainings/{id}", trainingId))
+        .andExpect(status().isNotFound());
   }
 
   @Test
