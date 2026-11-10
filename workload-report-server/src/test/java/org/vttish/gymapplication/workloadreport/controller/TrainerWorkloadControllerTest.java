@@ -24,9 +24,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.vttish.gymapplication.workloadreport.dto.ActionType;
-import org.vttish.gymapplication.workloadreport.dto.AddTrainerWorkloadRequestDto;
 import org.vttish.gymapplication.workloadreport.dto.MonthlyWorkloadItemResponseDto;
 import org.vttish.gymapplication.workloadreport.dto.TrainerWorkloadResponseDto;
+import org.vttish.gymapplication.workloadreport.dto.UpdateTrainerWorkloadRequestDto;
 import org.vttish.gymapplication.workloadreport.dto.YearWorkloadItemResponseDto;
 import org.vttish.gymapplication.workloadreport.exception.ResourceNotFoundException;
 import org.vttish.gymapplication.workloadreport.handler.TrainerWorkloadHandler;
@@ -57,25 +57,25 @@ class TrainerWorkloadControllerTest {
   }
 
   @Test
-  void addWorkload_ShouldReturnNoContent_WhenRequestIsValidAndUsernamesMatch() throws Exception {
-    AddTrainerWorkloadRequestDto request = new AddTrainerWorkloadRequestDto(
+  void updateWorkload_ShouldReturnNoContent_WhenRequestIsValidAndUsernamesMatch() throws Exception {
+    UpdateTrainerWorkloadRequestDto request = new UpdateTrainerWorkloadRequestDto(
         "firstName.lastName", "firstName", "lastName", true,
         LocalDate.of(2026, 6, 15), 60, ActionType.ADD
     );
 
-    doNothing().when(trainerWorkloadHandler).handleAddWorkload(any(AddTrainerWorkloadRequestDto.class));
+    doNothing().when(trainerWorkloadHandler).handleUpdateWorkload(any(UpdateTrainerWorkloadRequestDto.class));
 
     mockMvc.perform(post("/api/v1/trainers/firstName.lastName/workloads")
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isNoContent());
 
-    verify(trainerWorkloadHandler).handleAddWorkload(request);
+    verify(trainerWorkloadHandler).handleUpdateWorkload(request);
   }
 
   @Test
-  void addWorkload_ShouldReturnBadRequest_WhenUsernameInPathDoesNotMatchBody() throws Exception {
-    AddTrainerWorkloadRequestDto request = new AddTrainerWorkloadRequestDto(
+  void updateWorkload_ShouldReturnBadRequest_WhenUsernameInPathDoesNotMatchBody() throws Exception {
+    UpdateTrainerWorkloadRequestDto request = new UpdateTrainerWorkloadRequestDto(
         "other.username", "firstName", "lastName", true,
         LocalDate.of(2026, 6, 15), 60, ActionType.ADD
     );

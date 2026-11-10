@@ -9,8 +9,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.vttish.gymapplication.workloadreport.dto.AddTrainerWorkloadRequestDto;
 import org.vttish.gymapplication.workloadreport.dto.TrainerWorkloadResponseDto;
+import org.vttish.gymapplication.workloadreport.dto.UpdateTrainerWorkloadRequestDto;
 import org.vttish.gymapplication.workloadreport.exception.BadRequestException;
 import org.vttish.gymapplication.workloadreport.handler.TrainerWorkloadHandler;
 
@@ -22,9 +22,9 @@ public class TrainerWorkloadController {
   private final TrainerWorkloadHandler trainerWorkloadHandler;
 
   @PostMapping("/{username}/workloads")
-  public ResponseEntity<Void> addWorkload(
+  public ResponseEntity<Void> updateWorkload(
       @PathVariable String username,
-      @Valid @RequestBody AddTrainerWorkloadRequestDto request
+      @Valid @RequestBody UpdateTrainerWorkloadRequestDto request
   ) {
     if (!username.equals(request.username())) {
       throw new BadRequestException(
@@ -33,7 +33,7 @@ public class TrainerWorkloadController {
       );
     }
 
-    trainerWorkloadHandler.handleAddWorkload(request);
+    trainerWorkloadHandler.handleUpdateWorkload(request);
 
     return ResponseEntity.noContent().build();
   }

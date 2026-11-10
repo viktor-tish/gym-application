@@ -50,7 +50,7 @@ public class GlobalExceptionHandler {
     return respond(HttpStatus.METHOD_NOT_ALLOWED, ex.getMessage(), request, ex);
   }
 
-  @ExceptionHandler({ NoResourceFoundException.class, ResourceNotFoundException.class })
+  @ExceptionHandler({NoResourceFoundException.class, ResourceNotFoundException.class})
   public ResponseEntity<ErrorResponseDto> handleNotFoundException(
       Exception ex, HttpServletRequest request) {
     return respond(HttpStatus.NOT_FOUND, ex.getMessage(), request, ex);
@@ -62,13 +62,13 @@ public class GlobalExceptionHandler {
     return respond(HttpStatus.BAD_REQUEST, ex.getMessage(), request, ex);
   }
 
-  @ExceptionHandler({ UnauthenticatedException.class })
+  @ExceptionHandler({UnauthenticatedException.class})
   public ResponseEntity<ErrorResponseDto> handleAuthenticationException(
       Exception ex, HttpServletRequest request) {
     return respond(HttpStatus.UNAUTHORIZED, ex.getMessage(), request, ex);
   }
 
-  @ExceptionHandler({ ForbiddenException.class, AccessDeniedException.class })
+  @ExceptionHandler({ForbiddenException.class, AccessDeniedException.class})
   public ResponseEntity<ErrorResponseDto> handleForbiddenException(
       Exception ex, HttpServletRequest request) {
     return respond(HttpStatus.FORBIDDEN, ex.getMessage(), request, ex);
