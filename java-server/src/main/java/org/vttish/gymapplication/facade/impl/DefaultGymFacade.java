@@ -1,6 +1,7 @@
 package org.vttish.gymapplication.facade.impl;
 
 import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.vttish.gymapplication.dto.auth.ChangePasswordRequestDto;
@@ -110,6 +111,11 @@ public class DefaultGymFacade implements GymFacade {
   @Override
   public void createTraining(CreateTrainingRequestDto request) {
     trainingService.create(request);
+  }
+
+  @Override
+  public void deleteTraining(UUID id, String trainerUsername) {
+    trainingService.delete(id, trainerUsername);
   }
 
   @Override

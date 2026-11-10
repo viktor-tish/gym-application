@@ -262,7 +262,7 @@ class TraineeControllerTest {
   @Test
   void getTrainings_ShouldReturnOk_WhenParametersValid() throws Exception {
     TraineeTrainingItemResponseDto trainingItem = new TraineeTrainingItemResponseDto(
-        "Cardio", LocalDate.of(2025, 1, 1), null, 60, "trainer.username"
+        null, "Cardio", LocalDate.of(2025, 1, 1), null, 60, "trainer.username"
     );
 
     when(gymFacade.getTraineeTrainings(

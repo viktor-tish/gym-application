@@ -31,8 +31,9 @@
             **/entity/**,
             **/config/**,
             **/actuator/**,
-            **/mapper/**
-            **/repository/**
+            **/mapper/**,
+            **/repository/**,
+            **/event/**,
         </sonar.coverage.exclusions>
     </properties>
 
@@ -50,6 +51,11 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-circuitbreaker-resilience4j</artifactId>
         </dependency>
 
         <dependency>
@@ -246,6 +252,7 @@
                         <exclude>**/actuator/**</exclude>
                         <exclude>**/mapper/**</exclude>
                         <exclude>**/repository/**</exclude>
+                        <exclude>**/event/**</exclude>
                     </excludes>
                 </configuration>
                 <executions>

@@ -1,7 +1,10 @@
 package org.vttish.gymapplication.service.impl;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.vttish.gymapplication.actuator.metrics.GymMetrics;
@@ -14,6 +17,8 @@ import org.vttish.gymapplication.dto.training.TrainingTypeResponseDto;
 import org.vttish.gymapplication.entity.Trainee;
 import org.vttish.gymapplication.entity.Trainer;
 import org.vttish.gymapplication.entity.Training;
+import org.vttish.gymapplication.event.TrainingCreatedEvent;
+import org.vttish.gymapplication.event.TrainingDeletedEvent;
 import org.vttish.gymapplication.exception.ResourceNotFoundException;
 import org.vttish.gymapplication.logging.Loggable;
 import org.vttish.gymapplication.mapper.TrainingMapper;
@@ -37,6 +42,7 @@ public class DefaultTrainingService implements TrainingService {
   private final TrainingTypeRepository trainingTypeRepository;
   private final TrainingTypeMapper trainingTypeMapper;
   private final TrainingMapper trainingMapper;
+  private final ApplicationEventPublisher eventPublisher;
   private final GymMetrics gymMetrics;
 
   @Override
@@ -62,6 +68,23 @@ public class DefaultTrainingService implements TrainingService {
     trainingRepository.save(training);
 
     gymMetrics.incrementTrainingCreated();
+    eventPublisher.publishEvent(TrainingCreatedEvent.from(trainer, training));
+  }
+
+  @Override
+  @Transactional
+  public void delete(UUID id, String trainerUsername) {
+    Training training = trainingRepository.findById(id)
+        .orElseThrow(() -> new ResourceNotFoundException("Training not found with id: " + id));
+
+    Trainer trainer = training.getTrainer();
+
+    if (!Objects.equals(trainer.getUser().getUsername(), trainerUsername)) {
+      throw new ResourceNotFoundException("Training not found with id: " + id);
+    }
+
+    trainingRepository.delete(training);
+    eventPublisher.publishEvent(TrainingDeletedEvent.from(trainer, training));
   }
 
   @Override

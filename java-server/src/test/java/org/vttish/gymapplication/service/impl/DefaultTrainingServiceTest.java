@@ -2,6 +2,7 @@ package org.vttish.gymapplication.service.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -14,6 +15,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.vttish.gymapplication.actuator.metrics.GymMetrics;
 import org.vttish.gymapplication.dto.trainee.GetTraineeTrainingsRequestDto;
 import org.vttish.gymapplication.dto.trainer.GetTrainerTrainingsRequestDto;
@@ -25,6 +27,9 @@ import org.vttish.gymapplication.entity.Trainee;
 import org.vttish.gymapplication.entity.Trainer;
 import org.vttish.gymapplication.entity.Training;
 import org.vttish.gymapplication.entity.TrainingType;
+import org.vttish.gymapplication.entity.User;
+import org.vttish.gymapplication.event.TrainingCreatedEvent;
+import org.vttish.gymapplication.event.TrainingDeletedEvent;
 import org.vttish.gymapplication.exception.ResourceNotFoundException;
 import org.vttish.gymapplication.mapper.TrainingMapper;
 import org.vttish.gymapplication.mapper.TrainingTypeMapper;
@@ -57,14 +62,24 @@ class DefaultTrainingServiceTest {
   private TrainingMapper trainingMapper;
 
   @Mock
+  private ApplicationEventPublisher eventPublisher;
+
+  @Mock
   private GymMetrics gymMetrics;
 
   @InjectMocks
   private DefaultTrainingService trainingService;
 
   @Test
-  void create_ShouldSaveTraining_WhenValidRequest() {
+  void create_ShouldSaveTrainingAndPublishEvent_WhenValidRequest() {
+    User user = new User();
+    user.setUsername("trainer.username");
+    user.setFirstName("trainer");
+    user.setLastName("username");
+    user.setIsActive(true);
+
     Trainer trainer = new Trainer();
+    trainer.setUser(user);
     TrainingType specialization = new TrainingType();
     trainer.setSpecialization(specialization);
     Trainee trainee = new Trainee();
@@ -83,6 +98,7 @@ class DefaultTrainingServiceTest {
 
     verify(trainingRepository).save(training);
     verify(gymMetrics).incrementTrainingCreated();
+    verify(eventPublisher).publishEvent(any(TrainingCreatedEvent.class));
     assertEquals(trainer, training.getTrainer());
     assertEquals(trainee, training.getTrainee());
     assertEquals(specialization, training.getType());
@@ -120,6 +136,63 @@ class DefaultTrainingServiceTest {
   }
 
   @Test
+  void delete_ShouldDeleteTrainingAndPublishEvent_WhenValidRequest() {
+    UUID trainingId = UUID.randomUUID();
+    String trainerUsername = "trainer.username";
+
+    User user = new User();
+    user.setUsername(trainerUsername);
+
+    Trainer trainer = new Trainer();
+    trainer.setUser(user);
+
+    Training training = new Training();
+    training.setTrainer(trainer);
+
+    when(trainingRepository.findById(trainingId)).thenReturn(Optional.of(training));
+
+    trainingService.delete(trainingId, trainerUsername);
+
+    verify(trainingRepository).delete(training);
+    verify(eventPublisher).publishEvent(any(TrainingDeletedEvent.class));
+  }
+
+  @Test
+  void delete_ShouldThrowException_WhenTrainingNotFound() {
+    UUID trainingId = UUID.randomUUID();
+    String trainerUsername = "trainer.username";
+
+    when(trainingRepository.findById(trainingId)).thenReturn(Optional.empty());
+
+    assertThrows(
+        ResourceNotFoundException.class,
+        () -> trainingService.delete(trainingId, trainerUsername)
+    );
+  }
+
+  @Test
+  void delete_ShouldThrowException_WhenTrainerUsernameDoesNotMatch() {
+    UUID trainingId = UUID.randomUUID();
+    String trainerUsername = "trainer.username";
+
+    User user = new User();
+    user.setUsername("other.trainer");
+
+    Trainer trainer = new Trainer();
+    trainer.setUser(user);
+
+    Training training = new Training();
+    training.setTrainer(trainer);
+
+    when(trainingRepository.findById(trainingId)).thenReturn(Optional.of(training));
+
+    assertThrows(
+        ResourceNotFoundException.class,
+        () -> trainingService.delete(trainingId, trainerUsername)
+    );
+  }
+
+  @Test
   void getTraineeTrainings_ShouldReturnMappedDtos_WhenTraineeExists() {
     String traineeUsername = "trainee.username";
     GetTraineeTrainingsRequestDto request = new GetTraineeTrainingsRequestDto(
@@ -131,7 +204,7 @@ class DefaultTrainingServiceTest {
 
     Training training = new Training();
     TraineeTrainingItemResponseDto itemResponseDto = new TraineeTrainingItemResponseDto(
-        "Cardio", LocalDate.of(2025, 1, 1), null, 60, "trainer.username"
+        null, "Cardio", LocalDate.of(2025, 1, 1), null, 60, "trainer.username"
     );
 
     when(traineeRepository.existsByUsername(traineeUsername)).thenReturn(true);
@@ -174,7 +247,7 @@ class DefaultTrainingServiceTest {
 
     Training training = new Training();
     TrainerTrainingItemResponseDto itemResponseDto = new TrainerTrainingItemResponseDto(
-        "Cardio", LocalDate.of(2025, 1, 1), null, 60, "trainee.username"
+        null, "Cardio", LocalDate.of(2025, 1, 1), null, 60, "trainee.username"
     );
 
     when(trainerRepository.existsByUsername(trainerUsername)).thenReturn(true);

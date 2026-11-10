@@ -1,6 +1,7 @@
 package org.vttish.gymapplication.facade;
 
 import java.util.List;
+import java.util.UUID;
 import org.vttish.gymapplication.dto.auth.ChangePasswordRequestDto;
 import org.vttish.gymapplication.dto.auth.CredentialsResponseDto;
 import org.vttish.gymapplication.dto.auth.LoginRequestDto;
@@ -24,6 +25,7 @@ import org.vttish.gymapplication.dto.training.TrainerTrainingItemResponseDto;
 import org.vttish.gymapplication.dto.training.TrainingTypeResponseDto;
 
 public interface GymFacade {
+
   LoginResponseDto login(LoginRequestDto request, String ip);
 
   void changePassword(ChangePasswordRequestDto request);
@@ -58,6 +60,8 @@ public interface GymFacade {
   List<TrainerItemResponseDto> getUnassignedActiveTrainers(String traineeUsername);
 
   void createTraining(CreateTrainingRequestDto request);
+
+  void deleteTraining(UUID id, String trainerUsername);
 
   List<TraineeTrainingItemResponseDto> getTraineeTrainings(
       String traineeUsername,
