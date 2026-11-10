@@ -13,7 +13,8 @@ public record ErrorResponseDto(
     Instant timestamp,
     List<ValidationError> validationErrors
 ) {
-  public record ValidationError(String field, String message) {}
+  public record ValidationError(String field, String message) {
+  }
 
   public static ErrorResponseDto of(int status, String error, String message, String path) {
     return new ErrorResponseDto(status, error, message, path, Instant.now(), null);

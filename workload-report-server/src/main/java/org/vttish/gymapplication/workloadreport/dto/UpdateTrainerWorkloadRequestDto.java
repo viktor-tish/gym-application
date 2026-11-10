@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import java.time.LocalDate;
 
-public record AddTrainerWorkloadRequestDto(
+public record UpdateTrainerWorkloadRequestDto(
 
     @NotBlank(message = "Username is mandatory")
     String username,

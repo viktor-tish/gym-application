@@ -15,6 +15,6 @@ public interface TrainerProfileRepository extends JpaRepository<TrainerProfile, 
   @Lock(LockModeType.PESSIMISTIC_WRITE)
   Optional<TrainerProfile> findAndLockByUsername(String username);
 
-  @EntityGraph(attributePaths = { "workloads" })
+  @EntityGraph(attributePaths = {"workloads"})
   Optional<TrainerProfile> findWithWorkloadsByUsername(String username);
 }
