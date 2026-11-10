@@ -25,7 +25,7 @@ public class RestClientConfig {
   @Bean
   public RestClient workloadReportClient(RestClient.Builder internalRestClientBuilder) {
     return internalRestClientBuilder.clone()
-        .baseUrl("http://workload-report-server")
+        .baseUrl("http://gym-workload-report")
         .build();
   }
 }
