@@ -16,6 +16,10 @@ spring:
   flyway:
     enabled: true
     baseline-on-migrate: true
+  http:
+    clients:
+      connect-timeout: 5s
+      read-timeout: 5s
 
 management:
   health:
