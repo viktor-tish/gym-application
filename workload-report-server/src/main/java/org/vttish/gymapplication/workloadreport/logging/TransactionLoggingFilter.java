@@ -34,17 +34,13 @@ public class TransactionLoggingFilter extends OncePerRequestFilter {
       HttpServletResponse response,
       FilterChain filterChain
   ) throws ServletException, IOException {
-    String transactionId = resolveTransactionId(request);
+    long startTimeNanos = System.nanoTime();
+    String transactionId = resolveTransactionId(request, response);
     String parentId = resolveParentId(request);
     String spanId = newId();
 
-    long startTimeNanos = System.nanoTime();
-
-    response.setHeader(TRANSACTION_ID_HEADER, transactionId);
-
     String method = request.getMethod();
     String uri = request.getRequestURI();
-    long startTime = System.nanoTime();
 
     try (
         MDC.MDCCloseable ignoredTransaction = MDC.putCloseable(TRANSACTION_ID_KEY, transactionId);
@@ -62,7 +58,7 @@ public class TransactionLoggingFilter extends OncePerRequestFilter {
         throw ex;
       }
 
-      logCompletion(method, uri, response.getStatus(), elapsedMillis(startTime));
+      logCompletion(method, uri, response.getStatus(), elapsedMillis(startTimeNanos));
     }
   }
 
@@ -78,12 +74,14 @@ public class TransactionLoggingFilter extends OncePerRequestFilter {
     }
   }
 
-  private String resolveTransactionId(HttpServletRequest request) {
+  private String resolveTransactionId(HttpServletRequest request, HttpServletResponse response) {
     String header = request.getHeader(TRANSACTION_ID_HEADER);
 
     if (header == null || header.isBlank()) {
       String generated = newId();
       log.info("No {} header; generated transaction id: {}", TRANSACTION_ID_HEADER, generated);
+
+      response.setHeader(TRANSACTION_ID_HEADER, generated);
 
       return generated;
     }
@@ -93,6 +91,8 @@ public class TransactionLoggingFilter extends OncePerRequestFilter {
     } catch (IllegalArgumentException ex) {
       String generated = newId();
       log.warn("Invalid {} header; generated transaction id: {}", TRANSACTION_ID_HEADER, generated);
+
+      response.setHeader(TRANSACTION_ID_HEADER, generated);
 
       return generated;
     }

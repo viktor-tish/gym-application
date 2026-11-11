@@ -1,7 +1,6 @@
 package org.vttish.gymapplication.config;
 
 import org.springframework.boot.autoconfigure.web.client.RestClientBuilderConfigurer;
-import org.springframework.boot.web.client.RestClientCustomizer;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

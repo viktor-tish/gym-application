@@ -24,6 +24,7 @@
         <spring-cloud.version>2025.0.3</spring-cloud.version>
 
         <sonar.coverage.exclusions>
+            **/*Application.class,
             **/actuator/**
             **/dto/**,
             **/logging/**,
@@ -243,6 +244,7 @@
                 <version>0.8.12</version>
                 <configuration>
                     <excludes>
+                        <exclude>**/*Application.class</exclude>
                         <exclude>**/actuator/**</exclude>
                         <exclude>**/dto/**</exclude>
                         <exclude>**/logging/**</exclude>

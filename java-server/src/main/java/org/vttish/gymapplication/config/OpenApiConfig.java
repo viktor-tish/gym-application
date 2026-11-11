@@ -5,12 +5,21 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
+import io.swagger.v3.oas.models.servers.Server;
+import java.util.List;
+import org.springdoc.core.customizers.GlobalOpenApiCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class OpenApiConfig {
+
   private static final String SECURITY_SCHEME_NAME = "Bearer Authentication";
+
+  @Bean
+  public GlobalOpenApiCustomizer openApiCustomizer() {
+    return openApi -> openApi.setServers(List.of(new Server().url("/")));
+  }
 
   @Bean
   public OpenAPI openApi() {
