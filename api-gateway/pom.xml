@@ -19,7 +19,10 @@
 		<spring-cloud.version>2025.1.4</spring-cloud.version>
 
 		<sonar.coverage.exclusions>
-			**/*Application.class
+			**/*Application.class,
+			**/exception/**,
+			**/logging/**,
+			**/dto/**
 		</sonar.coverage.exclusions>
 	</properties>
 
@@ -59,6 +62,11 @@
 		<dependency>
 			<groupId>com.github.ben-manes.caffeine</groupId>
 			<artifactId>caffeine</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.aspectj</groupId>
+			<artifactId>aspectjweaver</artifactId>
 		</dependency>
 	</dependencies>
 
@@ -126,6 +134,9 @@
 				<configuration>
 					<excludes>
 						<exclude>**/*Application.class</exclude>
+						<exclude>**/exception/**</exclude>
+						<exclude>**/logging/**</exclude>
+						<exclude>**/dto/**</exclude>
 					</excludes>
 				</configuration>
 				<executions>
