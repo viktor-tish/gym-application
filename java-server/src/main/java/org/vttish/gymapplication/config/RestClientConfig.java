@@ -13,13 +13,12 @@ public class RestClientConfig {
 
   @Bean
   @LoadBalanced
-  public RestClient.Builder internalRestClientBuilder(RestClientBuilderConfigurer configurer) {
-    return configurer.configure(RestClient.builder());
-  }
-
-  @Bean
-  public RestClientCustomizer restClientCustomizer(TracingHeadersInterceptor tracingInterceptor) {
-    return builder -> builder.requestInterceptor(tracingInterceptor);
+  public RestClient.Builder internalRestClientBuilder(
+      RestClientBuilderConfigurer configurer,
+      TracingHeadersInterceptor tracingInterceptor
+  ) {
+    return configurer.configure(RestClient.builder())
+        .requestInterceptor(tracingInterceptor);
   }
 
   @Bean
