@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -34,6 +35,12 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ErrorResponseDto> handleAuthenticationException(
       Exception ex, HttpServletRequest request) {
     return respond(HttpStatus.UNAUTHORIZED, ex.getMessage(), request, ex);
+  }
+
+  @ExceptionHandler(AccessDeniedException.class)
+  public ResponseEntity<ErrorResponseDto> handleForbiddenException(
+      Exception ex, HttpServletRequest request) {
+    return respond(HttpStatus.FORBIDDEN, ex.getMessage(), request, ex);
   }
 
   @ExceptionHandler(TooManyRequestsException.class)

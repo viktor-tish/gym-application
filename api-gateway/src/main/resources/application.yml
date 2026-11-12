@@ -21,6 +21,22 @@ spring:
               order: 1
               predicates:
                 - Path=/api/v1/trainers/**, /api/v1/trainees/**, /api/v1/trainings/**, /api/v1/auth/**
+            - id: gym-application-docs
+              uri: lb://gym-application
+              order: 0
+              predicates:
+                - Path=/docs/gym-application/v3/api-docs
+                - Method=GET
+              filters:
+                - SetPath=/v3/api-docs
+            - id: gym-workload-report-docs
+              uri: lb://gym-workload-report
+              order: 0
+              predicates:
+                - Path=/docs/gym-workload-report/v3/api-docs
+                - Method=GET
+              filters:
+                - SetPath=/v3/api-docs
 
 management:
   endpoints:
@@ -41,3 +57,24 @@ eureka:
     fetch-registry: true
   instance:
     prefer-ip-address: true
+
+springdoc:
+  swagger-ui:
+    persist-authorization: true
+    disable-swagger-default-url: true
+    urls-primary-name: gym-application
+    urls:
+      - name: gym-application
+        url: /docs/gym-application/v3/api-docs
+      - name: gym-workload-report
+        url: /docs/gym-workload-report/v3/api-docs
+      - name: gym-api-gateway
+        url: /v3/api-docs
+
+app:
+  security:
+    cors:
+      allowed-origins: ${CORS_ALLOWED_ORIGINS}
+    jwt:
+      secret: ${JWT_SECRET}
+      expiration-ms: ${JWT_EXPIRATION_MS}

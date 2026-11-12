@@ -13,6 +13,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
@@ -97,6 +98,21 @@ class GlobalExceptionHandlerTest {
     assertEquals(401, response.getBody().status());
     assertEquals("Unauthorized", response.getBody().error());
     assertEquals("Bad credentials", response.getBody().message());
+    assertEquals("/test/path", response.getBody().path());
+    assertNotNull(response.getBody().timestamp());
+  }
+
+  @Test
+  void handleForbiddenException_ShouldReturnForbidden() {
+    AccessDeniedException ex = new AccessDeniedException("Access denied");
+
+    ResponseEntity<ErrorResponseDto> response = handler.handleForbiddenException(ex, request);
+
+    assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+    assertNotNull(response.getBody());
+    assertEquals(403, response.getBody().status());
+    assertEquals("Forbidden", response.getBody().error());
+    assertEquals("Access denied", response.getBody().message());
     assertEquals("/test/path", response.getBody().path());
     assertNotNull(response.getBody().timestamp());
   }

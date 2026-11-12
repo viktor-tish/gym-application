@@ -26,7 +26,8 @@
 			**/repository/**,
 			**/mapper/**,
 			**/handler/**,
-			**/logging/**
+			**/logging/**,
+			**/config/**
 		</sonar.coverage.exclusions>
 	</properties>
 
@@ -201,6 +202,7 @@
 						<exclude>**/mapper/**</exclude>
                         <exclude>**/handler/**</exclude>
 						<exclude>**/logging/**</exclude>
+						<exclude>**/config/**</exclude>
 					</excludes>
 				</configuration>
 				<executions>
