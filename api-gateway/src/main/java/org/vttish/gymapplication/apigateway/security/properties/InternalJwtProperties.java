@@ -27,7 +27,7 @@ public record InternalJwtProperties(
   public record Rule(
 
       @NotEmpty
-      Set<String> methods,
+      Set<Verb> methods,
 
       @NotBlank
       String path,
@@ -38,5 +38,9 @@ public record InternalJwtProperties(
       @NotEmpty
       List<String> scopes
   ) {
+  }
+
+  public enum Verb {
+    GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS
   }
 }
