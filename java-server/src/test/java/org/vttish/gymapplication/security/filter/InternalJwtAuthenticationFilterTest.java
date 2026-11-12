@@ -1,4 +1,4 @@
-package org.vttish.gymapplication.security;
+package org.vttish.gymapplication.security.filter;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -25,13 +25,14 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.vttish.gymapplication.exception.UnauthenticatedException;
+import org.vttish.gymapplication.security.JwtService;
 import org.vttish.gymapplication.security.model.AuthenticatedToken;
 import org.vttish.gymapplication.security.model.JwtMetadata;
 import org.vttish.gymapplication.security.model.Role;
 import org.vttish.gymapplication.security.model.UserPrincipal;
 
 @ExtendWith(MockitoExtension.class)
-class JwtAuthenticationFilterTest {
+class InternalJwtAuthenticationFilterTest {
 
   @Mock
   private JwtService jwtService;
@@ -48,7 +49,7 @@ class JwtAuthenticationFilterTest {
   @Mock
   private FilterChain filterChain;
 
-  private JwtAuthenticationFilter filter;
+  private InternalJwtAuthenticationFilter filter;
 
   private static UUID jwtId;
   private static UserPrincipal principal;
@@ -65,7 +66,7 @@ class JwtAuthenticationFilterTest {
 
   @BeforeEach
   void setUp() {
-    filter = new JwtAuthenticationFilter(jwtService, jwtBlacklistService);
+    filter = new InternalJwtAuthenticationFilter(jwtService, jwtBlacklistService);
     SecurityContextHolder.clearContext();
   }
 

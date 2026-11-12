@@ -1,4 +1,4 @@
-package org.vttish.gymapplication.security;
+package org.vttish.gymapplication.security.filter;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -16,6 +16,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.vttish.gymapplication.exception.UnauthenticatedException;
+import org.vttish.gymapplication.security.JwtService;
 import org.vttish.gymapplication.security.model.AuthenticatedToken;
 import org.vttish.gymapplication.security.model.JwtMetadata;
 import org.vttish.gymapplication.security.model.UserPrincipal;
@@ -23,12 +24,11 @@ import org.vttish.gymapplication.security.model.UserPrincipal;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class JwtAuthenticationFilter extends OncePerRequestFilter {
+public class InternalJwtAuthenticationFilter extends OncePerRequestFilter {
 
   private static final String BEARER_PREFIX = "Bearer ";
 
   private final JwtService jwtService;
-  private final JwtBlacklistService jwtBlacklistService;
 
   @Override
   protected void doFilterInternal(
@@ -61,11 +61,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     AuthenticatedToken authenticatedToken = jwtService.parseToken(token);
     UserPrincipal principal = authenticatedToken.userPrincipal();
     JwtMetadata metadata = authenticatedToken.jwtMetadata();
-
-    if (jwtBlacklistService.isBlacklisted(metadata.jwtId())) {
-      log.debug("Rejected blacklisted JWT with JTI: {}", metadata.jwtId());
-      return;
-    }
 
     List<SimpleGrantedAuthority> authorities = List.of(
         new SimpleGrantedAuthority("ROLE_" + principal.role().name())

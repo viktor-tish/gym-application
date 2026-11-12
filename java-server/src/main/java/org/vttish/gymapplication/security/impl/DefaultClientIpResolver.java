@@ -9,6 +9,12 @@ public class DefaultClientIpResolver implements ClientIpResolver {
 
   @Override
   public String resolve(HttpServletRequest request) {
+    String clientIp = request.getHeader("X-Client-Ip");
+
+    if (clientIp != null) {
+      return clientIp;
+    }
+
     return request.getRemoteAddr();
   }
 }

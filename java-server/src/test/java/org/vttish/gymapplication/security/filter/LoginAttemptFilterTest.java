@@ -1,4 +1,4 @@
-package org.vttish.gymapplication.security;
+package org.vttish.gymapplication.security.filter;
 
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
@@ -20,6 +20,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.vttish.gymapplication.exception.TooManyAttemptsException;
+import org.vttish.gymapplication.security.ClientIpResolver;
+import org.vttish.gymapplication.security.LoginAttemptService;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("LoginAttemptFilter Unit Tests")
