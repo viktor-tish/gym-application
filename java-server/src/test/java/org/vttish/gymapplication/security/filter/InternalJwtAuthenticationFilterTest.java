@@ -3,6 +3,7 @@ package org.vttish.gymapplication.security.filter;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -10,6 +11,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -22,12 +24,12 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpHeaders;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.vttish.gymapplication.exception.UnauthenticatedException;
-import org.vttish.gymapplication.security.JwtService;
-import org.vttish.gymapplication.security.model.AuthenticatedToken;
-import org.vttish.gymapplication.security.model.JwtMetadata;
+import org.vttish.gymapplication.security.InternalJwtService;
+import org.vttish.gymapplication.security.model.InternalJwtMetadata;
+import org.vttish.gymapplication.security.model.ParsedInternalJwt;
 import org.vttish.gymapplication.security.model.Role;
 import org.vttish.gymapplication.security.model.UserPrincipal;
 
@@ -35,10 +37,7 @@ import org.vttish.gymapplication.security.model.UserPrincipal;
 class InternalJwtAuthenticationFilterTest {
 
   @Mock
-  private JwtService jwtService;
-
-  @Mock
-  private JwtBlacklistService jwtBlacklistService;
+  private InternalJwtService internalJwtService;
 
   @Mock
   private HttpServletRequest request;
@@ -51,22 +50,32 @@ class InternalJwtAuthenticationFilterTest {
 
   private InternalJwtAuthenticationFilter filter;
 
+  private static final String APP_NAME = "gym-application";
   private static UUID jwtId;
+  private static UUID externalJwtId;
   private static UserPrincipal principal;
-  private static JwtMetadata metadata;
-  private static AuthenticatedToken authenticatedToken;
+  private static ParsedInternalJwt parsedInternalJwt;
 
   @BeforeAll
   static void setUpAll() {
     jwtId = UUID.randomUUID();
+    externalJwtId = UUID.randomUUID();
     principal = new UserPrincipal("firstName.lastName", Role.TRAINEE);
-    metadata = new JwtMetadata(jwtId, Instant.now().plusMillis(3600000L));
-    authenticatedToken = new AuthenticatedToken(principal, metadata);
+
+    InternalJwtMetadata metadata = new InternalJwtMetadata(
+        jwtId,
+        externalJwtId,
+        List.of(APP_NAME),
+        List.of("scope:read", "scope:write"),
+        Instant.now().plusMillis(3600000L)
+    );
+
+    parsedInternalJwt = new ParsedInternalJwt(principal, metadata);
   }
 
   @BeforeEach
   void setUp() {
-    filter = new InternalJwtAuthenticationFilter(jwtService, jwtBlacklistService);
+    filter = new InternalJwtAuthenticationFilter(APP_NAME, internalJwtService);
     SecurityContextHolder.clearContext();
   }
 
@@ -76,31 +85,51 @@ class InternalJwtAuthenticationFilterTest {
   }
 
   @Test
-  void doFilterInternal_ShouldAuthenticate_WhenValidTokenProvided() throws Exception {
-    String token = "valid.jwt.token";
+  void doFilterInternal_ShouldAuthenticate_WhenValidTokenAndMatchingAudienceProvided()
+      throws Exception {
+    String token = "valid.internal.jwt.token";
 
     when(request.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn("Bearer " + token);
-    when(jwtService.parseToken(token)).thenReturn(authenticatedToken);
-    when(jwtBlacklistService.isBlacklisted(jwtId)).thenReturn(false);
+    when(internalJwtService.parse(token)).thenReturn(parsedInternalJwt);
 
     filter.doFilterInternal(request, response, filterChain);
 
-    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+    UsernamePasswordAuthenticationToken auth =
+        (UsernamePasswordAuthenticationToken) SecurityContextHolder.getContext()
+            .getAuthentication();
+
     assertNotNull(auth);
     assertEquals(principal, auth.getPrincipal());
-    assertEquals(metadata, auth.getCredentials());
-    assertEquals(1, auth.getAuthorities().size());
-    assertEquals("ROLE_TRAINEE", auth.getAuthorities().iterator().next().getAuthority());
+    assertEquals(3, auth.getAuthorities().size());
+
+    boolean hasRole = auth.getAuthorities().stream()
+        .anyMatch(a -> a.getAuthority().equals("ROLE_TRAINEE"));
+    boolean hasReadScope = auth.getAuthorities().stream()
+        .anyMatch(a -> a.getAuthority().equals("SCOPE_scope:read"));
+    boolean hasWriteScope = auth.getAuthorities().stream()
+        .anyMatch(a -> a.getAuthority().equals("SCOPE_scope:write"));
+
+    assertTrue(hasRole);
+    assertTrue(hasReadScope);
+    assertTrue(hasWriteScope);
+
     verify(filterChain).doFilter(request, response);
   }
 
   @Test
-  void doFilterInternal_ShouldNotAuthenticate_WhenTokenIsBlacklisted() throws Exception {
-    String token = "blacklisted.jwt.token";
+  void doFilterInternal_ShouldNotAuthenticate_WhenAudienceDoesNotMatch() throws Exception {
+    String token = "valid.token.wrong.audience";
+    InternalJwtMetadata wrongAudienceMetadata = new InternalJwtMetadata(
+        jwtId,
+        externalJwtId,
+        List.of("other-service"),
+        List.of("scope:read"),
+        Instant.now().plusMillis(3600000L)
+    );
+    ParsedInternalJwt wrongAudienceParsed = new ParsedInternalJwt(principal, wrongAudienceMetadata);
 
     when(request.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn("Bearer " + token);
-    when(jwtService.parseToken(token)).thenReturn(authenticatedToken);
-    when(jwtBlacklistService.isBlacklisted(jwtId)).thenReturn(true);
+    when(internalJwtService.parse(token)).thenReturn(wrongAudienceParsed);
 
     filter.doFilterInternal(request, response, filterChain);
 
@@ -130,7 +159,8 @@ class InternalJwtAuthenticationFilterTest {
     String token = "invalid.token";
 
     when(request.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn("Bearer " + token);
-    when(jwtService.parseToken(token)).thenThrow(new UnauthenticatedException("Invalid JWT token"));
+    when(internalJwtService.parse(token))
+        .thenThrow(new UnauthenticatedException("Invalid JWT token"));
 
     filter.doFilterInternal(request, response, filterChain);
 
@@ -143,7 +173,7 @@ class InternalJwtAuthenticationFilterTest {
     String token = "some.token";
 
     when(request.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn("Bearer " + token);
-    when(jwtService.parseToken(token)).thenThrow(new RuntimeException("Database error"));
+    when(internalJwtService.parse(token)).thenThrow(new RuntimeException("Database error"));
 
     filter.doFilterInternal(request, response, filterChain);
 

@@ -49,7 +49,7 @@ public class DefaultAuthenticationService implements AuthenticationService {
       gymMetrics.incrementLoginSuccess();
       loginAttemptService.loginSucceeded(ip);
 
-      return new LoginResponseDto(jwtService.generateToken(userPrincipal));
+      return new LoginResponseDto(jwtService.generate(userPrincipal));
     } catch (UnauthenticatedException ex) {
       loginAttemptService.loginFailed(ip);
       gymMetrics.incrementLoginFailure();

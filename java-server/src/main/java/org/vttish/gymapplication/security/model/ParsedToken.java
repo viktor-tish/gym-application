@@ -1,6 +1,6 @@
 package org.vttish.gymapplication.security.model;
 
-public record AuthenticatedToken(
+public record ParsedToken(
     UserPrincipal userPrincipal,
     JwtMetadata jwtMetadata
 ) {

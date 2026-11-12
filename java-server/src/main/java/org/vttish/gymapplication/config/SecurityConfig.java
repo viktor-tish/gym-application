@@ -15,7 +15,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.logout.LogoutFilter;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -41,7 +41,7 @@ public class SecurityConfig {
   }
 
   @Bean
-  public FilterRegistrationBean<InternalJwtAuthenticationFilter> jwtAuthenticationFilterRegistration(
+  public FilterRegistrationBean<InternalJwtAuthenticationFilter> jwtAuthFilterRegistration(
       InternalJwtAuthenticationFilter filter
   ) {
     FilterRegistrationBean<InternalJwtAuthenticationFilter> registration =
@@ -68,6 +68,7 @@ public class SecurityConfig {
             .accessDeniedHandler(accessDeniedHandler))
         .sessionManagement(session ->
             session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .logout(AbstractHttpConfigurer::disable)
         .authorizeHttpRequests(auth -> auth
             .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
             .requestMatchers(HttpMethod.POST, "/api/v1/trainees").permitAll()
@@ -80,7 +81,8 @@ public class SecurityConfig {
                 "/actuator/**"
             ).permitAll()
             .anyRequest().authenticated())
-        .addFilterBefore(internalJwtAuthenticationFilter, LogoutFilter.class)
+        .addFilterBefore(internalJwtAuthenticationFilter,
+            UsernamePasswordAuthenticationFilter.class)
         .addFilterBefore(loginAttemptFilter, InternalJwtAuthenticationFilter.class);
 
     return http.build();

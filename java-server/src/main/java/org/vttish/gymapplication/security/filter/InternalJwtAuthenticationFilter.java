@@ -5,30 +5,43 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
-import lombok.RequiredArgsConstructor;
+import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.vttish.gymapplication.exception.UnauthenticatedException;
-import org.vttish.gymapplication.security.JwtService;
-import org.vttish.gymapplication.security.model.AuthenticatedToken;
-import org.vttish.gymapplication.security.model.JwtMetadata;
+import org.vttish.gymapplication.security.InternalJwtService;
+import org.vttish.gymapplication.security.model.InternalJwtMetadata;
+import org.vttish.gymapplication.security.model.ParsedInternalJwt;
 import org.vttish.gymapplication.security.model.UserPrincipal;
 
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class InternalJwtAuthenticationFilter extends OncePerRequestFilter {
 
+  private static final String ROLE_PREFIX = "ROLE_";
+  private static final String SCOPE_PREFIX = "SCOPE_";
   private static final String BEARER_PREFIX = "Bearer ";
 
-  private final JwtService jwtService;
+  private final String applicationName;
+  private final InternalJwtService internalJwtService;
+
+  public InternalJwtAuthenticationFilter(
+      @Value("${spring.application.name}") String applicationName,
+      InternalJwtService internalJwtService
+  ) {
+    this.applicationName = applicationName;
+    this.internalJwtService = internalJwtService;
+  }
 
   @Override
   protected void doFilterInternal(
@@ -43,9 +56,9 @@ public class InternalJwtAuthenticationFilter extends OncePerRequestFilter {
 
       if (!token.isBlank()) {
         try {
-          authenticate(request, token);
+          authenticate(token);
         } catch (UnauthenticatedException ex) {
-          log.debug("JWT authentication rejected: {}", ex.getMessage());
+          log.info("JWT authentication rejected: {}", ex.getMessage());
           SecurityContextHolder.clearContext();
         } catch (Exception ex) {
           log.error("Unexpected error during JWT authentication", ex);
@@ -57,20 +70,37 @@ public class InternalJwtAuthenticationFilter extends OncePerRequestFilter {
     filterChain.doFilter(request, response);
   }
 
-  private void authenticate(HttpServletRequest request, String token) {
-    AuthenticatedToken authenticatedToken = jwtService.parseToken(token);
-    UserPrincipal principal = authenticatedToken.userPrincipal();
-    JwtMetadata metadata = authenticatedToken.jwtMetadata();
+  private void authenticate(String token) {
+    ParsedInternalJwt parsedToken = internalJwtService.parse(token);
+    UserPrincipal principal = parsedToken.userPrincipal();
+    InternalJwtMetadata metadata = parsedToken.internalJwtMetadata();
 
-    List<SimpleGrantedAuthority> authorities = List.of(
-        new SimpleGrantedAuthority("ROLE_" + principal.role().name())
-    );
+    if (!metadata.audiences().contains(applicationName)) {
+      throw new UnauthenticatedException("Internal JWT is not intended for this service");
+    }
 
+    Collection<GrantedAuthority> authorities = buildAuthorities(principal, metadata);
     UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-        principal, metadata, authorities
+        principal, null, authorities
     );
-    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
     SecurityContextHolder.getContext().setAuthentication(authentication);
+  }
+
+  private Collection<GrantedAuthority> buildAuthorities(
+      UserPrincipal principal,
+      InternalJwtMetadata metadata
+  ) {
+    Set<GrantedAuthority> authorities = new LinkedHashSet<>();
+
+    authorities.add(new SimpleGrantedAuthority(ROLE_PREFIX + principal.role().name()));
+
+    for (String scope : metadata.scopes()) {
+      if (scope != null && !scope.isBlank()) {
+        authorities.add(new SimpleGrantedAuthority(SCOPE_PREFIX + scope.trim()));
+      }
+    }
+
+    return List.copyOf(authorities);
   }
 }
