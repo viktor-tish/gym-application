@@ -20,7 +20,6 @@ public record InternalJwtProperties(
     long expirationMs,
 
     @Valid
-    @NotEmpty
     List<Rule> rules
 ) {
 

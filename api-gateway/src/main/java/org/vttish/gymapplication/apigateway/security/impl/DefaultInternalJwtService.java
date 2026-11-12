@@ -11,7 +11,6 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.UUID;
 import javax.crypto.SecretKey;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.vttish.gymapplication.apigateway.exception.UnauthenticatedException;
 import org.vttish.gymapplication.apigateway.security.InternalJwtService;
@@ -23,7 +22,6 @@ import org.vttish.gymapplication.apigateway.security.model.UserPrincipal;
 import org.vttish.gymapplication.apigateway.security.properties.InternalJwtProperties;
 
 @Service
-@RequiredArgsConstructor
 public class DefaultInternalJwtService implements InternalJwtService {
 
   private static final String CLAIM_ROLE = "role";
