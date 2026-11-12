@@ -25,7 +25,8 @@
 			**/exception/**,
 			**/logging/**,
 			**/dto/**,
-			**/model/**
+			**/model/**,
+			**/properties/**
 		</sonar.coverage.exclusions>
 	</properties>
 
@@ -169,6 +170,7 @@
 						<exclude>**/logging/**</exclude>
 						<exclude>**/dto/**</exclude>
 						<exclude>**/model/**</exclude>
+						<exclude>**/properties/**</exclude>
 					</excludes>
 				</configuration>
 				<executions>

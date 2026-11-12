@@ -78,3 +78,23 @@ app:
     jwt:
       secret: ${JWT_SECRET}
       expiration-ms: ${JWT_EXPIRATION_MS}
+    internal-jwt:
+      secret: ${INTERNAL_JWT_SECRET}
+      expiration-ms: ${INTERNAL_JWT_EXPIRATION_MS}
+      rules:
+        - methods: [ POST ]
+          path: /api/v1/trainings
+          audiences: [ gym-application, gym-workload-report ]
+          scopes: [ gym:training:write, workload:trainer:write ]
+        - methods: [ DELETE ]
+          path: /api/v1/trainers/{username}/trainings/{id}
+          audiences: [ gym-application, gym-workload-report ]
+          scopes: [ gym:training:delete, workload:trainer:write ]
+        - methods: [ GET ]
+          path: /api/v1/trainers/{username}/workload
+          audiences: [ gym-workload-report ]
+          scopes: [ workload:trainer:read ]
+        - methods: [ GET, POST, PUT, PATCH, DELETE ]
+          path: /api/v1/**
+          audiences: [ gym-application ]
+          scopes: [ gym:access ]

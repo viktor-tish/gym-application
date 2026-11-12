@@ -15,6 +15,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.intercept.AuthorizationFilter;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
@@ -23,6 +24,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.vttish.gymapplication.apigateway.security.DelegatingAccessDeniedHandler;
 import org.vttish.gymapplication.apigateway.security.DelegatingAuthenticationEntryPoint;
+import org.vttish.gymapplication.apigateway.security.filter.InternalJwtFilter;
 import org.vttish.gymapplication.apigateway.security.filter.JwtAuthenticationFilter;
 import org.vttish.gymapplication.apigateway.security.JwtLogoutHandler;
 
@@ -42,10 +44,22 @@ public class SecurityConfig {
   }
 
   @Bean
+  public FilterRegistrationBean<InternalJwtFilter> internalJwtFilterRegistration(
+      InternalJwtFilter filter
+  ) {
+    FilterRegistrationBean<InternalJwtFilter> registration =
+        new FilterRegistrationBean<>(filter);
+    registration.setEnabled(false);
+
+    return registration;
+  }
+
+  @Bean
   @SuppressWarnings("java:S4502")
   public SecurityFilterChain securityFilterChain(
       HttpSecurity http,
       JwtAuthenticationFilter jwtAuthenticationFilter,
+      InternalJwtFilter internalJwtFilter,
       DelegatingAccessDeniedHandler accessDeniedHandler,
       DelegatingAuthenticationEntryPoint authenticationEntryPoint,
       JwtLogoutHandler jwtLogoutHandler
@@ -77,7 +91,8 @@ public class SecurityConfig {
                 "/docs/**"
             ).permitAll()
             .anyRequest().authenticated())
-        .addFilterBefore(jwtAuthenticationFilter, LogoutFilter.class);
+        .addFilterBefore(jwtAuthenticationFilter, LogoutFilter.class)
+        .addFilterAfter(internalJwtFilter, AuthorizationFilter.class);
 
     return http.build();
   }
