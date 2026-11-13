@@ -42,3 +42,11 @@ eureka:
       defaultZone: ${DISCOVERY_SERVER_URL}
   instance:
     prefer-ip-address: true
+
+app:
+  security:
+    cors:
+      allowed-origins: ${CORS_ALLOWED_ORIGINS}
+    internal-jwt:
+      secret: ${INTERNAL_JWT_SECRET}
+      expiration-ms: ${INTERNAL_JWT_EXPIRATION_MS}

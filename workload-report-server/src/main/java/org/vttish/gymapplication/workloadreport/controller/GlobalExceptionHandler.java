@@ -1,13 +1,14 @@
 package org.vttish.gymapplication.workloadreport.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
-import java.nio.file.AccessDeniedException;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -62,7 +63,7 @@ public class GlobalExceptionHandler {
     return respond(HttpStatus.BAD_REQUEST, ex.getMessage(), request, ex);
   }
 
-  @ExceptionHandler({UnauthenticatedException.class})
+  @ExceptionHandler({UnauthenticatedException.class, AuthenticationException.class})
   public ResponseEntity<ErrorResponseDto> handleAuthenticationException(
       Exception ex, HttpServletRequest request) {
     return respond(HttpStatus.UNAUTHORIZED, ex.getMessage(), request, ex);
