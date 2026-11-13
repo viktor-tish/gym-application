@@ -78,7 +78,7 @@ class DefaultAuthenticationServiceTest {
     when(userRepository.findByUsername("firstName.lastName")).thenReturn(Optional.of(testUser));
     when(passwordEncoder.matches("plainPassword", "hashedPassword")).thenReturn(true);
     when(traineeRepository.existsByUsername("firstName.lastName")).thenReturn(true);
-    when(jwtService.generateToken(principal)).thenReturn("jwt.token.trainee");
+    when(jwtService.generate(principal)).thenReturn("jwt.token.trainee");
 
     LoginResponseDto response = authenticationService.login(dto, CLIENT_IP);
 
@@ -97,7 +97,7 @@ class DefaultAuthenticationServiceTest {
     when(passwordEncoder.matches("plainPassword", "hashedPassword")).thenReturn(true);
     when(traineeRepository.existsByUsername("firstName.lastName")).thenReturn(false);
     when(trainerRepository.existsByUsername("firstName.lastName")).thenReturn(true);
-    when(jwtService.generateToken(principal)).thenReturn("jwt.token.trainer");
+    when(jwtService.generate(principal)).thenReturn("jwt.token.trainer");
 
     LoginResponseDto response = authenticationService.login(dto, CLIENT_IP);
 

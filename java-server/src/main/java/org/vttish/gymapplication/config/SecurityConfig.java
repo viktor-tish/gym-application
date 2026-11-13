@@ -6,7 +6,6 @@ import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -16,15 +15,14 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
-import org.springframework.security.web.authentication.logout.LogoutFilter;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.vttish.gymapplication.security.DelegatingAccessDeniedHandler;
 import org.vttish.gymapplication.security.DelegatingAuthenticationEntryPoint;
-import org.vttish.gymapplication.security.JwtAuthenticationFilter;
-import org.vttish.gymapplication.security.JwtLogoutHandler;
-import org.vttish.gymapplication.security.LoginAttemptFilter;
+import org.vttish.gymapplication.security.filter.InternalJwtAuthenticationFilter;
+import org.vttish.gymapplication.security.filter.LoginAttemptFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -43,10 +41,10 @@ public class SecurityConfig {
   }
 
   @Bean
-  public FilterRegistrationBean<JwtAuthenticationFilter> jwtAuthenticationFilterRegistration(
-      JwtAuthenticationFilter filter
+  public FilterRegistrationBean<InternalJwtAuthenticationFilter> jwtAuthFilterRegistration(
+      InternalJwtAuthenticationFilter filter
   ) {
-    FilterRegistrationBean<JwtAuthenticationFilter> registration =
+    FilterRegistrationBean<InternalJwtAuthenticationFilter> registration =
         new FilterRegistrationBean<>(filter);
     registration.setEnabled(false);
 
@@ -58,21 +56,19 @@ public class SecurityConfig {
   public SecurityFilterChain securityFilterChain(
       HttpSecurity http,
       LoginAttemptFilter loginAttemptFilter,
-      JwtAuthenticationFilter jwtAuthenticationFilter,
+      InternalJwtAuthenticationFilter internalJwtAuthenticationFilter,
       DelegatingAuthenticationEntryPoint authenticationEntryPoint,
-      JwtLogoutHandler jwtLogoutHandler
+      DelegatingAccessDeniedHandler accessDeniedHandler
   ) throws Exception {
     http
         .csrf(AbstractHttpConfigurer::disable)
         .cors(Customizer.withDefaults())
-        .exceptionHandling(ex -> ex.authenticationEntryPoint(authenticationEntryPoint))
+        .exceptionHandling(ex -> ex
+            .authenticationEntryPoint(authenticationEntryPoint)
+            .accessDeniedHandler(accessDeniedHandler))
         .sessionManagement(session ->
             session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-        .logout(logout -> logout
-            .addLogoutHandler(jwtLogoutHandler)
-            .logoutUrl("/api/v1/auth/logout")
-            .logoutSuccessHandler(
-                new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT)))
+        .logout(AbstractHttpConfigurer::disable)
         .authorizeHttpRequests(auth -> auth
             .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
             .requestMatchers(HttpMethod.POST, "/api/v1/trainees").permitAll()
@@ -85,8 +81,9 @@ public class SecurityConfig {
                 "/actuator/**"
             ).permitAll()
             .anyRequest().authenticated())
-        .addFilterBefore(jwtAuthenticationFilter, LogoutFilter.class)
-        .addFilterBefore(loginAttemptFilter, JwtAuthenticationFilter.class);
+        .addFilterBefore(internalJwtAuthenticationFilter,
+            UsernamePasswordAuthenticationFilter.class)
+        .addFilterBefore(loginAttemptFilter, InternalJwtAuthenticationFilter.class);
 
     return http.build();
   }

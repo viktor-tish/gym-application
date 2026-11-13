@@ -1,4 +1,4 @@
-package org.vttish.gymapplication.security;
+package org.vttish.gymapplication.security.filter;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -12,6 +12,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.vttish.gymapplication.exception.TooManyAttemptsException;
+import org.vttish.gymapplication.security.ClientIpResolver;
+import org.vttish.gymapplication.security.LoginAttemptService;
 
 @Component
 public class LoginAttemptFilter extends OncePerRequestFilter {

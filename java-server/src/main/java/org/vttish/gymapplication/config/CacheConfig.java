@@ -14,20 +14,6 @@ import org.vttish.gymapplication.security.properties.LoginAttemptProperties;
 public class CacheConfig {
 
   @Bean
-  public Cache<UUID, Instant> jwtBlackListCache() {
-    Expiry<UUID, Instant> expiry = Expiry.writing((jwtId, expiration) -> {
-      Duration remainingTtl = Duration.between(Instant.now(), expiration);
-
-      return remainingTtl.isNegative() ? Duration.ZERO : remainingTtl;
-    });
-
-    return Caffeine.newBuilder()
-        .maximumSize(100_000)
-        .expireAfter(expiry)
-        .build();
-  }
-
-  @Bean
   public Cache<String, Integer> attemptsPerIpCache(LoginAttemptProperties loginAttemptProperties) {
     return Caffeine.newBuilder()
         .maximumSize(100_000)

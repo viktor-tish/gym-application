@@ -26,7 +26,10 @@ public class TrainingController {
   private final GymFacade gymFacade;
 
   @PostMapping
-  @PreAuthorize("hasAnyRole('TRAINEE', 'TRAINER')")
+  @PreAuthorize("""
+      hasAnyRole('TRAINEE', 'TRAINER')
+      and hasAuthority('SCOPE_gym:training:write')
+      """)
   public ResponseEntity<Void> create(
       @Valid @RequestBody CreateTrainingRequestDto request,
       @Parameter(hidden = true) UserPrincipal userPrincipal

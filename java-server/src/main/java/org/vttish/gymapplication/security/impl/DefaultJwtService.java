@@ -13,8 +13,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.vttish.gymapplication.exception.UnauthenticatedException;
 import org.vttish.gymapplication.security.JwtService;
-import org.vttish.gymapplication.security.model.AuthenticatedToken;
 import org.vttish.gymapplication.security.model.JwtMetadata;
+import org.vttish.gymapplication.security.model.ParsedToken;
 import org.vttish.gymapplication.security.model.Role;
 import org.vttish.gymapplication.security.model.UserPrincipal;
 
@@ -34,7 +34,7 @@ public class DefaultJwtService implements JwtService {
   }
 
   @Override
-  public String generateToken(UserPrincipal principal) {
+  public String generate(UserPrincipal principal) {
     Instant now = Instant.now();
     Instant validity = now.plusMillis(expirationMs);
 
@@ -49,7 +49,7 @@ public class DefaultJwtService implements JwtService {
   }
 
   @Override
-  public AuthenticatedToken parseToken(String token) {
+  public ParsedToken parse(String token) {
     if (token == null || token.isBlank()) {
       throw new UnauthenticatedException("JWT token is missing");
     }
@@ -75,7 +75,7 @@ public class DefaultJwtService implements JwtService {
           claims.getExpiration().toInstant()
       );
 
-      return new AuthenticatedToken(principal, metadata);
+      return new ParsedToken(principal, metadata);
     } catch (JwtException | IllegalArgumentException ex) {
       throw new UnauthenticatedException("Invalid or expired JWT token");
     }

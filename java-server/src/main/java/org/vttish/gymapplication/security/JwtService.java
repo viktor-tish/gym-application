@@ -1,11 +1,11 @@
 package org.vttish.gymapplication.security;
 
-import org.vttish.gymapplication.security.model.AuthenticatedToken;
+import org.vttish.gymapplication.security.model.ParsedToken;
 import org.vttish.gymapplication.security.model.UserPrincipal;
 
 public interface JwtService {
 
-  String generateToken(UserPrincipal principal);
+  String generate(UserPrincipal principal);
 
-  AuthenticatedToken parseToken(String token);
+  ParsedToken parse(String token);
 }

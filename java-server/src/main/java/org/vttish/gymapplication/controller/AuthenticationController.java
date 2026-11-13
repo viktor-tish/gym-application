@@ -35,14 +35,11 @@ public class AuthenticationController {
     return ResponseEntity.ok(gymFacade.login(request, ip));
   }
 
-  @PostMapping("/logout")
-  public ResponseEntity<Void> logout() {
-    // Intercepted by Spring Security's LogoutFilter before reaching here
-    return ResponseEntity.noContent().build();
-  }
-
   @PostMapping("/change-password")
-  @PreAuthorize("hasAnyRole('TRAINEE', 'TRAINER')")
+  @PreAuthorize("""
+      hasAnyRole('TRAINEE', 'TRAINER')
+      and hasAuthority('SCOPE_gym:write')
+      """)
   public ResponseEntity<Void> changePassword(
       @Valid @RequestBody ChangePasswordRequestDto request,
       @Parameter(hidden = true) UserPrincipal userPrincipal

@@ -49,7 +49,12 @@ public class TrainerController {
   }
 
   @GetMapping("/{username}")
-  @PreAuthorize("hasRole('TRAINER') and #username == authentication.principal.username")
+  @PreAuthorize("""
+      hasRole('TRAINER')
+      and hasAuthority('SCOPE_gym:read')
+      and #username == authentication.principal.username
+      """
+  )
   public ResponseEntity<TrainerProfileResponseDto> getProfile(
       @PathVariable("username") String username
   ) {
@@ -57,7 +62,12 @@ public class TrainerController {
   }
 
   @PutMapping("/{username}")
-  @PreAuthorize("hasRole('TRAINER') and #username == authentication.principal.username")
+  @PreAuthorize("""
+      hasRole('TRAINER')
+      and hasAuthority('SCOPE_gym:write')
+      and #username == authentication.principal.username
+      """
+  )
   public ResponseEntity<UpdateTrainerProfileResponseDto> updateProfile(
       @PathVariable("username") String username,
       @Valid @RequestBody UpdateTrainerProfileRequestDto request
@@ -66,7 +76,12 @@ public class TrainerController {
   }
 
   @GetMapping("/{username}/trainings")
-  @PreAuthorize("hasRole('TRAINER') and #username == authentication.principal.username")
+  @PreAuthorize("""
+      hasRole('TRAINER')
+      and hasAuthority('SCOPE_gym:read')
+      and #username == authentication.principal.username
+      """
+  )
   public ResponseEntity<List<TrainerTrainingItemResponseDto>> getTrainings(
       @PathVariable("username") String username,
       @Valid @ModelAttribute GetTrainerTrainingsRequestDto request
@@ -75,7 +90,12 @@ public class TrainerController {
   }
 
   @DeleteMapping("/{username}/trainings/{id}")
-  @PreAuthorize("hasRole('TRAINER') and #username == authentication.principal.username")
+  @PreAuthorize("""
+      hasRole('TRAINER')
+      and hasAuthority('SCOPE_gym:training:write')
+      and #username == authentication.principal.username
+      """
+  )
   public ResponseEntity<Void> deleteTraining(
       @PathVariable("username") String username,
       @PathVariable("id") UUID id
@@ -86,7 +106,12 @@ public class TrainerController {
   }
 
   @PatchMapping("/{username}/status")
-  @PreAuthorize("hasRole('TRAINER') and #username == authentication.principal.username")
+  @PreAuthorize("""
+      hasRole('TRAINER')
+      and hasAuthority('SCOPE_gym:write')
+      and #username == authentication.principal.username
+      """
+  )
   public ResponseEntity<Void> updateStatus(
       @PathVariable("username") String username,
       @Valid @RequestBody UpdateUserStatusRequestDto request
