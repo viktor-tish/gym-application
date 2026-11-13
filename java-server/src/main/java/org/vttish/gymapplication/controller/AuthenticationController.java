@@ -36,7 +36,10 @@ public class AuthenticationController {
   }
 
   @PostMapping("/change-password")
-  @PreAuthorize("hasAnyRole('TRAINEE', 'TRAINER')")
+  @PreAuthorize("""
+      hasAnyRole('TRAINEE', 'TRAINER')
+      and hasAuthority('SCOPE_gym:write')
+      """)
   public ResponseEntity<Void> changePassword(
       @Valid @RequestBody ChangePasswordRequestDto request,
       @Parameter(hidden = true) UserPrincipal userPrincipal
