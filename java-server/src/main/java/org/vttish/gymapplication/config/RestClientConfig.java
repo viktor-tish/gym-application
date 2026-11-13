@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestClient;
 import org.vttish.gymapplication.logging.TracingHeadersInterceptor;
+import org.vttish.gymapplication.security.AuthorizationHeaderInterceptor;
 
 @Configuration
 public class RestClientConfig {
@@ -14,9 +15,11 @@ public class RestClientConfig {
   @LoadBalanced
   public RestClient.Builder internalRestClientBuilder(
       RestClientBuilderConfigurer configurer,
+      AuthorizationHeaderInterceptor authInterceptor,
       TracingHeadersInterceptor tracingInterceptor
   ) {
     return configurer.configure(RestClient.builder())
+        .requestInterceptor(authInterceptor)
         .requestInterceptor(tracingInterceptor);
   }
 
