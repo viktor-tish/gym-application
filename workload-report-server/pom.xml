@@ -18,6 +18,7 @@
 		<java.version>17</java.version>
 		<spring-cloud.version>2025.1.4</spring-cloud.version>
 		<mapstruct.version>1.6.3</mapstruct.version>
+		<jjwt.version>0.12.6</jjwt.version>
 
 		<sonar.coverage.exclusions>
 			**/*Application.class,
@@ -27,7 +28,9 @@
 			**/mapper/**,
 			**/handler/**,
 			**/logging/**,
-			**/config/**
+			**/config/**,
+			**/model/**,
+			**/properties/**
 		</sonar.coverage.exclusions>
 	</properties>
 
@@ -40,6 +43,31 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-validation</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-api</artifactId>
+			<version>${jjwt.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-impl</artifactId>
+			<version>${jjwt.version}</version>
+			<scope>runtime</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-jackson</artifactId>
+			<version>${jjwt.version}</version>
+			<scope>runtime</scope>
 		</dependency>
 
 		<dependency>
@@ -203,6 +231,8 @@
                         <exclude>**/handler/**</exclude>
 						<exclude>**/logging/**</exclude>
 						<exclude>**/config/**</exclude>
+						<exclude>**/model/**</exclude>
+						<exclude>**/properties/**</exclude>
 					</excludes>
 				</configuration>
 				<executions>
