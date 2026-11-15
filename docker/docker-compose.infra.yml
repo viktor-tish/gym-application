@@ -36,6 +36,19 @@ services:
     networks:
       - gym-network
 
+  message-broker:
+    container_name: gym-message-broker
+    image: apache/activemq-artemis:2.37.0
+    environment:
+      ARTEMIS_USER: ${ACTIVEMQ_USER}
+      ARTEMIS_PASSWORD: ${ACTIVEMQ_PASSWORD}
+      ANONYMOUS_LOGIN: "false"
+    ports:
+      - "61616:61616"
+      - "8161:8161"
+    networks:
+      - gym-network
+
   sonarqube:
     container_name: gym-sonarqube
     image: sonarqube:community
