@@ -1,34 +1,34 @@
 services:
-  java-server-test:
-    container_name: gym-java-server-test
+  gym-core-service-test:
+    container_name: gym-core-service-test
     build:
-      context: ../java-server
+      context: ../gym-core-service
       dockerfile: docker/test.Dockerfile
     environment:
-      SONAR_PROJECT_KEY: gym-java-server
+      SONAR_PROJECT_KEY: gym-core-service
     networks:
       - gym-network
     volumes:
       - maven-repo:/root/.m2/repository
       - sonarqube-context:/tmp/sonarqube-context:ro
 
-  workload-report-server-test:
-    container_name: gym-workload-report-server-test
+  gym-report-service-test:
+    container_name: gym-report-service-test
     build:
-      context: ../workload-report-server
+      context: ../gym-report-service
       dockerfile: docker/test.Dockerfile
     environment:
-      SONAR_PROJECT_KEY: gym-workload-report-server
+      SONAR_PROJECT_KEY: gym-report-service
     networks:
       - gym-network
     volumes:
       - maven-repo:/root/.m2/repository
       - sonarqube-context:/tmp/sonarqube-context:ro
 
-  api-gateway-test:
+  gym-api-gateway-test:
     container_name: gym-api-gateway-test
     build:
-      context: ../api-gateway
+      context: ../gym-api-gateway
       dockerfile: docker/test.Dockerfile
     environment:
       SONAR_PROJECT_KEY: gym-api-gateway
@@ -38,13 +38,13 @@ services:
       - maven-repo:/root/.m2/repository
       - sonarqube-context:/tmp/sonarqube-context:ro
 
-  discovery-server-test:
-    container_name: gym-discovery-server-test
+  gym-discovery-service-test:
+    container_name: gym-discovery-service-test
     build:
-      context: ../discovery-server
+      context: ../gym-discovery-service
       dockerfile: docker/test.Dockerfile
     environment:
-      SONAR_PROJECT_KEY: gym-discovery-server
+      SONAR_PROJECT_KEY: gym-discovery-service
     networks:
       - gym-network
     volumes:

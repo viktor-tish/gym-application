@@ -1,0 +1,104 @@
+spring:
+  application:
+    name: gym-api-gateway
+  mvc:
+    throw-exception-if-no-handler-found: true
+  web:
+    resources:
+      add-mappings: false
+  cloud:
+    gateway:
+      server:
+        webmvc:
+          routes:
+            - id: gym-report-service
+              uri: lb://gym-report-service
+              order: 0
+              predicates:
+                - Path=/api/v1/trainers/{username}/workload
+            - id: gym-core-service
+              uri: lb://gym-core-service
+              order: 1
+              predicates:
+                - Path=/api/v1/trainers/**, /api/v1/trainees/**, /api/v1/trainings/**, /api/v1/auth/**
+            - id: gym-core-service-docs
+              uri: lb://gym-core-service
+              order: 0
+              predicates:
+                - Path=/docs/gym-core-service/v3/api-docs
+                - Method=GET
+              filters:
+                - SetPath=/v3/api-docs
+            - id: gym-report-service-docs
+              uri: lb://gym-report-service
+              order: 0
+              predicates:
+                - Path=/docs/gym-report-service/v3/api-docs
+                - Method=GET
+              filters:
+                - SetPath=/v3/api-docs
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+
+server:
+  port: 8000
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${DISCOVERY_SERVER_URL}
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+
+springdoc:
+  swagger-ui:
+    persist-authorization: true
+    disable-swagger-default-url: true
+    urls-primary-name: gym-core-service
+    urls:
+      - name: gym-core-service
+        url: /docs/gym-core-service/v3/api-docs
+      - name: gym-report-service
+        url: /docs/gym-report-service/v3/api-docs
+      - name: gym-api-gateway
+        url: /v3/api-docs
+
+app:
+  security:
+    cors:
+      allowed-origins: ${CORS_ALLOWED_ORIGINS}
+    jwt:
+      secret: ${JWT_SECRET}
+      expiration-ms: ${JWT_EXPIRATION_MS}
+    internal-jwt:
+      secret: ${INTERNAL_JWT_SECRET}
+      expiration-ms: ${INTERNAL_JWT_EXPIRATION_MS}
+      rules:
+        - methods: [ POST ]
+          path: /api/v1/trainings
+          audiences: [ gym-core-service, gym-report-service ]
+          scopes: [ gym:training:write, report:trainer:write ]
+        - methods: [ DELETE ]
+          path: /api/v1/trainers/{username}/trainings/{id}
+          audiences: [ gym-core-service, gym-report-service ]
+          scopes: [ gym:training:write, report:trainer:write ]
+        - methods: [ GET ]
+          path: /api/v1/trainers/{username}/workload
+          audiences: [ gym-report-service ]
+          scopes: [ report:trainer:read ]
+        - methods: [ GET ]
+          path: /api/v1/{resource:auth|trainees|trainers|trainings}/**
+          audiences: [ gym-core-service ]
+          scopes: [ gym:read ]
+        - methods: [ POST, PUT, PATCH, DELETE ]
+          path: /api/v1/{resource:auth|trainees|trainers|trainings}/**
+          audiences: [ gym-core-service ]
+          scopes: [ gym:write ]
