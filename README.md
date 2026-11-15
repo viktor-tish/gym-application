@@ -61,7 +61,7 @@ Examples:
 
 > **Note:** In `dev` and `stg` environments, test accounts are automatically seeded with password `password123` (e.g., trainees: `john.doe`, `alice.wonderland`, `bob.marley`; trainers: `jane.smith`, `michael.scott`, `serena.williams`).
 
-To view the live logs of the service, use: `docker logs -f gym-java-server`
+To view the live logs of the service, use: `docker logs -f [conatainer-name]`
 
 ### Run the Tests
 

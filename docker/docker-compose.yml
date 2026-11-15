@@ -1,8 +1,8 @@
 services:
-  java-server:
-    container_name: gym-java-server
+  gym-core-service:
+    container_name: gym-core-service
     build:
-      context: ../java-server
+      context: ../gym-core-service
       dockerfile: docker/Dockerfile
     ports:
       - "8080:8080"
@@ -21,13 +21,13 @@ services:
     networks:
       - gym-network
     depends_on:
-      discovery-server:
+      gym-discovery-service:
         condition: service_healthy
 
-  workload-report-server:
-    container_name: gym-workload-report-server
+  gym-report-service:
+    container_name: gym-report-service
     build:
-      context: ../workload-report-server
+      context: ../gym-report-service
       dockerfile: docker/Dockerfile
     ports:
       - "8081:8081"
@@ -42,13 +42,13 @@ services:
     networks:
       - gym-network
     depends_on:
-      discovery-server:
+      gym-discovery-service:
         condition: service_healthy
 
-  api-gateway:
+  gym-api-gateway:
     container_name: gym-api-gateway
     build:
-      context: ../api-gateway
+      context: ../gym-api-gateway
       dockerfile: docker/Dockerfile
     ports:
       - "8000:8000"
@@ -63,13 +63,13 @@ services:
     networks:
       - gym-network
     depends_on:
-      discovery-server:
+      gym-discovery-service:
         condition: service_healthy
 
-  discovery-server:
-    container_name: gym-discovery-server
+  gym-discovery-service:
+    container_name: gym-discovery-service
     build:
-      context: ../discovery-server
+      context: ../gym-discovery-service
       dockerfile: docker/Dockerfile
     ports:
       - "8761:8761"
