@@ -13,6 +13,10 @@ spring:
   flyway:
     locations:
       - classpath:db/migration
+  artemis:
+    pool:
+      enabled: true
+      max-connections: 20
 
 springdoc:
   api-docs:
@@ -49,3 +53,7 @@ app:
     login-attempt:
       max-attempts: 3
       ban-duration: 5m
+
+logging:
+  level:
+    org.vttish.gymapplication: INFO

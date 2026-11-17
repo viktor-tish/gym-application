@@ -3,6 +3,7 @@ package org.vttish.gymapplication.core.client.impl;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.vttish.gymapplication.core.client.TrainerWorkloadClient;
@@ -16,6 +17,11 @@ import org.vttish.gymapplication.core.logging.Loggable;
 @Component
 @Slf4j
 @Loggable
+@ConditionalOnProperty(
+    name = "app.trainer-workload.transport",
+    havingValue = "rest",
+    matchIfMissing = true
+)
 public class DefaultTrainerWorkloadClient implements TrainerWorkloadClient {
 
   private final RestClient restClient;

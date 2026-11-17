@@ -15,3 +15,11 @@ spring:
     locations:
       - classpath:db/migration
       - classpath:db/testdata
+  artemis:
+    pool:
+      enabled: false
+
+logging:
+  level:
+    org.vttish.gymapplication: DEBUG
+    org.springframework.jms.listener: DEBUG
