@@ -12,6 +12,7 @@ import org.vttish.gymapplication.core.client.mapper.TrainerWorkloadMapper;
 import org.vttish.gymapplication.core.event.TrainingCreatedEvent;
 import org.vttish.gymapplication.core.event.TrainingDeletedEvent;
 import org.vttish.gymapplication.core.logging.Loggable;
+import org.vttish.gymapplication.core.logging.TracingHeadersPostprocessor;
 
 @Component
 @Slf4j
@@ -22,18 +23,22 @@ import org.vttish.gymapplication.core.logging.Loggable;
 )
 public class JmsTrainerWorkloadClient implements TrainerWorkloadClient {
 
+
   private final JmsTemplate jmsTemplate;
   private final TrainerWorkloadMapper trainerWorkloadMapper;
   private final String jmsQueue;
+  private final TracingHeadersPostprocessor tracingHeadersPostprocessor;
 
   public JmsTrainerWorkloadClient(
       JmsTemplate jmsTemplate,
       TrainerWorkloadMapper trainerWorkloadMapper,
-      @Value("${app.trainer-workload.queue}") String jmsQueue
+      @Value("${app.trainer-workload.queue}") String jmsQueue,
+      TracingHeadersPostprocessor tracingHeadersPostprocessor
   ) {
     this.jmsTemplate = jmsTemplate;
     this.trainerWorkloadMapper = trainerWorkloadMapper;
     this.jmsQueue = jmsQueue;
+    this.tracingHeadersPostprocessor = tracingHeadersPostprocessor;
   }
 
   @Override
@@ -47,7 +52,13 @@ public class JmsTrainerWorkloadClient implements TrainerWorkloadClient {
   }
 
   private void publish(UpdateTrainerWorkloadRequestDto payload) {
-    jmsTemplate.convertAndSend(jmsQueue, payload);
-    log.debug("Published trainer workload update");
+    jmsTemplate.convertAndSend(jmsQueue, payload, message -> {
+      tracingHeadersPostprocessor.postProcessMessage(message);
+      message.setStringProperty("JMSXGroupID", payload.username());
+
+      return message;
+    });
+
+    log.debug("Published trainer workload update {}", payload);
   }
 }
