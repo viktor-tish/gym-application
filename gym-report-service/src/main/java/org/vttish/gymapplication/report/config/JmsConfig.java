@@ -1,17 +1,18 @@
 package org.vttish.gymapplication.report.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.jms.ConnectionFactory;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.jms.autoconfigure.DefaultJmsListenerContainerFactoryConfigurer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.jms.config.DefaultJmsListenerContainerFactory;
 import org.springframework.jms.support.converter.JacksonJsonMessageConverter;
 import org.springframework.jms.support.converter.MessageConverter;
 import org.springframework.jms.support.converter.MessageType;
 import org.vttish.gymapplication.report.dto.UpdateTrainerWorkloadRequestDto;
+import org.vttish.gymapplication.report.logging.TracingMessageConverter;
 import tools.jackson.databind.json.JsonMapper;
 
 @Configuration
@@ -40,12 +41,18 @@ public class JmsConfig {
       MessageConverter messageConverter
   ) {
     DefaultJmsListenerContainerFactory factory = new DefaultJmsListenerContainerFactory();
+    messageConverter = new TracingMessageConverter(messageConverter);
 
     configurer.configure(factory, connectionFactory);
     factory.setMessageConverter(messageConverter);
     factory.setErrorHandler(t ->
         log.error("JMS listener failed, message will be redelivered or sent to DLQ", t)
     );
+
+    SimpleAsyncTaskExecutor executor = new SimpleAsyncTaskExecutor("jms-listener-");
+
+    executor.setTaskDecorator(TracingMessageConverter.mdcCleanupDecorator());
+    factory.setTaskExecutor(executor);
 
     return factory;
   }
