@@ -33,7 +33,7 @@ and test lifecycles. To see the list of available commands run:
 
 ### Infrastructure
 
-To start the persistent background infrastructure (PostgreSQL database, pgAdmin, and SonarQube), run:
+To start the persistent background infrastructure (PostgreSQL database, pgAdmin, ActiveMQ message broker, and SonarQube), run:
 
 ```bash
 ./run infra
