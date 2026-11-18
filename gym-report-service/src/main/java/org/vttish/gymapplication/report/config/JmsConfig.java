@@ -2,24 +2,32 @@ package org.vttish.gymapplication.report.config;
 
 import jakarta.jms.ConnectionFactory;
 import java.util.Map;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.jms.autoconfigure.DefaultJmsListenerContainerFactoryConfigurer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
+import org.springframework.jms.annotation.JmsListenerConfigurer;
 import org.springframework.jms.config.DefaultJmsListenerContainerFactory;
+import org.springframework.jms.config.JmsListenerEndpointRegistrar;
 import org.springframework.jms.support.converter.JacksonJsonMessageConverter;
 import org.springframework.jms.support.converter.MessageConverter;
 import org.springframework.jms.support.converter.MessageType;
+import org.springframework.messaging.handler.annotation.support.DefaultMessageHandlerMethodFactory;
+import org.springframework.validation.Validator;
 import org.vttish.gymapplication.report.dto.UpdateTrainerWorkloadRequestDto;
 import org.vttish.gymapplication.report.logging.TracingMessageConverter;
 import tools.jackson.databind.json.JsonMapper;
 
 @Configuration
 @Slf4j
-public class JmsConfig {
+@RequiredArgsConstructor
+public class JmsConfig implements JmsListenerConfigurer {
 
   private static final String UPDATE_TRAINER_WORKLOAD_TYPE = "update-trainer-workload";
+
+  private final Validator validator;
 
   @Bean
   public MessageConverter jacksonJmsMessageConverter(JsonMapper jsonMapper) {
@@ -55,5 +63,14 @@ public class JmsConfig {
     factory.setTaskExecutor(executor);
 
     return factory;
+  }
+
+  @Override
+  public void configureJmsListeners(JmsListenerEndpointRegistrar registrar) {
+    DefaultMessageHandlerMethodFactory factory = new DefaultMessageHandlerMethodFactory();
+
+    factory.setValidator(validator);
+    factory.afterPropertiesSet();
+    registrar.setMessageHandlerMethodFactory(factory);
   }
 }

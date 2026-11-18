@@ -1,5 +1,6 @@
 package org.vttish.gymapplication.report.listener;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jms.annotation.JmsListener;
@@ -16,7 +17,7 @@ public class TrainerWorkloadListener {
   private final TrainerWorkloadHandler trainerWorkloadHandler;
 
   @JmsListener(destination = "${app.trainer-workload.queue}")
-  public void onUpdateTrainerWorkload(@Payload UpdateTrainerWorkloadRequestDto payload) {
+  public void onUpdateTrainerWorkload(@Valid @Payload UpdateTrainerWorkloadRequestDto payload) {
     trainerWorkloadHandler.handleUpdateWorkload(payload);
   }
 }
