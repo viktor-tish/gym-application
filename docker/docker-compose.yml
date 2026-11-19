@@ -1,8 +1,8 @@
 services:
-  java-server:
-    container_name: gym-java-server
+  gym-core-service:
+    container_name: gym-core-service
     build:
-      context: ../java-server
+      context: ../gym-core-service
       dockerfile: docker/Dockerfile
     ports:
       - "8080:8080"
@@ -14,9 +14,73 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS}
+      INTERNAL_JWT_SECRET: ${INTERNAL_JWT_SECRET}
+      INTERNAL_JWT_EXPIRATION_MS: ${INTERNAL_JWT_EXPIRATION_MS}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
+      DISCOVERY_SERVER_URL: ${DISCOVERY_SERVER_URL}
+    networks:
+      - gym-network
+    depends_on:
+      gym-discovery-service:
+        condition: service_healthy
+
+  gym-report-service:
+    container_name: gym-report-service
+    build:
+      context: ../gym-report-service
+      dockerfile: docker/Dockerfile
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_PROFILES_ACTIVE:
+      H2_WORKLOAD_REPORT_DB_USERNAME:
+      H2_WORKLOAD_REPORT_DB_PASSWORD:
+      DISCOVERY_SERVER_URL: ${DISCOVERY_SERVER_URL}
+      INTERNAL_JWT_SECRET: ${INTERNAL_JWT_SECRET}
+      INTERNAL_JWT_EXPIRATION_MS: ${INTERNAL_JWT_EXPIRATION_MS}
       CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
     networks:
       - gym-network
+    depends_on:
+      gym-discovery-service:
+        condition: service_healthy
+
+  gym-api-gateway:
+    container_name: gym-api-gateway
+    build:
+      context: ../gym-api-gateway
+      dockerfile: docker/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      SPRING_PROFILES_ACTIVE:
+      DISCOVERY_SERVER_URL: ${DISCOVERY_SERVER_URL}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS}
+      INTERNAL_JWT_SECRET: ${INTERNAL_JWT_SECRET}
+      INTERNAL_JWT_EXPIRATION_MS: ${INTERNAL_JWT_EXPIRATION_MS}
+    networks:
+      - gym-network
+    depends_on:
+      gym-discovery-service:
+        condition: service_healthy
+
+  gym-discovery-service:
+    container_name: gym-discovery-service
+    build:
+      context: ../gym-discovery-service
+      dockerfile: docker/Dockerfile
+    ports:
+      - "8761:8761"
+    networks:
+      - gym-network
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8761/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
 
 networks:
   gym-network:

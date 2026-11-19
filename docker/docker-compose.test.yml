@@ -1,21 +1,55 @@
 services:
-  java-server-test:
-    container_name: gym-java-server-test
+  gym-core-service-test:
+    container_name: gym-core-service-test
     build:
-      context: ../java-server
+      context: ../gym-core-service
       dockerfile: docker/test.Dockerfile
     environment:
-      SONAR_LOGIN: ${SONAR_LOGIN}
-      SONAR_PASSWORD: ${SONAR_PASSWORD}
-      SONAR_PROJECT_KEY: gym-java-server
-      SONAR_PROJECT_NAME: "Gym Java Server"
-      JWT_SECRET: ${JWT_SECRET}
-      JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS}
-      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
+      SONAR_PROJECT_KEY: gym-core-service
     networks:
       - gym-network
     volumes:
       - maven-repo:/root/.m2/repository
+      - sonarqube-context:/tmp/sonarqube-context:ro
+
+  gym-report-service-test:
+    container_name: gym-report-service-test
+    build:
+      context: ../gym-report-service
+      dockerfile: docker/test.Dockerfile
+    environment:
+      SONAR_PROJECT_KEY: gym-report-service
+    networks:
+      - gym-network
+    volumes:
+      - maven-repo:/root/.m2/repository
+      - sonarqube-context:/tmp/sonarqube-context:ro
+
+  gym-api-gateway-test:
+    container_name: gym-api-gateway-test
+    build:
+      context: ../gym-api-gateway
+      dockerfile: docker/test.Dockerfile
+    environment:
+      SONAR_PROJECT_KEY: gym-api-gateway
+    networks:
+      - gym-network
+    volumes:
+      - maven-repo:/root/.m2/repository
+      - sonarqube-context:/tmp/sonarqube-context:ro
+
+  gym-discovery-service-test:
+    container_name: gym-discovery-service-test
+    build:
+      context: ../gym-discovery-service
+      dockerfile: docker/test.Dockerfile
+    environment:
+      SONAR_PROJECT_KEY: gym-discovery-service
+    networks:
+      - gym-network
+    volumes:
+      - maven-repo:/root/.m2/repository
+      - sonarqube-context:/tmp/sonarqube-context:ro
 
 networks:
   gym-network:
@@ -24,3 +58,6 @@ networks:
 
 volumes:
   maven-repo:
+  sonarqube-context:
+    external: true
+    name: sonarqube-context
