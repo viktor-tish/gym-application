@@ -60,6 +60,7 @@ eureka:
 app:
   trainer-workload:
     queue: gym.trainer-workload.updates
+    dlq: DLQ
   security:
     cors:
       allowed-origins: ${CORS_ALLOWED_ORIGINS}
