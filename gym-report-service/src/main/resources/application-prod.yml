@@ -11,6 +11,14 @@ spring:
   h2:
     console:
       enabled: false
+  artemis:
+    pool:
+      enabled: true
+      max-connections: 20
+  jms:
+    listener:
+      min-concurrency: 4
+      max-concurrency: 16
 
 springdoc:
   api-docs:
@@ -26,3 +34,8 @@ management:
   endpoint:
     health:
       show-details: always
+
+logging:
+  level:
+    org.vttish.gymapplication: INFO
+    org.springframework.jms.listener: INFO
