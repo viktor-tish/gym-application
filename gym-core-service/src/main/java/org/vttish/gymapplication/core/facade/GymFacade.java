@@ -62,6 +62,8 @@ public interface GymFacade {
 
   TrainingDetailsResponseDto createTraining(CreateTrainingRequestDto request);
 
+  TrainingDetailsResponseDto getDetails(UUID id, String username);
+
   void deleteTraining(UUID id, String trainerUsername);
 
   List<TraineeTrainingItemResponseDto> getTraineeTrainings(

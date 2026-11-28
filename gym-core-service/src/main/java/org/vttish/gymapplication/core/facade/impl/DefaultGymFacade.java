@@ -115,6 +115,11 @@ public class DefaultGymFacade implements GymFacade {
   }
 
   @Override
+  public TrainingDetailsResponseDto getDetails(UUID id, String username) {
+    return trainingService.getDetails(id, username);
+  }
+
+  @Override
   public void deleteTraining(UUID id, String trainerUsername) {
     trainingService.delete(id, trainerUsername);
   }

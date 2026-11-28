@@ -31,6 +31,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.vttish.gymapplication.core.dto.trainee.TraineeDetailsItemResponseDto;
+import org.vttish.gymapplication.core.dto.trainer.TrainerDetailsItemResponseDto;
 import org.vttish.gymapplication.core.dto.training.CreateTrainingRequestDto;
 import org.vttish.gymapplication.core.dto.training.TrainingDetailsResponseDto;
 import org.vttish.gymapplication.core.dto.training.TrainingTypeResponseDto;
@@ -195,6 +197,52 @@ class TrainingControllerTest {
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void getDetails_ShouldReturnOk_WhenTrainingExists() throws Exception {
+    UUID trainingId = UUID.randomUUID();
+    String username = "trainer.username";
+    TrainingTypeResponseDto type = new TrainingTypeResponseDto(UUID.randomUUID(), "Fitness");
+    TrainerDetailsItemResponseDto trainer = new TrainerDetailsItemResponseDto(
+        username, "John", "Doe", type, true
+    );
+    TraineeDetailsItemResponseDto trainee = new TraineeDetailsItemResponseDto(
+        "trainee.username", "Alice", "Smith", true, LocalDate.of(2000, 1, 1)
+    );
+    TrainingDetailsResponseDto response = new TrainingDetailsResponseDto(
+        trainingId, "Morning Workout", LocalDate.of(2025, 5, 1), type, 60, trainer, trainee
+    );
+
+    when(gymFacade.getDetails(trainingId, username)).thenReturn(response);
+    setAuthentication(new UserPrincipal(username, Role.TRAINER));
+
+    MvcResult result = mockMvc.perform(get("/api/v1/trainings/{id}", trainingId))
+        .andExpect(status().isOk())
+        .andReturn();
+
+    TrainingDetailsResponseDto actual = objectMapper.readValue(
+        result.getResponse().getContentAsString(),
+        TrainingDetailsResponseDto.class
+    );
+
+    assertEquals(response, actual);
+    verify(gymFacade).getDetails(trainingId, username);
+  }
+
+  @Test
+  void getDetails_ShouldReturnNotFound_WhenTrainingDoesNotExist() throws Exception {
+    UUID trainingId = UUID.randomUUID();
+    String username = "trainer.username";
+
+    when(gymFacade.getDetails(trainingId, username))
+        .thenThrow(new ResourceNotFoundException("Training not found with id: " + trainingId));
+    setAuthentication(new UserPrincipal(username, Role.TRAINER));
+
+    mockMvc.perform(get("/api/v1/trainings/{id}", trainingId))
+        .andExpect(status().isNotFound());
+
+    verify(gymFacade).getDetails(trainingId, username);
   }
 
   @Test

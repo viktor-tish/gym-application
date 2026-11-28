@@ -14,6 +14,8 @@ public interface TrainingService {
 
   TrainingDetailsResponseDto create(CreateTrainingRequestDto request);
 
+  TrainingDetailsResponseDto getDetails(UUID id, String username);
+
   void delete(UUID id, String trainerUsername);
 
   List<TraineeTrainingItemResponseDto> getTraineeTrainings(

@@ -62,6 +62,18 @@ public class TrainingController {
     return ResponseEntity.created(location).body(detailsResponseDto);
   }
 
+  @GetMapping("/{id}")
+  @PreAuthorize("""
+      hasAnyRole('TRAINEE', 'TRAINER')
+      and hasAuthority('SCOPE_gym:read')
+      """)
+  public ResponseEntity<TrainingDetailsResponseDto> getDetails(
+      @PathVariable UUID id,
+      @Parameter(hidden = true) UserPrincipal userPrincipal
+  ) {
+    return ResponseEntity.ok(gymFacade.getDetails(id, userPrincipal.username()));
+  }
+
   @GetMapping("/types")
   public ResponseEntity<List<TrainingTypeResponseDto>> getTypes() {
     return ResponseEntity.ok(gymFacade.getTrainingTypes());

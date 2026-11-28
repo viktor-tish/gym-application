@@ -75,6 +75,24 @@ public class DefaultTrainingService implements TrainingService {
   }
 
   @Override
+  public TrainingDetailsResponseDto getDetails(UUID id, String username) {
+    Training training = trainingRepository.findById(id).orElseThrow(
+        () -> new ResourceNotFoundException("Training not found with id: " + id)
+    );
+
+    Trainer trainer = training.getTrainer();
+    Trainee trainee = training.getTrainee();
+
+    if (!Objects.equals(trainer.getUser().getUsername(), username)
+        && !Objects.equals(trainee.getUser().getUsername(), username)
+    ) {
+      throw new ResourceNotFoundException("Training not found with id: " + id);
+    }
+
+    return trainingMapper.toTrainingDetailsResponseDto(training);
+  }
+
+  @Override
   @Transactional
   public void delete(UUID id, String trainerUsername) {
     Training training = trainingRepository.findById(id)
