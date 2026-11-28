@@ -13,6 +13,7 @@ import org.vttish.gymapplication.core.dto.trainer.GetTrainerTrainingsRequestDto;
 import org.vttish.gymapplication.core.dto.training.CreateTrainingRequestDto;
 import org.vttish.gymapplication.core.dto.training.TraineeTrainingItemResponseDto;
 import org.vttish.gymapplication.core.dto.training.TrainerTrainingItemResponseDto;
+import org.vttish.gymapplication.core.dto.training.TrainingDetailsResponseDto;
 import org.vttish.gymapplication.core.dto.training.TrainingTypeResponseDto;
 import org.vttish.gymapplication.core.entity.Trainee;
 import org.vttish.gymapplication.core.entity.Trainer;
@@ -47,7 +48,7 @@ public class DefaultTrainingService implements TrainingService {
 
   @Override
   @Transactional
-  public void create(CreateTrainingRequestDto request) {
+  public TrainingDetailsResponseDto create(CreateTrainingRequestDto request) {
     Trainer trainer = trainerRepository.findByUsername(request.trainerUsername()).orElseThrow(
         () -> new ResourceNotFoundException(
             "Trainer not found with username: " + request.trainerUsername()
@@ -69,6 +70,8 @@ public class DefaultTrainingService implements TrainingService {
 
     gymMetrics.incrementTrainingCreated();
     eventPublisher.publishEvent(TrainingCreatedEvent.from(trainer, training));
+
+    return trainingMapper.toTrainingDetailsResponseDto(training);
   }
 
   @Override

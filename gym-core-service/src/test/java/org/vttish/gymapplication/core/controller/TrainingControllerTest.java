@@ -1,6 +1,7 @@
 package org.vttish.gymapplication.core.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -9,6 +10,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -30,6 +32,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.vttish.gymapplication.core.dto.training.CreateTrainingRequestDto;
+import org.vttish.gymapplication.core.dto.training.TrainingDetailsResponseDto;
 import org.vttish.gymapplication.core.dto.training.TrainingTypeResponseDto;
 import org.vttish.gymapplication.core.exception.ResourceNotFoundException;
 import org.vttish.gymapplication.core.facade.GymFacade;
@@ -84,32 +87,46 @@ class TrainingControllerTest {
 
   @Test
   void create_ShouldReturnCreated_WhenCallerIsTrainer() throws Exception {
+    UUID trainingId = UUID.randomUUID();
+    TrainingDetailsResponseDto response = mock(TrainingDetailsResponseDto.class);
+    when(response.id()).thenReturn(trainingId);
     CreateTrainingRequestDto request = new CreateTrainingRequestDto(
         "firstName.lastName", "trainee.username", "Morning Workout", LocalDate.of(2025, 5, 1), 60
     );
-    doNothing().when(gymFacade).createTraining(request);
+    when(gymFacade.createTraining(any())).thenReturn(response);
     setAuthentication(new UserPrincipal("firstName.lastName", Role.TRAINER));
 
     mockMvc.perform(post("/api/v1/trainings")
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(request)))
-        .andExpect(status().isCreated());
+        .andExpect(status().isCreated())
+        .andExpect(header().string(
+        "Location",
+        "http://localhost/api/v1/trainings/" + trainingId
+        ));
 
     verify(gymFacade).createTraining(request);
   }
 
   @Test
   void create_ShouldReturnCreated_WhenCallerIsTrainee() throws Exception {
+    UUID trainingId = UUID.randomUUID();
+    TrainingDetailsResponseDto response = mock(TrainingDetailsResponseDto.class);
+    when(response.id()).thenReturn(trainingId);
     CreateTrainingRequestDto request = new CreateTrainingRequestDto(
         "firstName.lastName", "trainee.username", "Morning Workout", LocalDate.of(2025, 5, 1), 60
     );
-    doNothing().when(gymFacade).createTraining(request);
+    when(gymFacade.createTraining(any())).thenReturn(response);
     setAuthentication(new UserPrincipal("trainee.username", Role.TRAINEE));
 
     mockMvc.perform(post("/api/v1/trainings")
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(request)))
-        .andExpect(status().isCreated());
+        .andExpect(status().isCreated())
+        .andExpect(header().string(
+            "Location",
+            "http://localhost/api/v1/trainings/" + trainingId
+        ));
 
     verify(gymFacade).createTraining(request);
   }

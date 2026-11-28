@@ -2,17 +2,22 @@ package org.vttish.gymapplication.core.controller;
 
 import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
+import java.net.URI;
 import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.vttish.gymapplication.core.dto.training.CreateTrainingRequestDto;
+import org.vttish.gymapplication.core.dto.training.TrainingDetailsResponseDto;
 import org.vttish.gymapplication.core.dto.training.TrainingTypeResponseDto;
 import org.vttish.gymapplication.core.exception.ForbiddenException;
 import org.vttish.gymapplication.core.facade.GymFacade;
@@ -30,7 +35,7 @@ public class TrainingController {
       hasAnyRole('TRAINEE', 'TRAINER')
       and hasAuthority('SCOPE_gym:training:write')
       """)
-  public ResponseEntity<Void> create(
+  public ResponseEntity<TrainingDetailsResponseDto> create(
       @Valid @RequestBody CreateTrainingRequestDto request,
       @Parameter(hidden = true) UserPrincipal userPrincipal
   ) {
@@ -48,9 +53,13 @@ public class TrainingController {
       throw new ForbiddenException("Access denied");
     }
 
-    gymFacade.createTraining(request);
+    TrainingDetailsResponseDto detailsResponseDto = gymFacade.createTraining(request);
+    URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+        .path("/{id}")
+        .buildAndExpand(detailsResponseDto.id())
+        .toUri();
 
-    return ResponseEntity.status(HttpStatus.CREATED).build();
+    return ResponseEntity.created(location).body(detailsResponseDto);
   }
 
   @GetMapping("/types")

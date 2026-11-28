@@ -24,6 +24,7 @@ import org.vttish.gymapplication.core.dto.trainer.UpdateTrainerProfileResponseDt
 import org.vttish.gymapplication.core.dto.training.CreateTrainingRequestDto;
 import org.vttish.gymapplication.core.dto.training.TraineeTrainingItemResponseDto;
 import org.vttish.gymapplication.core.dto.training.TrainerTrainingItemResponseDto;
+import org.vttish.gymapplication.core.dto.training.TrainingDetailsResponseDto;
 import org.vttish.gymapplication.core.dto.training.TrainingTypeResponseDto;
 import org.vttish.gymapplication.core.facade.GymFacade;
 import org.vttish.gymapplication.core.service.AuthenticationService;
@@ -109,8 +110,8 @@ public class DefaultGymFacade implements GymFacade {
   }
 
   @Override
-  public void createTraining(CreateTrainingRequestDto request) {
-    trainingService.create(request);
+  public TrainingDetailsResponseDto createTraining(CreateTrainingRequestDto request) {
+    return trainingService.create(request);
   }
 
   @Override
