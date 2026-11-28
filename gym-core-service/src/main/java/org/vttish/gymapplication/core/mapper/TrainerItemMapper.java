@@ -3,6 +3,7 @@ package org.vttish.gymapplication.core.mapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
+import org.vttish.gymapplication.core.dto.trainer.TrainerDetailsItemResponseDto;
 import org.vttish.gymapplication.core.dto.trainer.TrainerItemResponseDto;
 import org.vttish.gymapplication.core.entity.Trainer;
 
@@ -17,4 +18,11 @@ public interface TrainerItemMapper {
   @Mapping(source = "user.lastName", target = "lastName")
   @Mapping(source = "specialization", target = "specialization")
   TrainerItemResponseDto toTrainerItemResponseDto(Trainer trainer);
+
+  @Mapping(source = "user.username", target = "username")
+  @Mapping(source = "user.firstName", target = "firstName")
+  @Mapping(source = "user.lastName", target = "lastName")
+  @Mapping(source = "specialization", target = "specialization")
+  @Mapping(source = "user.isActive", target = "isActive")
+  TrainerDetailsItemResponseDto toTrainerDetailsItemResponseDto(Trainer trainer);
 }

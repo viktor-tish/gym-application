@@ -7,11 +7,14 @@ import org.vttish.gymapplication.core.dto.trainer.GetTrainerTrainingsRequestDto;
 import org.vttish.gymapplication.core.dto.training.CreateTrainingRequestDto;
 import org.vttish.gymapplication.core.dto.training.TraineeTrainingItemResponseDto;
 import org.vttish.gymapplication.core.dto.training.TrainerTrainingItemResponseDto;
+import org.vttish.gymapplication.core.dto.training.TrainingDetailsResponseDto;
 import org.vttish.gymapplication.core.dto.training.TrainingTypeResponseDto;
 
 public interface TrainingService {
 
-  void create(CreateTrainingRequestDto request);
+  TrainingDetailsResponseDto create(CreateTrainingRequestDto request);
+
+  TrainingDetailsResponseDto getDetails(UUID id, String username);
 
   void delete(UUID id, String trainerUsername);
 

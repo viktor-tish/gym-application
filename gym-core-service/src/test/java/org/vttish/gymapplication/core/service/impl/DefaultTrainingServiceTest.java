@@ -3,6 +3,7 @@ package org.vttish.gymapplication.core.service.impl;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -22,6 +23,7 @@ import org.vttish.gymapplication.core.dto.trainer.GetTrainerTrainingsRequestDto;
 import org.vttish.gymapplication.core.dto.training.CreateTrainingRequestDto;
 import org.vttish.gymapplication.core.dto.training.TraineeTrainingItemResponseDto;
 import org.vttish.gymapplication.core.dto.training.TrainerTrainingItemResponseDto;
+import org.vttish.gymapplication.core.dto.training.TrainingDetailsResponseDto;
 import org.vttish.gymapplication.core.dto.training.TrainingTypeResponseDto;
 import org.vttish.gymapplication.core.entity.Trainee;
 import org.vttish.gymapplication.core.entity.Trainer;
@@ -132,6 +134,112 @@ class DefaultTrainingServiceTest {
 
     assertThrows(
         ResourceNotFoundException.class, () -> trainingService.create(request)
+    );
+  }
+
+  @Test
+  void getDetails_ShouldReturnMappedDto_WhenCallerIsTrainer() {
+    UUID trainingId = UUID.randomUUID();
+    String trainerUsername = "trainer.username";
+    String traineeUsername = "trainee.username";
+
+    User trainerUser = new User();
+    trainerUser.setUsername(trainerUsername);
+    Trainer trainer = new Trainer();
+    trainer.setUser(trainerUser);
+
+    User traineeUser = new User();
+    traineeUser.setUsername(traineeUsername);
+    Trainee trainee = new Trainee();
+    trainee.setUser(traineeUser);
+
+    Training training = new Training();
+    training.setTrainer(trainer);
+    training.setTrainee(trainee);
+
+    TrainingDetailsResponseDto responseDto = mock(TrainingDetailsResponseDto.class);
+
+    when(trainingRepository.findById(trainingId)).thenReturn(Optional.of(training));
+    when(trainingMapper.toTrainingDetailsResponseDto(training)).thenReturn(responseDto);
+
+    TrainingDetailsResponseDto result = trainingService.getDetails(trainingId, trainerUsername);
+
+    assertEquals(responseDto, result);
+    verify(trainingRepository).findById(trainingId);
+    verify(trainingMapper).toTrainingDetailsResponseDto(training);
+  }
+
+  @Test
+  void getDetails_ShouldReturnMappedDto_WhenCallerIsTrainee() {
+    UUID trainingId = UUID.randomUUID();
+    String trainerUsername = "trainer.username";
+    String traineeUsername = "trainee.username";
+
+    User trainerUser = new User();
+    trainerUser.setUsername(trainerUsername);
+    Trainer trainer = new Trainer();
+    trainer.setUser(trainerUser);
+
+    User traineeUser = new User();
+    traineeUser.setUsername(traineeUsername);
+    Trainee trainee = new Trainee();
+    trainee.setUser(traineeUser);
+
+    Training training = new Training();
+    training.setTrainer(trainer);
+    training.setTrainee(trainee);
+
+    TrainingDetailsResponseDto responseDto = mock(TrainingDetailsResponseDto.class);
+
+    when(trainingRepository.findById(trainingId)).thenReturn(Optional.of(training));
+    when(trainingMapper.toTrainingDetailsResponseDto(training)).thenReturn(responseDto);
+
+    TrainingDetailsResponseDto result = trainingService.getDetails(trainingId, traineeUsername);
+
+    assertEquals(responseDto, result);
+    verify(trainingRepository).findById(trainingId);
+    verify(trainingMapper).toTrainingDetailsResponseDto(training);
+  }
+
+  @Test
+  void getDetails_ShouldThrowException_WhenTrainingNotFound() {
+    UUID trainingId = UUID.randomUUID();
+    String username = "any.user";
+
+    when(trainingRepository.findById(trainingId)).thenReturn(Optional.empty());
+
+    assertThrows(
+        ResourceNotFoundException.class,
+        () -> trainingService.getDetails(trainingId, username)
+    );
+  }
+
+  @Test
+  void getDetails_ShouldThrowException_WhenCallerIsNotTrainerOrTrainee() {
+    UUID trainingId = UUID.randomUUID();
+    String trainerUsername = "trainer.username";
+    String traineeUsername = "trainee.username";
+    String otherUsername = "other.user";
+
+    User trainerUser = new User();
+    trainerUser.setUsername(trainerUsername);
+    Trainer trainer = new Trainer();
+    trainer.setUser(trainerUser);
+
+    User traineeUser = new User();
+    traineeUser.setUsername(traineeUsername);
+    Trainee trainee = new Trainee();
+    trainee.setUser(traineeUser);
+
+    Training training = new Training();
+    training.setTrainer(trainer);
+    training.setTrainee(trainee);
+
+    when(trainingRepository.findById(trainingId)).thenReturn(Optional.of(training));
+
+    assertThrows(
+        ResourceNotFoundException.class,
+        () -> trainingService.getDetails(trainingId, otherUsername)
     );
   }
 

@@ -22,6 +22,7 @@ import org.vttish.gymapplication.core.dto.trainer.UpdateTrainerProfileResponseDt
 import org.vttish.gymapplication.core.dto.training.CreateTrainingRequestDto;
 import org.vttish.gymapplication.core.dto.training.TraineeTrainingItemResponseDto;
 import org.vttish.gymapplication.core.dto.training.TrainerTrainingItemResponseDto;
+import org.vttish.gymapplication.core.dto.training.TrainingDetailsResponseDto;
 import org.vttish.gymapplication.core.dto.training.TrainingTypeResponseDto;
 
 public interface GymFacade {
@@ -59,7 +60,9 @@ public interface GymFacade {
 
   List<TrainerItemResponseDto> getUnassignedActiveTrainers(String traineeUsername);
 
-  void createTraining(CreateTrainingRequestDto request);
+  TrainingDetailsResponseDto createTraining(CreateTrainingRequestDto request);
+
+  TrainingDetailsResponseDto getDetails(UUID id, String username);
 
   void deleteTraining(UUID id, String trainerUsername);
 

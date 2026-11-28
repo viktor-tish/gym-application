@@ -8,6 +8,17 @@ The application provides functionality to modify profile information and activat
 the application (excluding the Registration page) requires login credentials for both trainers and trainees. 
 Additionally, the system calculates and provides weekly training duration statistics for each trainer.
 
+## REST API
+
+All service API endpoints are routed and aggregated through `gym-api-gateway`, which serves as the single entry 
+point for external clients and exposes unified Swagger/OpenAPI documentation.
+
+- **Swagger UI:** `http://<gateway-host>:<port>/swagger-ui.html`
+- **OpenAPI Spec (JSON):** `http://<gateway-host>:<port>/v3/api-docs` 
+- **Routing:** External requests hit `gym-api-gateway`, which handles authentication and routing before forwarding 
+traffic to downstream microservices. Individual services also expose their own local Swagger specs for isolated 
+debugging.
+
 ## Prerequisites
 
 - Docker and Docker Compose must be installed.
